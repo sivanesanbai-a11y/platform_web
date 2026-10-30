@@ -1753,8 +1753,6 @@ export default function DashboardClient() {
           </div>
         </article>
       </section>
-        </article>
-      </section>
 
       {/* 4.5. MD EXECUTIVE COLLABORATIVE PIPELINE & COMPLETED WORK SUMMARY */}
       <section style={{ marginBottom: "24px" }}>
