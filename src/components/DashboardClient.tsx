@@ -1275,11 +1275,6 @@ export default function DashboardClient() {
           </div>
         </div>
       </section>
-            <strong>{pComp}</strong>
-            <p>Verified closed batches</p>
-          </div>
-        </div>
-      </section>
 
       {/* 2.5. OPERATIONAL WORKFLOW QUEUE HUB (PENDING & COMPLETED FOR EACH STAFF) */}
       <section style={{ marginBottom: "24px" }}>
