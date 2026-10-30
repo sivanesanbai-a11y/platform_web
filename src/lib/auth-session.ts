@@ -54,18 +54,8 @@ export function getPersistentSession(): AuthSession | null {
  * Saves the session permanently across both localStorage and 1-year persistent Cookie,
  * and broadcasts an auth event to all open tabs and components.
  */
-export function savePersistentSession(sessionOrEmail: AuthSession | string, roleId?: string): void {
+export function savePersistentSession(session: AuthSession): void {
   if (typeof window === "undefined") return;
-
-  const session: AuthSession =
-    typeof sessionOrEmail === "string"
-      ? {
-          email: sessionOrEmail,
-          role: roleId || sessionOrEmail.split("@")[0],
-          name: sessionOrEmail.split("@")[0].toUpperCase(),
-          loggedInAt: new Date().toISOString(),
-        }
-      : sessionOrEmail;
 
   const serialized = JSON.stringify(session);
 

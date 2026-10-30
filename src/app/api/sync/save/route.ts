@@ -6,6 +6,7 @@ import {
   upsertPurchasingOrderAsync,
   upsertQuotationAsync,
   upsertAuthUserAsync,
+  purgeAllStoreDataAsync,
 } from "@/lib/serverStore";
 
 export const runtime = "nodejs";
@@ -119,4 +120,12 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE() {
+  await purgeAllStoreDataAsync();
+  return NextResponse.json({
+    success: true,
+    message: "All operational records permanently purged",
+  });
 }

@@ -3,12 +3,11 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Printer, X, MessageCircle, Mail, Check, Copy, 
-  Save, Send, FileCheck, Download, FileDown, Image as ImageIcon, Sparkles, AlertCircle, ExternalLink, Plus
+  Save, Send, FileCheck
 } from 'lucide-react';
-import { exportElementToPdf, triggerFileDownload, copyElementAsImage, sharePdfFile } from '@/lib/pdf-service';
-import { cleanNumberString, parseCleanNumber, copyToClipboard } from '@/lib/utils';
-import { syncFormToCloud } from '@/lib/sync';
 import type { PurchasingOrder, MarketingItem } from '@/types/purchasing-order';
+import { syncFormToCloud } from '@/lib/sync';
+import { cleanNumberString, parseCleanNumber } from '@/lib/utils';
 
 export interface PurchasingQuotationModalProps {
   order: Partial<PurchasingOrder> & {
@@ -27,14 +26,10 @@ export interface PurchasingQuotationModalProps {
   };
   onClose: () => void;
   onSaved?: () => void;
-  onStartNewOrder?: () => void;
 }
 
 function cleanPhone(raw: string): string {
-  let digits = String(raw || '').replace(/\D/g, '');
-  if (digits.startsWith('0') && digits.length === 11) {
-    digits = digits.slice(1);
-  }
+  const digits = String(raw || '').replace(/\D/g, '');
   if (digits.length === 10) return '91' + digits;
   return digits;
 }
@@ -95,16 +90,13 @@ export default function PurchasingQuotationModal({ order, onClose, onSaved, onSt
     'Thank you for your enquiry with NUNES Instrumentation. Please find our commercial quotation below based on your requested specifications.'
   );
   const [terms, setTerms] = useState(
-    order.special_terms || '1. Prices are Ex-Works, Coimbatore.\n2. Delivery as per schedule from Coimbatore Works.\n3. Standard 18% GST as applicable.\n4. Payment terms as agreed.'
+    order.special_terms || '1. Prices are valid for 15 days.\n2. Delivery as per schedule.\n3. Standard 18% GST as applicable.\n4. Payment terms as agreed.'
   );
 
   const [copied, setCopied] = useState(false);
   const [phoneCopied, setPhoneCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [imageCopied, setImageCopied] = useState(false);
-  const [generatingPdf, setGeneratingPdf] = useState(false);
-  const [pdfNotice, setPdfNotice] = useState<{ title: string; desc: string; type: 'whatsapp' | 'email' | 'download' } | null>(null);
 
   const items: MarketingItem[] = (order.marketing_items && order.marketing_items.length > 0)
     ? order.marketing_items
@@ -172,27 +164,23 @@ Regards,
     taxAmount, grandTotal, amountInWords, terms
   ]);
 
-  const emailBody = useMemo(() => {
-    return `Dear ${customerName},\n\n${intro}\n\nPlease find attached our official sales & commercial quotation in exact PDF format for your review and approval.\n\nQuotation Reference: ${reference}\nOrder Reference: ${orderId}\nDate: ${formatDate(quoteDate)}\n${validUntil ? 'Valid Until: ' + formatDate(validUntil) + '\n' : ''}\nSubtotal: ${formatMoney(subtotal)}\nDiscount: ${formatMoney(discount)}\nGST (${taxRate}%): ${formatMoney(taxAmount)}\nGrand Total: ${formatMoney(grandTotal)}\n(${amountInWords})\n\nKindly refer to the attached PDF for complete itemized specifications, line rates, and commercial terms.\n\nPlease confirm acceptance to proceed.\n\nRegards,\nNUNES Instrumentation Commercial Sales Team`;
-  }, [customerName, intro, reference, orderId, quoteDate, validUntil, subtotal, discount, taxRate, taxAmount, grandTotal, amountInWords]);
-
   const formattedPhone = cleanPhone(recipientPhone);
 
   const whatsappWebUrl = useMemo(() => {
-    return formattedPhone ? `https://web.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}` : 'https://web.whatsapp.com';
-  }, [formattedPhone]);
+    return `https://web.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}&text=${encodeURIComponent(whatsappMessage)}`;
+  }, [formattedPhone, whatsappMessage]);
 
   const whatsappDirectUrl = useMemo(() => {
-    return formattedPhone ? `https://api.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}` : 'https://api.whatsapp.com';
-  }, [formattedPhone]);
+    return `https://api.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}&text=${encodeURIComponent(whatsappMessage)}`;
+  }, [formattedPhone, whatsappMessage]);
 
   const gmailWebUrl = useMemo(() => {
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-  }, [recipientEmail, subject, emailBody]);
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(whatsappMessage)}`;
+  }, [recipientEmail, subject, whatsappMessage]);
 
   const mailtoUrl = useMemo(() => {
-    return `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-  }, [recipientEmail, subject, emailBody]);
+    return `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(whatsappMessage)}`;
+  }, [recipientEmail, subject, whatsappMessage]);
 
   function handleCopy() {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -209,154 +197,6 @@ Regards,
   function handleGmailClick() {
     window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
   }
-
-  // Helper: Export and download exact PDF
-  async function handleDownloadPdf() {
-    const el = document.getElementById('purchasing-quotation-sheet');
-    if (!el) return;
-    setGeneratingPdf(true);
-    try {
-      const pdfFileName = `NUNES-Purchasing-Quotation-${reference}.pdf`;
-      const res = await exportElementToPdf(el, pdfFileName);
-      triggerFileDownload(res.blob, pdfFileName);
-      saveQuotationSnapshot();
-      setPdfNotice({
-        title: 'Quotation PDF Downloaded & Saved',
-        desc: `"${pdfFileName}" has been generated in exact formal layout, saved to Quotations & Downloads.`,
-        type: 'download'
-      });
-    } catch (err) {
-      console.error(err);
-      window.print();
-    } finally {
-      setGeneratingPdf(false);
-    }
-  }
-
-  // Helper: Copy exact quotation card as image (to paste into WhatsApp / Teams / Email)
-  async function handleCopyExactImage() {
-    const el = document.getElementById('purchasing-quotation-sheet');
-    if (!el) return;
-    setGeneratingPdf(true);
-    try {
-      const ok = await copyElementAsImage(el);
-      if (ok) {
-        setImageCopied(true);
-        setTimeout(() => setImageCopied(false), 3500);
-      } else {
-        handleCopy();
-      }
-    } catch {
-      handleCopy();
-    } finally {
-      setGeneratingPdf(false);
-    }
-  }
-
-  // 1-Click WhatsApp with Exact PDF Generation + Automatic Phone Number Copy to Clipboard
-  async function handleWhatsAppWithPdf() {
-    const phoneToCopy = recipientPhone.trim() || (formattedPhone ? `+${formattedPhone}` : '');
-    if (phoneToCopy) {
-      await copyToClipboard(phoneToCopy);
-      setPhoneCopied(true);
-      setTimeout(() => setPhoneCopied(false), 5000);
-    }
-
-    const el = document.getElementById('purchasing-quotation-sheet');
-    if (!el) {
-      window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    setGeneratingPdf(true);
-    const pdfFileName = `NUNES-Purchasing-Quotation-${reference}.pdf`;
-    try {
-      const res = await exportElementToPdf(el, pdfFileName);
-      const shared = await sharePdfFile(res.file, phoneToCopy);
-      if (!shared) {
-        triggerFileDownload(res.blob, pdfFileName);
-        window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
-        setPdfNotice({
-          title: 'Quotation PDF Ready for WhatsApp',
-          desc: `"${pdfFileName}" has been downloaded. Phone number (${phoneToCopy}) copied! Attach this PDF in WhatsApp chat.`,
-          type: 'whatsapp'
-        });
-      } else {
-        setPdfNotice({
-          title: `Phone Number Copied: ${phoneToCopy}`,
-          desc: `In WhatsApp Desktop "Send message to" search bar, just press Ctrl+V (Paste) to select this contact immediately! The quotation PDF is attached.`,
-          type: 'whatsapp'
-        });
-      }
-      saveQuotationSnapshot();
-    } catch (err) {
-      console.error(err);
-      window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
-    } finally {
-      setGeneratingPdf(false);
-    }
-  }
-
-  // 1-Click Email with Exact PDF Attached via System Mail / Outlook
-  async function handleEmailWithPdf() {
-    const el = document.getElementById('purchasing-quotation-sheet');
-    if (!el) {
-      window.open(mailtoUrl, '_blank');
-      return;
-    }
-
-    setGeneratingPdf(true);
-    const pdfFileName = `NUNES-Purchasing-Quotation-${reference}.pdf`;
-    try {
-      const res = await exportElementToPdf(el, pdfFileName);
-      const shared = await sharePdfFile(res.file, emailBody, subject);
-      if (shared) {
-        saveQuotationSnapshot();
-        setPdfNotice({
-          title: 'Quotation PDF Attached to Email Draft',
-          desc: `"${pdfFileName}" has been attached directly to your email draft with recipient, subject, and quotation details pre-filled.`,
-          type: 'email'
-        });
-      } else {
-        await handleGmailWithPdf();
-      }
-    } catch (err) {
-      console.error(err);
-      window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
-    } finally {
-      setGeneratingPdf(false);
-    }
-  }
-
-  // 1-Click Gmail with Exact PDF Generation (Downloads PDF + Copies visual card + Pre-fills full body)
-  async function handleGmailWithPdf() {
-    const el = document.getElementById('purchasing-quotation-sheet');
-    if (!el) {
-      window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    setGeneratingPdf(true);
-    const pdfFileName = `NUNES-Purchasing-Quotation-${reference}.pdf`;
-    try {
-      const res = await exportElementToPdf(el, pdfFileName);
-      triggerFileDownload(res.blob, pdfFileName);
-      await copyElementAsImage(el);
-      saveQuotationSnapshot();
-      window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
-      setPdfNotice({
-        title: 'Quotation PDF Ready for Gmail',
-        desc: `"${pdfFileName}" downloaded. Email body pre-filled in Gmail! Drag the PDF from Chrome's download icon (↓) into Gmail compose to attach, or press Ctrl+V to paste the card.`,
-        type: 'email'
-      });
-    } catch (err) {
-      console.error(err);
-      window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
-    } finally {
-      setGeneratingPdf(false);
-    }
-  }
-
 
   function saveQuotationSnapshot() {
     setSaving(true);
@@ -429,93 +269,65 @@ Regards,
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ background: '#059669', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>
-                PDF ENGINE READY
+                READY
               </span>
-              <b style={{ fontSize: '15px' }}>Commercial Quotation (Exact PDF Format)</b>
+              <b style={{ fontSize: '15px' }}>Commercial Quotation &amp; Dispatcher</b>
             </div>
             <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Official PDF format with NUNES logo, itemized specifications and GST. Ready to dispatch via WhatsApp Web and Gmail.
+              Quotation ready for {customerName} ({orderId}). Send via WhatsApp Web or Gmail with 1 click.
             </span>
           </div>
 
           <div className="paperPreviewActions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginLeft: 'auto' }}>
             <button
               type="button"
-              className="btn btn-whatsapp-action"
-              onClick={handleWhatsAppWithPdf}
-              disabled={generatingPdf}
-              title="Generate and send exact quotation PDF via WhatsApp"
+              className="btn"
+              onClick={handleWhatsAppClick}
+              style={{ background: '#25D366', color: '#fff', borderColor: '#25D366', fontWeight: 600 }}
+              title="Open WhatsApp Web with pre-filled message"
             >
-              <MessageCircle size={16} />
-              <span>{generatingPdf ? 'Generating PDF...' : 'Send PDF via WhatsApp'}</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-gmail-action"
-              onClick={handleEmailWithPdf}
-              disabled={generatingPdf}
-              title="Attach PDF directly to Email draft via system Mail / Outlook"
-            >
-              <Mail size={16} />
-              <span>{generatingPdf ? 'Generating PDF...' : 'Send PDF via Email (Attached)'}</span>
+              <MessageCircle size={16} /> WhatsApp Web
             </button>
 
             <button
               type="button"
               className="btn"
-              onClick={handleGmailWithPdf}
-              disabled={generatingPdf}
-              style={{ background: '#EA4335', color: '#fff', borderColor: '#EA4335', fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-              title="Open Gmail Web draft with pre-filled body, downloaded PDF & copied card"
+              onClick={handleGmailClick}
+              style={{ background: '#EA4335', color: '#fff', borderColor: '#EA4335', fontWeight: 600 }}
+              title="Open Gmail Composer with pre-filled message"
             >
-              <ExternalLink size={14} />
-              <span>Gmail Web</span>
+              <Mail size={16} /> Send via Gmail
             </button>
 
             <button
               type="button"
               className="btn primary"
-              onClick={handleDownloadPdf}
-              disabled={generatingPdf}
-              title="Download exact official quotation PDF"
+              onClick={() => window.print()}
+              title="Print official quotation or save as PDF"
             >
-              <FileDown size={16} />
-              <span>Download PDF</span>
+              <Printer size={16} /> Print / PDF
             </button>
 
             <button
               type="button"
               className="btn"
-              onClick={() => window.print()}
-              title="Print official quotation or save as PDF"
+              onClick={handleCopy}
+              title="Copy formatted quotation message to clipboard"
             >
-              <Printer size={16} />
-              <span>Print</span>
+              {copied ? <Check size={16} style={{ color: '#10b981' }} /> : <Copy size={16} />}
+              {copied ? 'Copied!' : 'Copy Text'}
             </button>
 
             <button
               type="button"
-              className="btn btn-quotation-header"
+              className="btn"
               onClick={saveQuotationSnapshot}
               disabled={saving}
               title="Save a snapshot of this quotation"
             >
               <Save size={16} />
-              {savedSuccess ? 'Saved!' : 'Save'}
+              {savedSuccess ? 'Saved!' : 'Save Quote'}
             </button>
-
-            {onStartNewOrder && (
-              <button
-                type="button"
-                className="btn primary"
-                onClick={onStartNewOrder}
-                title="Complete current order and start next new order"
-                style={{ background: '#059669', borderColor: '#059669', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
-              >
-                <Plus size={15} /> Start Next Order
-              </button>
-            )}
 
             <button
               type="button"
@@ -527,60 +339,6 @@ Regards,
             </button>
           </div>
         </div>
-
-        {/* PDF / NOTICE BANNER */}
-        {pdfNotice && (
-          <div className="no-print" style={{
-            background: pdfNotice.type === 'whatsapp' ? '#f0fdf4' : pdfNotice.type === 'email' ? '#fef2f2' : '#eff6ff',
-            border: `1px solid ${pdfNotice.type === 'whatsapp' ? '#bbf7d0' : pdfNotice.type === 'email' ? '#fecaca' : '#bfdbfe'}`,
-            borderRadius: '10px',
-            padding: '12px 16px',
-            marginBottom: '16px',
-            display: 'flex',
-            gap: '12px',
-            alignItems: 'flex-start'
-          }}>
-            <Sparkles size={20} style={{ color: pdfNotice.type === 'whatsapp' ? '#16a34a' : pdfNotice.type === 'email' ? '#dc2626' : '#2563eb', flexShrink: 0, marginTop: '2px' }} />
-            <div style={{ flex: 1 }}>
-              <b style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '2px' }}>
-                {pdfNotice.title}
-              </b>
-              <p style={{ margin: 0, fontSize: '12px', color: '#334155', lineHeight: 1.5 }}>
-                {pdfNotice.desc}
-              </p>
-              {onStartNewOrder && (
-                <div style={{ marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={onStartNewOrder}
-                    style={{
-                      background: '#059669',
-                      borderColor: '#059669',
-                      color: '#ffffff',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      padding: '5px 12px',
-                      borderRadius: '6px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Plus size={13} /> Complete &amp; Start Next Order (4s Fireworks)
-                  </button>
-                </div>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => setPdfNotice(null)}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
 
         {/* SETTINGS (HIDDEN IN PRINT) */}
         <div className="no-print" style={{ 
@@ -629,15 +387,65 @@ Regards,
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                GST Tax Rate (%):
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>
+                  GST Tax Rate (%):
+                </label>
+                {taxRate > 0 ? (
+                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#059669', background: '#ecfdf5', padding: '1px 6px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
+                    GST Applied ({taxRate}%)
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '1px 6px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
+                    No GST (0% Nil)
+                  </span>
+                )}
+              </div>
+
+              {/* Quick 1-click GST Toggle buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setTaxRate(0)}
+                  style={{
+                    padding: '6px 8px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    borderRadius: '6px',
+                    border: taxRate === 0 ? '2px solid #0f2e5a' : '1px solid #cbd5e1',
+                    background: taxRate === 0 ? '#0f2e5a' : '#ffffff',
+                    color: taxRate === 0 ? '#ffffff' : '#475569',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  ✓ No GST (0%)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTaxRate(18)}
+                  style={{
+                    padding: '6px 8px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    borderRadius: '6px',
+                    border: taxRate === 18 ? '2px solid #2563eb' : '1px solid #93c5fd',
+                    background: taxRate === 18 ? '#2563eb' : '#eff6ff',
+                    color: taxRate === 18 ? '#ffffff' : '#1d4ed8',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  + Add 18% GST
+                </button>
+              </div>
+
               <select
                 value={taxRate}
                 onChange={e => setTaxRate(Number(e.target.value))}
-                style={{ width: '100%', padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff' }}
+                style={{ width: '100%', padding: '6px 10px', fontSize: '12px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff' }}
               >
-                <option value={0}>0% (Tax Exempt)</option>
+                <option value={0}>0% (No GST / Nil / Tax Exempt)</option>
                 <option value={5}>5% GST</option>
                 <option value={12}>12% GST</option>
                 <option value={18}>18% GST (Standard)</option>
@@ -670,40 +478,26 @@ Regards,
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <label style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>
-                  WhatsApp Phone Number:
-                </label>
-                {phoneCopied && (
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    <Check size={12} /> Copied! Press Ctrl+V in WhatsApp
-                  </span>
-                )}
-              </div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                WhatsApp Phone Number:
+              </label>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input
                   type="text"
                   placeholder="+91 9876543210"
                   value={recipientPhone}
                   onChange={e => setRecipientPhone(e.target.value)}
-                  style={{ flex: 1, padding: '7px 12px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
+                  style={{ flex: 1, padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
                 />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const p = recipientPhone.trim() || (formattedPhone ? `+${formattedPhone}` : '');
-                    if (p) {
-                      await copyToClipboard(p);
-                      setPhoneCopied(true);
-                      setTimeout(() => setPhoneCopied(false), 3000);
-                    }
-                  }}
-                  className="btn"
-                  title="Copy phone number to clipboard"
-                  style={{ padding: '6px 12px', fontSize: '12px', background: '#f8fafc', borderColor: '#cbd5e1', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px' }}
+                <a
+                  href={whatsappDirectUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn mini-btn"
+                  style={{ background: '#22c55e', color: '#fff', borderColor: '#22c55e', whiteSpace: 'nowrap' }}
                 >
-                  <Copy size={13} /> {phoneCopied ? 'Copied!' : 'Copy'}
-                </button>
+                  <Send size={13} /> Mobile
+                </a>
               </div>
             </div>
 
@@ -711,82 +505,86 @@ Regards,
               <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
                 Customer Email Address:
               </label>
-              <input
-                type="email"
-                placeholder="customer@domain.com"
-                value={recipientEmail}
-                onChange={e => setRecipientEmail(e.target.value)}
-                style={{ width: '100%', padding: '7px 12px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
-              />
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <input
+                  type="email"
+                  placeholder="customer@domain.com"
+                  value={recipientEmail}
+                  onChange={e => setRecipientEmail(e.target.value)}
+                  style={{ flex: 1, padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
+                />
+                <a
+                  href={mailtoUrl}
+                  className="btn mini-btn"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  <Mail size={13} /> Mailto
+                </a>
+              </div>
             </div>
           </div>
         </div>
 
         {/* PRINTABLE QUOTATION SHEET */}
         <article 
-          id="purchasing-quotation-sheet"
           className="paperJobCard quotationSheet" 
           style={{ 
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', 
+            fontFamily: '"Times New Roman", Times, serif', 
             background: '#ffffff',
-            boxShadow: '0 10px 35px rgba(0,0,0,0.08)',
-            padding: '36px 42px',
-            maxWidth: '850px',
-            margin: '0 auto',
-            color: '#1e293b',
-            position: 'relative',
-            borderRadius: '4px'
+            boxShadow: '0 15px 45px rgba(0,0,0,0.12)',
+            padding: '40px 48px',
+            minHeight: '1050px',
+            position: 'relative'
           }}
         >
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #0f2e5a', paddingBottom: '16px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #164f91', paddingBottom: '16px', marginBottom: '20px' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ 
-                  width: '42px', 
-                  height: '42px', 
-                  borderRadius: '10px', 
-                  background: 'linear-gradient(135deg, #0f2e5a 0%, #1e40af 100%)', 
+                  width: '36px', 
+                  height: '36px', 
+                  borderRadius: '8px', 
+                  background: 'linear-gradient(135deg, #1d4ed8, #0284c7)', 
                   display: 'grid', 
                   placeItems: 'center',
-                  color: '#ffffff',
+                  color: '#fff',
                   fontWeight: 900,
-                  fontSize: '24px',
-                  boxShadow: '0 4px 10px rgba(15, 46, 90, 0.25)'
+                  fontSize: '20px',
+                  fontFamily: 'sans-serif'
                 }}>
                   N
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: '#0f2e5a', letterSpacing: '0.8px', lineHeight: 1.1 }}>
-                    NUNES INSTRUMENTS
+                  <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#164f91', letterSpacing: '1px', lineHeight: 1.1 }}>
+                    NUNES INSTRUMENTATION
                   </h1>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Manufacturing, Testing, Supply &amp; Order Solutions
                   </span>
                 </div>
               </div>
               <p style={{ margin: '6px 0 0 0', fontSize: '11.5px', color: '#64748b', lineHeight: 1.4 }}>
-                Head Office &amp; Works: Coimbatore, Tamil Nadu - 641027, India<br/>
-                Email: sales@nunesinstruments.com
+                Office / Works: Head Office: Kolkata &amp; Branches: Chennai, Mumbai, Delhi<br/>
+                Email: sales@nunesinstruments.com | Web: https://nunes-operations-v44.vercel.app
               </p>
             </div>
 
             <div style={{ textAlign: 'right' }}>
               <div style={{ 
-                background: '#0f2e5a', 
-                color: '#ffffff', 
+                background: '#164f91', 
+                color: '#fff', 
                 padding: '6px 14px', 
-                borderRadius: '6px', 
+                borderRadius: '4px', 
                 display: 'inline-block',
                 fontWeight: 700,
-                fontSize: '13px',
-                letterSpacing: '0.8px',
-                textTransform: 'uppercase'
+                fontSize: '14px',
+                letterSpacing: '1px'
               }}>
-                Commercial Sales Quotation
+                SALES QUOTATION
               </div>
-              <div style={{ marginTop: '8px', fontSize: '12px', lineHeight: 1.6, color: '#334155' }}>
-                <div><b>Quote Ref:</b> <span style={{ color: '#0f2e5a', fontWeight: 800 }}>{reference}</span></div>
+              <div style={{ marginTop: '8px', fontSize: '12px' }}>
+                <div><b>Quote Ref:</b> <span style={{ color: '#0f172a', fontWeight: 700 }}>{reference}</span></div>
                 <div><b>Date:</b> {formatDate(quoteDate)}</div>
                 <div><b>Order Ref:</b> {orderId}</div>
                 {validUntil && <div><b>Valid Until:</b> {formatDate(validUntil)}</div>}
@@ -797,34 +595,33 @@ Regards,
           {/* Customer & Order Box */}
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: '1.25fr 0.75fr', 
+            gridTemplateColumns: '1.2fr 0.8fr', 
             gap: '16px', 
             background: '#f8fafc', 
             border: '1px solid #e2e8f0', 
-            borderRadius: '8px', 
-            padding: '12px 16px',
-            marginBottom: '16px'
+            borderRadius: '6px', 
+            padding: '14px 18px',
+            marginBottom: '20px'
           }}>
             <div>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
                 QUOTATION ISSUED TO:
               </div>
-              <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#0f172a' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
                 {customerName}
               </div>
-              <div style={{ fontSize: '11.5px', color: '#475569', marginTop: '3px' }}>
+              <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>
                 {recipientPhone && <span><b>Phone:</b> {recipientPhone} &nbsp;|&nbsp; </span>}
                 {recipientEmail && <span><b>Email:</b> {recipientEmail}</span>}
               </div>
             </div>
 
             <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '16px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
                 COMMERCIAL DETAILS:
               </div>
-              <div style={{ fontSize: '11.5px', color: '#334155', lineHeight: 1.55 }}>
-                <div><b>Location / Works:</b> Coimbatore, Tamil Nadu</div>
-                <div><b>Branch:</b> {order.branch || 'Coimbatore'}</div>
+              <div style={{ fontSize: '12px', color: '#334155', lineHeight: 1.6 }}>
+                <div><b>Branch:</b> {order.branch || 'Main Commercial Office'}</div>
                 <div><b>Current Status:</b> <span style={{ color: '#0284c7', fontWeight: 700 }}>{order.current_status || 'Quotation'}</span></div>
                 <div><b>Items Count:</b> {items.length} Product(s)</div>
               </div>
@@ -832,22 +629,20 @@ Regards,
           </div>
 
           {/* Intro */}
-          {intro && (
-            <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', lineHeight: 1.5, fontStyle: 'italic' }}>
-              {intro}
-            </div>
-          )}
+          <div style={{ fontSize: '12.5px', color: '#334155', marginBottom: '16px', lineHeight: 1.5, fontStyle: 'italic' }}>
+            {intro}
+          </div>
 
           {/* Products Table */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '20px' }}>
             <thead>
-              <tr style={{ background: '#0f2e5a', color: '#ffffff', textAlign: 'left' }}>
-                <th style={{ padding: '8px 10px', width: '35px', textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>#</th>
-                <th style={{ padding: '8px 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Product &amp; Specification</th>
-                <th style={{ padding: '8px 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Model / Remarks</th>
-                <th style={{ padding: '8px 10px', textAlign: 'center', width: '50px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Qty</th>
-                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Unit Rate</th>
-                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Total Amount</th>
+              <tr style={{ background: '#164f91', color: '#ffffff', textAlign: 'left' }}>
+                <th style={{ padding: '8px 10px', width: '35px', textAlign: 'center' }}>#</th>
+                <th style={{ padding: '8px 10px' }}>Product &amp; Specification</th>
+                <th style={{ padding: '8px 10px' }}>Model / Remarks</th>
+                <th style={{ padding: '8px 10px', textAlign: 'center', width: '50px' }}>Qty</th>
+                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px' }}>Unit Rate</th>
+                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px' }}>Total Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -856,24 +651,24 @@ Regards,
                 const rate = Number(item.item_value || 0);
                 const lineTotal = qty * rate;
                 return (
-                  <tr key={item.id || idx} style={{ borderBottom: '1px solid #e2e8f0', background: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                    <td style={{ padding: '8px', textAlign: 'center', verticalAlign: 'top', color: '#64748b' }}>
+                  <tr key={item.id || idx} style={{ borderBottom: '1px solid #cbd5e1' }}>
+                    <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'top', color: '#64748b' }}>
                       {idx + 1}
                     </td>
-                    <td style={{ padding: '8px', verticalAlign: 'top' }}>
-                      <b style={{ color: '#0f2e5a', display: 'block', fontSize: '13px', fontWeight: 800 }}>{item.item_name || 'Item'}</b>
+                    <td style={{ padding: '10px 8px', verticalAlign: 'top' }}>
+                      <b style={{ color: '#0f172a', display: 'block', fontSize: '12.5px' }}>{item.item_name || 'Item'}</b>
                     </td>
-                    <td style={{ padding: '8px', verticalAlign: 'top', color: '#334155', fontSize: '11.5px' }}>
-                      {item.model && <div style={{ color: '#1e40af', fontWeight: 650, fontSize: '11.5px' }}>Model: {item.model}</div>}
-                      {Boolean(item.add_charge) && <div style={{ color: '#64748b', fontSize: '10.5px' }}>Addl charge: {formatMoney(item.add_charge)}</div>}
+                    <td style={{ padding: '10px 8px', verticalAlign: 'top', color: '#334155' }}>
+                      {item.model && <div>Model: {item.model}</div>}
+                      {Boolean(item.add_charge) && <div style={{ color: '#64748b', fontSize: '11px' }}>Addl charge: {formatMoney(item.add_charge)}</div>}
                     </td>
-                    <td style={{ padding: '8px', textAlign: 'center', verticalAlign: 'top' }}>
+                    <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'top' }}>
                       {qty}
                     </td>
-                    <td style={{ padding: '8px', textAlign: 'right', verticalAlign: 'top' }}>
+                    <td style={{ padding: '10px 8px', textAlign: 'right', verticalAlign: 'top' }}>
                       {formatMoney(rate)}
                     </td>
-                    <td style={{ padding: '8px', textAlign: 'right', verticalAlign: 'top', fontWeight: 700, color: '#0f172a' }}>
+                    <td style={{ padding: '10px 8px', textAlign: 'right', verticalAlign: 'top', fontWeight: 700, color: '#0f172a' }}>
                       {formatMoney(lineTotal)}
                     </td>
                   </tr>
@@ -883,49 +678,65 @@ Regards,
           </table>
 
           {/* Pricing Totals */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', gap: '20px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+            <div style={{ maxWidth: '420px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
                 AMOUNT IN WORDS:
               </div>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f2e5a', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', lineHeight: 1.4 }}>
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#164f91', background: '#f8fafc', padding: '8px 12px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
                 {amountInWords}
               </div>
             </div>
 
-            <div style={{ width: '310px', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '11.5px' }}>
+            <div style={{ width: '320px', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '12px' }}>
                 <span>Subtotal:</span>
                 <b>{formatMoney(subtotal)}</b>
               </div>
               {discount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '11.5px', color: '#dc2626' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '12px', color: '#dc2626' }}>
                   <span>Discount:</span>
                   <b>-{formatMoney(discount)}</b>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '11.5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '12px' }}>
                 <span>Taxable Value:</span>
                 <b>{formatMoney(taxableAmount)}</b>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '2px solid #0f2e5a', fontSize: '11.5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '2px solid #164f91', fontSize: '12px' }}>
                 <span>GST ({taxRate}%):</span>
                 <b>{formatMoney(taxAmount)}</b>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f2e5a', color: '#ffffff', fontSize: '13.5px', fontWeight: 800 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#f1f5f9', fontSize: '14px', fontWeight: 800, color: '#164f91' }}>
                 <span>GRAND TOTAL:</span>
                 <span>{formatMoney(grandTotal)}</span>
               </div>
             </div>
           </div>
 
-          {/* Signatures & Authorization */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', paddingTop: '10px' }}>
-            <div style={{ textAlign: 'center', width: '240px' }}>
-              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2e5a', marginBottom: '38px', letterSpacing: '0.5px' }}>
-                For NUNES INSTRUMENTS, Coimbatore
+          {/* Terms & Conditions */}
+          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginBottom: '24px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '4px' }}>
+              TERMS &amp; CONDITIONS:
+            </div>
+            <div style={{ fontSize: '11.5px', color: '#64748b', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+              {terms}
+            </div>
+          </div>
+
+          {/* Signatures */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '36px', paddingTop: '16px' }}>
+            <div style={{ textAlign: 'center', width: '200px' }}>
+              <div style={{ borderTop: '1px solid #94a3b8', paddingTop: '6px', fontSize: '11.5px', color: '#475569', fontWeight: 600 }}>
+                Customer Acceptance
               </div>
-              <div style={{ borderTop: '1.5px solid #0f2e5a', paddingTop: '6px', fontSize: '11.5px', color: '#334155', fontWeight: 700 }}>
+            </div>
+
+            <div style={{ textAlign: 'center', width: '220px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#164f91', marginBottom: '35px' }}>
+                For NUNES INSTRUMENTATION
+              </div>
+              <div style={{ borderTop: '1px solid #94a3b8', paddingTop: '6px', fontSize: '11.5px', color: '#475569', fontWeight: 600 }}>
                 Authorized Commercial Signatory
               </div>
             </div>

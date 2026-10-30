@@ -36,8 +36,8 @@ function emptyOverview():Overview{
   const sRecent=serviceJobs.slice(0,7).map(x=>({id:x.id,job_no:x.jobNo||x.id,customer:x.customer?.name||"Customer",product:x.products?.[0]?.productName||"Service Job",status:x.status||"RECEIVED",updated_at:x.updatedAt}));
   return {
     generated_at:new Date().toISOString(),
-    forms:{total_orders:purchaseOrders.length,active_orders:pActive,completed_orders:purchaseOrders.length-pActive,this_month_orders:purchaseOrders.length,today_forms:purchaseOrders.length,this_month_forms:purchaseOrders.length,order_value:pVal,outstanding:purchaseOrders.reduce((sum,x)=>sum+Number(x.payment_balance||0),0),statuses:{Marketing:purchaseOrders.length},monthly:[],daily:[],stage_completion:[],recent:pRecent,latest_output:null},
-    service:{open_jobs:sOpen,total_jobs:serviceJobs.length,ready:serviceJobs.filter(x=>x.status==="READY").length,today_forms:serviceJobs.length,this_month_forms:serviceJobs.length,total_estimate:sVal,statuses:{RECEIVED:serviceJobs.length},branches:[],monthly:[],daily:[],recent:sRecent,latest_output:null},
+    forms:{total_orders:purchaseOrders.length,active_orders:pActive,completed_orders:purchaseOrders.length-pActive,this_month_orders:purchaseOrders.length,today_forms:purchaseOrders.length,this_month_forms:purchaseOrders.length,order_value:pVal,outstanding:purchaseOrders.reduce((sum,x)=>sum+Number(x.payment_balance||0),0),statuses:purchaseOrders.length>0?{Marketing:purchaseOrders.length}:{},monthly:[],daily:[],stage_completion:[],recent:pRecent,latest_output:null},
+    service:{open_jobs:sOpen,total_jobs:serviceJobs.length,ready:serviceJobs.filter(x=>x.status==="READY").length,today_forms:serviceJobs.length,this_month_forms:serviceJobs.length,total_estimate:sVal,statuses:serviceJobs.length>0?{RECEIVED:serviceJobs.length}:{},branches:[],monthly:[],daily:[],recent:sRecent,latest_output:null},
     modules:{},
     system:{data_state:"online"}
   } as Overview;
@@ -217,10 +217,40 @@ export function clearAllOlderForms(): void {
     localStorage.removeItem("nunes:service_current_draft");
     localStorage.removeItem("nunes:purchasing_orders");
     localStorage.removeItem("nunes:purchasing_current_draft");
+    localStorage.removeItem("nunes:quotations");
     localStorage.removeItem("nunes:service_quotations");
     localStorage.removeItem("nunes:purchasing_quotations");
+    localStorage.removeItem("nunes:customers");
+    localStorage.removeItem("nunes_customers");
+    localStorage.removeItem("nunes:suppliers");
+    localStorage.removeItem("nunes_suppliers");
     localStorage.removeItem("nunes:dashboard:last-good:v2");
+    localStorage.removeItem("nunes:dashboard_snapshot");
+    localStorage.removeItem("nunes_recent_activity");
+    localStorage.setItem("nunes:service_jobs", "[]");
+    localStorage.setItem("nunes:purchasing_orders", "[]");
+    localStorage.setItem("nunes:quotations", "[]");
+    localStorage.setItem("nunes:customers", "[]");
+    localStorage.setItem("nunes:suppliers", "[]");
     sessionStorage.clear();
+    localStorage.removeItem("nunes:quotations");
+    localStorage.removeItem("nunes:customers");
+    localStorage.removeItem("nunes_customers");
+    localStorage.removeItem("nunes:suppliers");
+    localStorage.removeItem("nunes_suppliers");
+    localStorage.removeItem("nunes:dashboard_snapshot");
+    localStorage.removeItem("nunes_recent_activity");
+    localStorage.setItem("nunes:service_jobs", "[]");
+    localStorage.setItem("nunes:purchasing_orders", "[]");
+    localStorage.setItem("nunes:quotations", "[]");
+    localStorage.setItem("nunes:customers", "[]");
+    localStorage.setItem("nunes:suppliers", "[]");
+    clearDataCache();
+    try { window.dispatchEvent(new CustomEvent("nunes:records-synced")); } catch {}
+    clearDataCache();
+    try {
+      window.dispatchEvent(new CustomEvent("nunes:records-synced"));
+    } catch {}
   } catch {}
 }
 
@@ -396,16 +426,6 @@ export async function getDashboardBootstrap(force=false):Promise<DashboardBootst
     const r=await companyFetch("/api/data/dashboard-bootstrap",{headers:{"x-nunes-client":"dashboard-bootstrap"}});
     if(!r.ok)throw await responseError(r,"/api/data/dashboard-bootstrap");
     const data=await r.json() as DashboardBootstrap;
-    if (typeof window !== "undefined" && Array.isArray((data as any).service_jobs) && (data as any).service_jobs.length > 0) {
-      try {
-        const localRaw = localStorage.getItem("nunes:service_jobs");
-        const localList: any[] = localRaw ? JSON.parse(localRaw) : [];
-        const map = new Map<string, any>();
-        for (const item of (data as any).service_jobs) map.set(String(item.id || item.jobNo), item);
-        for (const item of localList) map.set(String(item.id || item.jobNo), item);
-        localStorage.setItem("nunes:service_jobs", JSON.stringify(Array.from(map.values())));
-      } catch {}
-    }
     memoryCache.set("/api/data/dashboard-bootstrap",{time:now(),data});writeSession("/api/data/dashboard-bootstrap",data);
     writeDashboardSnapshot(data.overview,data.tasks,data.revision);
     return {...data,offline:false,data_mode:bridgeMemory?"local-bridge":"cloud"};

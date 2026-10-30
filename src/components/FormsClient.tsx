@@ -2,6 +2,7 @@
 import CylindricalLoader from '@/components/CylindricalLoader';
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
@@ -18,6 +19,7 @@ import { clearDataCache, companyFetch, getModules, getOverview, getTasks, module
 import { MODULE_REGISTRY, type ModuleDefinition } from "@/lib/module-registry";
 import CartLottieAnimation from "@/components/CartLottieAnimation";
 import ServicingLottieAnimation from "@/components/ServicingLottieAnimation";
+import AddOlderFormModal from "@/components/AddOlderFormModal";
 
 // =========================================================================
 // 1. ProcessHero 3D Animated Components
@@ -124,11 +126,11 @@ function ServicingHero3D({ isReady }: { isReady: boolean }) {
       style={{ textDecoration: 'none', cursor: 'pointer' }}
     >
       {/* Background Animated Glow */}
-      <div className="hero-mesh-glow teal" />
+      <div className="hero-mesh-glow blue" />
 
       {/* Left Content / Typography */}
       <div className="hero-content-left">
-        <div className="hero-kicker-pill teal">
+        <div className="hero-kicker-pill">
           <Wrench size={12} />
           <span>DIAGNOSTICS &amp; LAB</span>
         </div>
@@ -165,7 +167,7 @@ function ServicingHero3D({ isReady }: { isReady: boolean }) {
           }}
         >
           {/* Ground Contact Shadow */}
-          <div className="hero-3d-shadow teal" />
+          <div className="hero-3d-shadow" />
 
           {/* Floating 3D Core Device - Running Lottie JSON Animation */}
           <div className="hero-3d-device-floater">
@@ -219,7 +221,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
       </div>
 
       <div className="metric-tile waiting">
-        <div className="metric-icon amber">
+        <div className="metric-icon blue">
           <Clock3 size={18} />
         </div>
         <div className="metric-data">
@@ -229,7 +231,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
       </div>
 
       <div className="metric-tile attention">
-        <div className="metric-icon red">
+        <div className="metric-icon blue">
           <AlertTriangle size={18} />
         </div>
         <div className="metric-data">
@@ -239,7 +241,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
       </div>
 
       <div className="metric-tile completed">
-        <div className="metric-icon green">
+        <div className="metric-icon blue">
           <CheckCircle2 size={18} />
         </div>
         <div className="metric-data">
@@ -377,11 +379,59 @@ export function ErrorState({ error, onRetry }: { error: string; onRetry: () => v
 // 9. ProcessSelection (Main Page View)
 // =========================================================================
 export default function ProcessSelection() {
+  const router = useRouter();
   const [overview, setOverview] = useState<any>(null);
   const [tasks, setTasks] = useState<any>(null);
   const [modules, setModules] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddOlderModal, setShowAddOlderModal] = useState(false);
+
+  const handleOlderFormSuccess = () => {
+    setLoading(true);
+    void loadData();
+  };
+
+  // Role Redirection Guard
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("nunes_auth_session");
+      if (raw) {
+        const email = (JSON.parse(raw)?.email || "").toLowerCase().trim();
+        const isMdUser = Boolean(
+          email &&
+            !email.includes("admin") &&
+            (email === "md" ||
+              email.startsWith("md@") ||
+              email.includes("md@nunesinstruments.com") ||
+              email.includes("director") ||
+              email.includes("managing"))
+        );
+        if (isMdUser) {
+          router.replace("/dashboard");
+          return;
+        }
+
+        if (
+          email &&
+          !email.includes("admin") &&
+          !email.includes("md") &&
+          !email.startsWith("md@") &&
+          !email.startsWith("admin@") &&
+          !email.includes("director")
+        ) {
+          if (email.includes("aravind") || email.includes("senthil")) {
+            router.replace("/workshop");
+            return;
+          }
+          if (email.includes("priya") || email.includes("azhalaku")) {
+            router.replace("/quotations");
+            return;
+          }
+        }
+      }
+    } catch {}
+  }, [router]);
 
   const loadData = async () => {
     try {
@@ -572,13 +622,20 @@ export default function ProcessSelection() {
 
   return (
     <main className="forms-hub-page">
-      <div className="hub-forms-grid" style={{ gridTemplateColumns: "1fr", maxWidth: "840px" }}>
+      <div className="hub-forms-grid" style={{ gridTemplateColumns: "1fr", maxWidth: "920px", margin: "0 auto" }}>
         <ProcessCard
           moduleDef={servicingDef}
           isReady={isServicingReady}
           metrics={servicingMetrics}
         />
       </div>
+
+      {/* Modal: Add Older Form Record with Manual Price & File Attachments */}
+      <AddOlderFormModal
+        isOpen={showAddOlderModal}
+        onClose={() => setShowAddOlderModal(false)}
+        onSuccess={handleOlderFormSuccess}
+      />
     </main>
   );
 }

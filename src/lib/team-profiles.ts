@@ -42,17 +42,36 @@ export const COMPANY_STAFF_PROFILES: StaffProfile[] = [
     name: "Suganya S.",
     username: "suganya",
     email: "suganya@nunesinstruments.com",
-    role: "Senior Purchasing & Commercial Executive",
-    department: "Procurement & Commercials",
+    role: "Branch Office & Online Intake Executive",
+    department: "Branch Office & Procurement",
     phone: "+91 98422 45678",
     avatarBg: "linear-gradient(135deg, #065f46 0%, #059669 100%)",
     avatarTextColor: "#ffffff",
     initials: "SS",
-    modules: ["Purchasing", "Approvals"],
+    modules: ["Purchasing", "Servicing", "Approvals"],
     responsibilities: [
-      "Authoring and processing purchase orders (NM-Series)",
-      "Vendor price negotiations, rate contracts & supplier evaluations",
-      "Tracking material inwards, GST verification & invoice clearances"
+      "Branch Office customer equipment intake and receipt logging",
+      "Online and phone order processing and documentation",
+      "Coordinating equipment transit from Branch Office to Main Office"
+    ],
+    status: "Active"
+  },
+  {
+    id: "staff-radha",
+    name: "Radha V.",
+    username: "radha",
+    email: "radha@nunesinstruments.com",
+    role: "Branch Office Intake Specialist",
+    department: "Branch Office & Customer Intake",
+    phone: "+91 98422 77889",
+    avatarBg: "linear-gradient(135deg, #047857 0%, #10b981 100%)",
+    avatarTextColor: "#ffffff",
+    initials: "RV",
+    modules: ["Purchasing", "Servicing"],
+    responsibilities: [
+      "Branch Office equipment receipt and customer handover registration",
+      "Logging incoming repairs delivered by customers at Branch Office",
+      "Coordinating branch product transfers to Main Office with Aravindh"
     ],
     status: "Active"
   },
@@ -119,7 +138,7 @@ export const COMPANY_STAFF_PROFILES: StaffProfile[] = [
     username: "aravindh",
     email: "aravindh@nunesinstruments.com",
     role: "Senior Instrumentation Service Engineer",
-    department: "Bench Servicing & Electronics Rework",
+    department: "Bench Servicing & Handover Logistics",
     phone: "+91 98426 89012",
     avatarBg: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)",
     avatarTextColor: "#ffffff",
@@ -127,10 +146,30 @@ export const COMPANY_STAFF_PROFILES: StaffProfile[] = [
     modules: ["Servicing"],
     responsibilities: [
       "Troubleshooting electronic PCB faults, display chips & sensors",
-      "Hydraulic seal replacement, pressure chamber cleaning & overhaul",
-      "Equipment inspection reports and technical repair estimates"
+      "Field client handover, courier pickups, and outward delivery verification",
+      "Post-repair calibration checks and client delivery signoff"
     ],
     status: "Active"
+  },
+  {
+    id: "staff-senthil",
+    name: "Senthil Kumar",
+    username: "senthil",
+    email: "senthil@nunesinstruments.com",
+    role: "Lead Service & Repair Mechanic",
+    department: "Mechanical Servicing & Teardown Lab",
+    phone: "+91 98428 11224",
+    avatarBg: "linear-gradient(135deg, #b45309 0%, #d97706 100%)",
+    avatarTextColor: "#ffffff",
+    initials: "SK",
+    modules: ["Servicing", "Calibration"],
+    responsibilities: [
+      "Physical instrument teardown, fault diagnosis & mechanical repairs",
+      "Repair estimation (selecting Minimum vs. Maximum overhaul pricing)",
+      "Sensor, diaphragm, hydraulic seal and PCB replacement",
+      "Completing repairs and notifying MD for commercial price approval"
+    ],
+    status: "In Lab"
   },
   {
     id: "staff-admin",
@@ -148,24 +187,6 @@ export const COMPANY_STAFF_PROFILES: StaffProfile[] = [
       "Vercel cloud database synchronization and offline backup maintenance",
       "User security credentials and access rights administration",
       "System health audits and continuous multi-device uptime"
-    ],
-    status: "Active"
-  },
-  {
-    id: "staff-instruasia",
-    name: "Admin / Instruasia",
-    username: "instruasia",
-    email: "instruasia@gmail.com",
-    role: "System Operations & Master Admin",
-    department: "Executive Operations",
-    phone: "+91 98420 00000",
-    avatarBg: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)",
-    avatarTextColor: "#ffffff",
-    initials: "IN",
-    modules: ["Administration", "Servicing", "Quotations", "Approvals"],
-    responsibilities: [
-      "Master workstation oversight and company telemetry",
-      "Executive authorization and cross-departmental operations"
     ],
     status: "Active"
   }

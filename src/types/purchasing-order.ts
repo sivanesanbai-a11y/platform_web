@@ -126,6 +126,8 @@ export interface PurchasingOrder {
   approval_complete: boolean;
 
   current_status: string;
+  createdBy?: string;
+  assignedStaff?: string;
   created_at: string;
   updated_at: string;
 }

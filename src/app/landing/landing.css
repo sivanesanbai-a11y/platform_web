@@ -25,6 +25,8 @@
 .headline{font-family:Epilogue,Arial,sans-serif;font-weight:900;font-size:1.66vw;line-height:1.2;letter-spacing:0}
 .job-title{display:block;margin-top:1.45vw}
 .footer-nav{display:flex;flex-direction:column;align-items:flex-start;gap:.93vw;margin-top:1.3vw;font-size:1.075vw;line-height:1.35}
+.logo{position:absolute;left:40.33vw;top:7.7vw;width:17vw;z-index:2}
+.logo svg{display:block;width:100%;height:auto}
 
 .contact{position:absolute;left:74.3vw;top:6.54vw;z-index:2}
 .contact-links{display:flex;flex-direction:column;align-items:flex-start;margin-top:1.45vw;white-space:nowrap}
@@ -97,6 +99,7 @@
     min-height:100svh;
     padding:40px 24px 0;
   }
+  .logo{position:static;order:0;align-self:flex-start;width:210px;max-width:75%;margin-bottom:4px}
   .jobs{order:1;margin:0;width:100%}
   .tag{height:30px;padding:6px 11px;font-size:14px}
   .headline{font-size:clamp(22px,6.3vw,30px);line-height:1.25}
@@ -117,21 +120,4 @@
     font-size:14px;
     padding:10px 22px;
   }
-}
-
-
-/* LANDING HERO TYPOGRAPHY SAFEGUARDS */
-.footer .tag { font-size: .88vw !important; }
-.footer .headline { font-size: 1.66vw !important; }
-.footer .footer-nav { font-size: 1.075vw !important; }
-.footer .note { font-size: .733vw !important; }
-.footer .contact-links a { font-size: 1.075vw !important; }
-.heart-login-btn { font-size: 15px !important; }
-
-@media (max-width: 700px) {
-  .footer .tag { font-size: 14px !important; }
-  .footer .headline { font-size: clamp(22px, 6.3vw, 30px) !important; }
-  .footer .footer-nav { font-size: 17px !important; }
-  .footer .note { font-size: 14px !important; }
-  .heart-login-btn { font-size: 14px !important; }
 }

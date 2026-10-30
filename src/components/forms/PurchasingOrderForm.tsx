@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   FileText, Check, Plus, Trash2, Printer, 
   ArrowRight, ArrowLeft, Save, Building, Phone, MapPin, DollarSign,
   FolderOpen, X, Search, Clock, CheckCircle2, RotateCcw, FileCheck,
-  Camera, Upload, Eye, Package
+  Camera, Upload, Eye, Package, LogOut
 } from 'lucide-react';
 import type { PurchasingOrder, MarketingItem, SupplierRow } from '@/types/purchasing-order';
 import { blankPurchasingOrder, newMarketingItem, newSupplierRow } from '@/lib/purchasing-defaults';
@@ -48,9 +49,12 @@ export default function PurchasingOrderForm() {
     setDirection(next > activeStep ? 'forward' : 'back');
     setActiveStep(next);
   };
+  const router = useRouter();
   const [showPaper, setShowPaper] = useState(false);
   const [showQuotation, setShowQuotation] = useState(false);
   const [message, setMessage] = useState('');
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [draftSaveNotice, setDraftSaveNotice] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState<{
     recordNumber: string;
@@ -65,6 +69,115 @@ export default function PurchasingOrderForm() {
   const [showSavedModal, setShowSavedModal] = useState(false);
   const [savedOrdersList, setSavedOrdersList] = useState<PurchasingOrder[]>([]);
   const [searchSaved, setSearchSaved] = useState('');
+
+  // Cross-device sync & saved orders watcher
+  useEffect(() => {
+    const loadSavedOrders = () => {
+      try {
+        const raw = localStorage.getItem('nunes:purchasing_orders');
+        const list: PurchasingOrder[] = raw ? JSON.parse(raw) : [];
+        setSavedOrdersList(list);
+      } catch {}
+    };
+
+    loadSavedOrders();
+    void syncPullFromCloud().then(() => loadSavedOrders());
+    window.addEventListener('nunes:records-synced', loadSavedOrders);
+    return () => window.removeEventListener('nunes:records-synced', loadSavedOrders);
+  }, []);
+
+  // Active User Email for Multi-Role Collaborative Workflow
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>('suganya@nunesinstruments.com');
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('nunes_auth_session');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.email) setCurrentUserEmail(parsed.email);
+        else if (parsed.username) setCurrentUserEmail(parsed.username);
+      }
+    } catch {}
+  }, []);
+
+  const [staffFilter, setStaffFilter] = useState<string>('ALL');
+
+  const isMd = useMemo(() => {
+    const u = (currentUserEmail || '').toLowerCase();
+    return (
+      u.includes('md') ||
+      u.startsWith('director') ||
+      u === 'md'
+    );
+  }, [currentUserEmail]);
+
+  const isAdmin = useMemo(() => {
+    const u = (currentUserEmail || '').toLowerCase();
+    return u.includes('admin') || u === 'admin';
+  }, [currentUserEmail]);
+
+  const isAdminOrMd = useMemo(() => {
+    return isAdmin || isMd;
+  }, [isAdmin, isMd]);
+
+  // For MD: Auto-open Saved Orders Modal on load so MD inspects existing orders
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sp = new URLSearchParams(window.location.search);
+    const targetId = sp.get('id') || sp.get('order_id');
+    if (!targetId && isMd) {
+      setShowSavedModal(true);
+    }
+  }, [isMd]);
+
+  // Separate worker accounts: individual workers only see orders they created or handle.
+  // Admin and MD see all orders and can filter by staff.
+  const visibleSavedOrders = useMemo(() => {
+    const user = (currentUserEmail || '').toLowerCase();
+    const uKey = user.split('@')[0].replace(/[^a-z]/g, '');
+
+    return savedOrdersList.filter((ord) => {
+      // 1. Search text filter
+      if (searchSaved.trim()) {
+        const s = searchSaved.toLowerCase();
+        const name = String(ord.customer_name || '').toLowerCase();
+        const orderId = String(ord.order_id || ord.id || '').toLowerCase();
+        const prod = (ord.marketing_items || []).map((m: any) => String(m.item_name || '')).join(' ').toLowerCase();
+        if (!name.includes(s) && !orderId.includes(s) && !prod.includes(s)) return false;
+      }
+
+      // 2. Admin & MD Master View: can view all or filter by selected staff
+      if (isAdminOrMd) {
+        if (staffFilter === 'ALL') return true;
+        const target = staffFilter.toLowerCase();
+        const createdBy = String(ord.createdBy || '').toLowerCase();
+        const marketingPerson = String(ord.marketing_person || '').toLowerCase();
+        const packingBy = String(ord.packing_by || '').toLowerCase();
+        const servicePerson = String(ord.service_person || '').toLowerCase();
+        return (
+          createdBy.includes(target) ||
+          marketingPerson.includes(target) ||
+          packingBy.includes(target) ||
+          servicePerson.includes(target)
+        );
+      }
+
+      // 3. Regular Worker Account View: ONLY show the particular orders they added or handle
+      const createdBy = String(ord.createdBy || '').toLowerCase();
+      const marketingPerson = String(ord.marketing_person || '').toLowerCase();
+      const packingBy = String(ord.packing_by || '').toLowerCase();
+      const servicePerson = String(ord.service_person || '').toLowerCase();
+
+      const isOwner = (
+        (createdBy && (createdBy.includes(uKey) || uKey.includes(createdBy.split('@')[0]))) ||
+        (marketingPerson && (marketingPerson.includes(uKey) || uKey.includes(marketingPerson.split('@')[0]))) ||
+        (packingBy && (packingBy.includes(uKey) || uKey.includes(packingBy.split('@')[0]))) ||
+        (servicePerson && (servicePerson.includes(uKey) || uKey.includes(servicePerson.split('@')[0])))
+      );
+
+      return isOwner;
+    });
+  }, [savedOrdersList, searchSaved, isAdminOrMd, staffFilter, currentUserEmail]);
 
   // Product Catalog & Photo states
   const [showCatalogModal, setShowCatalogModal] = useState(false);
@@ -129,7 +242,9 @@ export default function PurchasingOrderForm() {
           };
           return { ...prev, marketing_items: items };
         });
-        setActiveStep(0);
+        setDirection('forward');
+    setDirection('forward');
+    setActiveStep(0);
         setMessage(`✓ Pre-filled ordered product "${urlProdName}" with photo from catalog`);
         setTimeout(() => setMessage(''), 4000);
         return;
@@ -146,11 +261,14 @@ export default function PurchasingOrderForm() {
     } catch {}
   }, []);
 
-  // Persist current active form draft
+  // Persist current active form draft with debounce to avoid freezing UI
   useEffect(() => {
-    try {
-      localStorage.setItem('nunes:purchasing_current_draft', JSON.stringify(order));
-    } catch {}
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('nunes:purchasing_current_draft', JSON.stringify(order));
+      } catch {}
+    }, 400);
+    return () => clearTimeout(timer);
   }, [order]);
 
   // Recalculate Marketing Total Order Value
@@ -260,6 +378,8 @@ export default function PurchasingOrderForm() {
     if (completeCurrent) {
       if (!isFinalStep) {
         setDirection('forward');
+        setDirection('forward');
+        setDirection('forward');
         setActiveStep(s => s + 1);
         setMessage('✓ Saved & moving to next step.');
         setTimeout(() => setMessage(''), 3000);
@@ -274,8 +394,64 @@ export default function PurchasingOrderForm() {
         setShowCelebration(true);
       }
     } else {
-      setMessage('✓ Saved to Purchasing records.');
-      setTimeout(() => setMessage(''), 3000);
+      setMessage(`✓ Saved draft for Order #${updated.order_id || updated.id}`);
+      setDraftSaveNotice(true);
+      setTimeout(() => setMessage(''), 4500);
+    }
+  }
+
+  function handleSaveAndClose() {
+    const updated = {
+      ...order,
+      updated_at: new Date().toISOString()
+    };
+    setOrder(updated);
+
+    try {
+      const raw = localStorage.getItem('nunes:purchasing_orders');
+      const list: PurchasingOrder[] = raw ? JSON.parse(raw) : [];
+      const idx = list.findIndex(x => String(x.id) === String(updated.id));
+      if (idx >= 0) {
+        list[idx] = updated;
+      } else {
+        list.unshift(updated);
+      }
+      localStorage.setItem('nunes:purchasing_orders', JSON.stringify(list));
+      void syncFormToCloud("purchasing", String(updated.order_id || updated.id), String(updated.customer_name || "Customer"), updated);
+    } catch {}
+
+    try {
+      localStorage.removeItem('nunes:purchasing_current_draft');
+    } catch {}
+
+    setShowCloseModal(false);
+    setDraftSaveNotice(false);
+    setMessage('✓ Draft saved. Closing form and returning to Forms Hub...');
+    setTimeout(() => {
+      router.push('/forms');
+    }, 350);
+  }
+
+  function handleCloseWithoutSaving() {
+    try {
+      localStorage.removeItem('nunes:purchasing_current_draft');
+    } catch {}
+    setShowCloseModal(false);
+    setDraftSaveNotice(false);
+    router.push('/forms');
+  }
+
+  function handlePromptClose() {
+    const hasData = Boolean(
+      order.customer_name ||
+      order.place ||
+      (order.marketing_items && order.marketing_items.some(i => i.item_name || i.model))
+    );
+
+    if (!hasData) {
+      handleCloseWithoutSaving();
+    } else {
+      setShowCloseModal(true);
     }
   }
 
@@ -294,6 +470,8 @@ export default function PurchasingOrderForm() {
     } catch {}
     const fresh = blankPurchasingOrder();
     setOrder(fresh);
+    setDirection('forward');
+    setDirection('forward');
     setDirection('forward');
     setActiveStep(0);
     setMessage(`✓ Started new blank order ${fresh.order_id}`);
@@ -333,6 +511,238 @@ export default function PurchasingOrderForm() {
             setShowCelebration(true);
           }}
         />
+      )}
+
+      {showSavedModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setShowSavedModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              maxWidth: '680px',
+              width: '100%',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: '16px 20px',
+                borderBottom: '1px solid #e2e8f0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#f8fafc',
+              }}
+            >
+              <div>
+                <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FolderOpen size={18} style={{ color: '#2563eb' }} />
+                  <span>
+                    {isAdminOrMd
+                      ? `All Saved Purchasing Orders (${visibleSavedOrders.length})`
+                      : `My Saved Purchasing Orders (${visibleSavedOrders.length})`}
+                  </span>
+                </h3>
+                <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                  {isAdminOrMd
+                    ? 'Master Administration View • Showing orders across all staff members'
+                    : `Account: ${currentUserEmail} • Showing only the particular orders you created or handle`}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSavedModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  borderRadius: '8px',
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Staff Filter Bar for Admin / MD */}
+            {isAdminOrMd && (
+              <div style={{ padding: '8px 20px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '4px' }}>
+                  Filter by Worker:
+                </span>
+                {[
+                  { key: 'ALL', label: `All (${savedOrdersList.length})` },
+                  { key: 'suganya', label: 'Suganya' },
+                  { key: 'senthil', label: 'Senthil' },
+                  { key: 'rekha', label: 'Rekha' },
+                  { key: 'sabitha', label: 'Sabitha' },
+                  { key: 'priya', label: 'Azhalaku Priya' },
+                  { key: 'aravind', label: 'Aravindh' },
+                ].map((chip) => {
+                  const isActive = staffFilter === chip.key;
+                  return (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      onClick={() => setStaffFilter(chip.key)}
+                      style={{
+                        padding: '3px 10px',
+                        borderRadius: '6px',
+                        border: isActive ? '1px solid #2563eb' : '1px solid #cbd5e1',
+                        background: isActive ? '#2563eb' : '#ffffff',
+                        color: isActive ? '#ffffff' : '#475569',
+                        fontSize: '11px',
+                        fontWeight: 750,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {chip.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Search Input */}
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ position: 'relative' }}>
+                <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                <input
+                  type="text"
+                  placeholder="Search by Order ID, Customer, or Ordered Items..."
+                  value={searchSaved}
+                  onChange={(e) => setSearchSaved(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px 8px 36px',
+                    borderRadius: '10px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '13px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* List */}
+            <div style={{ padding: '12px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {visibleSavedOrders.length === 0 ? (
+                <div style={{ padding: '40px 20px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                  {isAdminOrMd
+                    ? 'No purchasing orders match this search or staff filter.'
+                    : `No purchasing orders recorded under your account (${currentUserEmail}) yet. Fill out the form and click Save Draft to save your first order.`}
+                </div>
+              ) : (
+                visibleSavedOrders.map((o) => {
+                  const prodName = (o.marketing_items || []).map((m) => m.item_name).filter(Boolean).join(', ') || 'Ordered Items';
+                  const isCurrent = (o.order_id || o.id) === (order.order_id || order.id);
+                  return (
+                    <div
+                      key={String(o.id || o.order_id)}
+                      style={{
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        border: isCurrent ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: isCurrent ? '#eff6ff' : '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <strong style={{ fontSize: '14px', color: '#0f172a' }}>{o.order_id || o.id}</strong>
+                          <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', background: '#e0f2fe', color: '#0369a1', fontWeight: 600 }}>
+                            {o.current_status || 'In Progress'}
+                          </span>
+                          {o.createdBy && (
+                            <span style={{ fontSize: '11px', color: '#64748b', background: '#f1f5f9', padding: '1px 6px', borderRadius: '4px' }}>
+                              by {o.createdBy.split('@')[0]}
+                            </span>
+                          )}
+                          {isCurrent && (
+                            <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: '#dbeafe', color: '#1d4ed8', fontWeight: 700 }}>
+                              ACTIVE IN FORM
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#334155', fontWeight: 600, marginTop: '2px' }}>
+                          {o.customer_name || 'Customer'}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '1px' }}>
+                          {prodName} • Total Value: ₹{Number(o.total_order_value || o.bill_amount || 0).toLocaleString()}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOrder(o);
+                          setShowSavedModal(false);
+                          setMessage(`✓ Loaded purchasing order ${o.order_id || o.id} into form.`);
+                          setTimeout(() => setMessage(''), 3500);
+                        }}
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '10px',
+                          background: isCurrent ? '#cbd5e1' : '#2563eb',
+                          color: '#ffffff',
+                          border: 'none',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      >
+                        Load into Form →
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setShowSavedModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  background: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showSavedModal && (
@@ -559,7 +969,7 @@ export default function PurchasingOrderForm() {
             style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', fontWeight: 700 }}
           >
             <FolderOpen size={15} style={{ color: '#1d4ed8' }} />
-            <span>Saved Orders ({savedOrdersList.length})</span>
+            <span>Saved Orders ({visibleSavedOrders.length})</span>
           </button>
           <button type="button" className="btn" onClick={startNewOrder} title="Start a fresh blank order">
             <Plus size={15} /> New Order
@@ -699,6 +1109,84 @@ export default function PurchasingOrderForm() {
       </div>
 
       {message && <div className="notice success">{message}</div>}
+
+      {/* Draft Saved Banner with Instant Close Option */}
+      {draftSaveNotice && (
+        <div style={{
+          background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
+          border: '1.5px solid #93c5fd',
+          borderRadius: '12px',
+          padding: '12px 18px',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          boxShadow: '0 4px 14px rgba(29, 78, 216, 0.12)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: '#1d4ed8',
+              color: '#ffffff',
+              display: 'grid',
+              placeItems: 'center',
+              flexShrink: 0
+            }}>
+              <CheckCircle2 size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#1e3a8a' }}>
+                Draft Saved Successfully for Order #{order.order_id}!
+              </div>
+              <div style={{ fontSize: '12px', color: '#1d4ed8' }}>
+                Saved to your purchasing records and synced across devices. You can close this form now or keep editing.
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={handleSaveAndClose}
+              style={{
+                background: '#1d4ed8',
+                color: '#ffffff',
+                border: 'none',
+                padding: '7px 16px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: 750,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 6px rgba(29, 78, 216, 0.25)'
+              }}
+            >
+              <LogOut size={14} /> Close Form Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setDraftSaveNotice(false)}
+              style={{
+                background: '#ffffff',
+                color: '#475569',
+                border: '1px solid #cbd5e1',
+                padding: '7px 12px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Keep Editing
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stepper */}
       <div className="nunes-stepper">
@@ -1445,7 +1933,6 @@ export default function PurchasingOrderForm() {
             </label>
           </div>
         )}
-
         </PageTransition>
 
         {/* Navigation buttons */}
@@ -1456,8 +1943,8 @@ export default function PurchasingOrderForm() {
             </button>
           )}
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-            <button type="button" className="btn" onClick={() => saveRecord(false)}>
-              <Save size={14} /> Save Draft
+            <button type="button" className="btn" onClick={handleSaveAndClose} title="Save record and return to Forms Hub">
+              <Save size={14} /> Save &amp; Close
             </button>
             {activeStep < STEPS.length - 1 ? (
               <button 
@@ -1522,6 +2009,229 @@ export default function PurchasingOrderForm() {
         }}
         onCancel={() => setShowCelebration(false)}
       />
+
+      {/* Product Catalog Picker Modal */}
+      {showCatalogModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.7)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '820px',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 22px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#f8fafc'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#1d4ed8', color: '#fff', display: 'grid', placeItems: 'center' }}>
+                  <Package size={18} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#0f172a' }}>
+                    Select Instrument from Product Catalog
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                    Populates item name, model, photo, technical specifications, and catalog price for Item #{catalogTargetIdx + 1}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCatalogModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div style={{ padding: '12px 22px', borderBottom: '1px solid #f1f5f9', background: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '8px 12px' }}>
+                <Search size={16} style={{ color: '#64748b' }} />
+                <input
+                  type="text"
+                  placeholder="Search by instrument name, model, category, specifications..."
+                  value={catalogSearch}
+                  onChange={e => setCatalogSearch(e.target.value)}
+                  style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px' }}
+                />
+              </div>
+            </div>
+
+            {/* Product List */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 22px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '12px' }}>
+              {getAllProducts()
+                .filter(prod => {
+                  if (!catalogSearch) return true;
+                  const q = catalogSearch.toLowerCase();
+                  return prod.name.toLowerCase().includes(q) ||
+                         prod.model.toLowerCase().includes(q) ||
+                         prod.category.toLowerCase().includes(q) ||
+                         prod.specifications.toLowerCase().includes(q);
+                })
+                .map(prod => (
+                  <div
+                    key={prod.id}
+                    onClick={() => {
+                      updateItem(catalogTargetIdx, {
+                        item_name: prod.name,
+                        model: prod.model,
+                        item_value: prod.price,
+                        image_url: prod.imageUrl,
+                        specifications: prod.specifications
+                      });
+                      setShowCatalogModal(false);
+                      setMessage(`✓ Loaded "${prod.name}" into Item #${catalogTargetIdx + 1}`);
+                      setTimeout(() => setMessage(''), 3000);
+                    }}
+                    style={{
+                      border: '1.5px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      display: 'flex',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      background: '#ffffff',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#1d4ed8';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(29,78,216,0.12)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', background: '#f8fafc', border: '1px solid #cbd5e1', flexShrink: 0 }}>
+                      <img src={prod.imageUrl} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                        <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 750, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {prod.name}
+                        </h4>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#1d4ed8', flexShrink: 0 }}>
+                          ₹{prod.price.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
+                        Model: {prod.model} • {prod.category}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {prod.specifications}
+                      </div>
+                      <div style={{ marginTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '10px', background: '#eff6ff', color: '#1e40af', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          Range: {prod.range}
+                        </span>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#1d4ed8' }}>
+                          Add to Order →
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '12px 22px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <a
+                href="/products"
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}
+              >
+                Manage Product Profiles &amp; Add New Equipment ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowCatalogModal(false)}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enlarged Photo Lightbox Modal */}
+      {enlargedPhoto && (
+        <div
+          onClick={() => setEnlargedPhoto(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            cursor: 'zoom-out'
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              padding: '16px',
+              maxWidth: '600px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              cursor: 'default'
+            }}
+          >
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 750, color: '#0f172a' }}>Ordered Item Photo Preview</span>
+              <button
+                type="button"
+                onClick={() => setEnlargedPhoto(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ width: '100%', height: '360px', borderRadius: '12px', overflow: 'hidden', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={enlargedPhoto} alt="Enlarged Item" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setEnlargedPhoto(null)}
+              style={{ marginTop: '14px', padding: '8px 20px', borderRadius: '8px', background: '#1d4ed8', color: '#fff', border: 'none', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+            >
+              Done Viewing
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Product Catalog Picker Modal */}
       {showCatalogModal && (

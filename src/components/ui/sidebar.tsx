@@ -70,7 +70,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 
-const SIDEBAR_WIDTH = "16.5rem"
+const SIDEBAR_WIDTH = "17.5rem"
 const SIDEBAR_WIDTH_MOBILE = "18.5rem"
 const SIDEBAR_WIDTH_ICON = "3.5rem"
 

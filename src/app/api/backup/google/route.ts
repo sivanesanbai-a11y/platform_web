@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
       app_password,
       data = {},
       title,
+      sheet_csv,
     } = payload;
 
     const targetEmail = (
@@ -102,27 +103,41 @@ export async function POST(req: NextRequest) {
         </table>
 
         <div style="margin-top: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; color: #475569;">
-          <strong>Attached File:</strong> <code>nunes-backup-${id}.json</code> contains the complete structured operational payload ready for import or audit at any time.
+          <strong>Attached Files:</strong>
+          <ul style="margin: 6px 0 0; padding-left: 18px;">
+            <li><code>nunes-backup-${id}.json</code> - Complete structured backup payload</li>
+            ${sheet_csv ? `<li><code>nunes-sheet-${id}.csv</code> - Ready to open in Microsoft Excel or Google Sheets</li>` : ""}
+          </ul>
         </div>
 
         <div style="margin-top: 24px; font-size: 11px; color: #94a3b8; text-align: center;">
-          NUNES Instrumentation · Coimbatore Facility · Secure Cloud Backup
+          NUNES Instrumentation · Coimbatore Facility · Secure Cloud &amp; Drive Backup
         </div>
       </div>
     `;
+
+    const mailAttachments: any[] = [
+      {
+        filename: `nunes-backup-${id}.json`,
+        content: jsonString,
+        contentType: "application/json",
+      },
+    ];
+
+    if (sheet_csv) {
+      mailAttachments.push({
+        filename: `nunes-sheet-${id}.csv`,
+        content: sheet_csv,
+        contentType: "text/csv; charset=utf-8",
+      });
+    }
 
     const info = await transporter.sendMail({
       from: `"NUNES Operations Platform" <${targetEmail}>`,
       to: targetEmail,
       subject,
       html: htmlBody,
-      attachments: [
-        {
-          filename: `nunes-backup-${id}.json`,
-          content: jsonString,
-          contentType: "application/json",
-        },
-      ],
+      attachments: mailAttachments,
     });
 
     return NextResponse.json({

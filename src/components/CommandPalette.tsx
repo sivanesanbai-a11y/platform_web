@@ -160,11 +160,11 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-lg rounded-2xl bg-white border border-slate-200/90 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Search Input */}
-        <div className="relative flex items-center px-4 py-3 border-b border-slate-100 bg-white">
+        <div className="relative flex items-center px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <Search size={16} className="text-slate-400 mr-2.5 shrink-0" />
           <input
             ref={inputRef}
@@ -172,18 +172,18 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search pages, forms, customers..."
-            className="w-full text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none bg-transparent"
+            className="w-full text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none bg-transparent"
           />
           {query ? (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-600 shrink-0"
+              className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0"
             >
               <X size={14} />
             </button>
           ) : (
-            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-[10px] font-mono text-slate-400 shrink-0">
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[10px] font-mono text-slate-400 shrink-0">
               ESC
             </kbd>
           )}
@@ -208,7 +208,9 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                   }}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition-colors ${
-                    isSelected ? "bg-slate-100 text-slate-900 font-medium" : "text-slate-600 hover:bg-slate-50"
+                    isSelected
+                      ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">

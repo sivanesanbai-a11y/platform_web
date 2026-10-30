@@ -301,8 +301,8 @@ export default function SuppliersPage() {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${
                             item.status === "PREFERRED"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-blue-50 text-blue-700"
+                              ? "bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200"
+                              : "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300"
                           }`}
                         >
                           {item.status}

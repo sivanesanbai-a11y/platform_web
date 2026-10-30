@@ -5660,3 +5660,102 @@ header.topbar {
   color: #0f172a !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
 }
+
+
+/* === INSTRUASIA LATEST CLEAN RESTORE OVERRIDES === */
+
+
+/* ============================================================
+   SIDEBAR PERMANENT REMOVAL & 100% FULL-WIDTH VIEWPORT
+   User Command: REMOVE THE SDIE BAR
+   ============================================================ */
+
+.sidebar,
+aside.sidebar,
+.sidebar-wrapper,
+[data-sidebar="sidebar"] {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.main,
+.shell,
+.dashboard-shell .main,
+.app-main-viewport,
+.nunes-form-workspace,
+.dashboard-page-v2,
+.page {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ============================================================
+   SINGLE UNIFIED COLOR - PROCESS HEROES & METRIC TILES
+   ============================================================ */
+
+.process-hero.purchasing,
+.process-hero.servicing {
+  background: radial-gradient(circle at 85% 50%, rgba(57, 197, 255, 0.35) 0%, transparent 60%),
+              linear-gradient(135deg, #063ec4 0%, #0866ff 45%, #2bb7ff 100%) !important;
+}
+
+.process-hero.servicing .hero-mesh-glow {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, transparent 70%) !important;
+}
+
+.process-action-btn.primary,
+.process-action-btn.primary.servicing {
+  background: #0866ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(8, 102, 255, 0.28) !important;
+}
+
+.process-action-btn.primary:hover,
+.process-action-btn.primary.servicing:hover {
+  background: #0647D8 !important;
+  box-shadow: 0 6px 18px rgba(8, 102, 255, 0.38) !important;
+}
+
+.process-card.servicing:hover {
+  border-color: #93c5fd !important;
+  box-shadow: 0 20px 40px -12px rgba(8, 102, 255, 0.14), 0 4px 12px -2px rgba(8, 102, 255, 0.06) !important;
+}
+
+.metric-icon,
+.metric-icon.blue,
+.metric-icon.amber,
+.metric-icon.red,
+.metric-icon.green {
+  background: #eff6ff !important;
+  color: #0866ff !important;
+}
+
+html.dark .metric-icon,
+html.dark .metric-icon.blue,
+html.dark .metric-icon.amber,
+html.dark .metric-icon.red,
+html.dark .metric-icon.green {
+  background: #172554 !important;
+  color: #93c5fd !important;
+}
+
+.hero-kicker-pill,
+.hero-kicker-pill.teal {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+/* HIGH-CONTRAST READABILITY & ZERO DARKNESS OVERCOMING */
+.hero-status-badge {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.hero-subtitle {
+  color: rgba(255, 255, 255, 0.88) !important;
+}

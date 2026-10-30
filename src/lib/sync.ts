@@ -1,3 +1,6 @@
+import { generateServiceJobsCsv } from "@/lib/excel-export";
+import type { ServiceJob } from "@/types/service-job";
+
 export interface CloudSyncResult {
   success?: boolean;
   message?: string;
@@ -5,6 +8,39 @@ export interface CloudSyncResult {
   cloud_sync?: any;
   google_backup?: any;
   skipped?: boolean;
+  updated?: boolean;
+}
+
+export function sortJobsDeterministically<T extends Record<string, any>>(jobs: T[]): T[] {
+  if (!Array.isArray(jobs)) return [];
+  return [...jobs].sort((a, b) => {
+    const getTs = (j: any) => {
+      const d = j?.createdAt || j?.jobDate || j?.customer?.date || j?.receipt?.mrDate || j?.updatedAt;
+      if (!d) return 0;
+      const t = new Date(d).getTime();
+      return isNaN(t) ? 0 : t;
+    };
+    const timeA = getTs(a);
+    const timeB = getTs(b);
+    if (timeB !== timeA) {
+      return timeB - timeA;
+    }
+    const idA = String(a?.jobNo || a?.id || "");
+    const idB = String(b?.jobNo || b?.id || "");
+    return idB.localeCompare(idA, undefined, { numeric: true });
+  });
+}
+
+export function sortOrdersDeterministically<T extends Record<string, any>>(orders: T[]): T[] {
+  if (!Array.isArray(orders)) return [];
+  return [...orders].sort((a, b) => {
+    const timeA = new Date(a?.order_date || a?.date || a?.updated_at || a?.created_at || 0).getTime();
+    const timeB = new Date(b?.order_date || b?.date || b?.updated_at || b?.created_at || 0).getTime();
+    if (timeB !== timeA) return timeB - timeA;
+    const idA = String(a?.order_id || a?.id || "");
+    const idB = String(b?.order_id || b?.id || "");
+    return idB.localeCompare(idA, undefined, { numeric: true });
+  });
 }
 
 /**
@@ -42,23 +78,42 @@ export async function syncFormToCloud(
       }).then((r) => r.json()).catch((e) => ({ error: e.message }))
     );
 
-    // 2. Google Account Backup (if user has provided email or auto-sync enabled)
-    if (google_auto && google_email && type !== "auth_user") {
-      promises.push(
-        fetch("/api/backup/google", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type,
-            id,
-            customer,
-            email: google_email,
-            app_password: google_pass,
-            data,
-            title: `[NUNES BACKUP] ${type.toUpperCase()}: ${id} - ${customer}`,
-          }),
-        }).then((r) => r.json()).catch((e) => ({ error: e.message }))
-      );
+    // 2. Automated Excel / Google Drive Sheet Backup (Auto-Sync to Google Account)
+    if (google_auto && type !== "auth_user") {
+      try {
+        const rawJobs = localStorage.getItem("nunes:service_jobs");
+        const currentJobs: ServiceJob[] = rawJobs ? JSON.parse(rawJobs) : [];
+        if (type === "servicing" && data) {
+          const exists = currentJobs.some((j: any) => String(j.jobNo || j.id) === String(data.jobNo || data.id));
+          if (!exists) currentJobs.unshift(data);
+        }
+        const sheetCsv = generateServiceJobsCsv(currentJobs);
+
+        promises.push(
+          fetch("/api/backup/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "drive_sheet_backup",
+              id: `AUTO-SHEET-${id}`,
+              customer,
+              email: google_email || "nunesinstruments@gmail.com",
+              app_password: google_pass,
+              data: {
+                total_forms: currentJobs.length,
+                backup_type: "Automatic Excel / Google Drive Sheet Sync",
+                timestamp: new Date().toISOString(),
+                saved_record_id: id,
+                record_customer: customer,
+              },
+              sheet_csv: sheetCsv,
+              title: `[NUNES AUTOMATIC EXCEL / DRIVE SHEET] ${currentJobs.length} Forms Auto-Synced (${new Date().toLocaleDateString("en-IN")})`,
+            }),
+          }).then((r) => r.json()).catch((e) => ({ error: e.message }))
+        );
+      } catch (sheetErr) {
+        console.warn("Automated sheet backup generation warning:", sheetErr);
+      }
     }
 
     const [syncRes, googleRes] = await Promise.all(promises);
@@ -87,139 +142,232 @@ export async function syncFormToCloud(
  * Pulls all synchronized records from the server and merges them into this device's localStorage
  * ensuring every device sees all filled forms, service jobs, purchasing orders, and quotations.
  */
-export async function syncPullFromCloud(): Promise<{ success: boolean; pulled?: any; error?: string }> {
+let clientSyncInFlight: Promise<any> | null = null;
+let lastClientSyncTime = 0;
+
+export interface PullSyncResult {
+  success: boolean;
+  updated?: boolean;
+  pulled?: any;
+  error?: string;
+}
+
+export async function syncPullFromCloud(force = false): Promise<PullSyncResult> {
   if (typeof window === "undefined") return { success: false, error: "Browser required" };
 
-  try {
-    let remote: any = null;
+  if (!force && Date.now() - lastClientSyncTime < 2500) {
+    return { success: true, updated: false };
+  }
 
-    // 1. Try Next.js server route first
+  if (clientSyncInFlight) {
+    return clientSyncInFlight;
+  }
+
+  clientSyncInFlight = (async () => {
     try {
-      const res = await fetch("/api/sync/save", { cache: "no-store" });
-      if (res.ok) {
-        remote = await res.json();
-      }
-    } catch {}
+      let remote: any = null;
 
-    // 2. Direct Cloud KV Fallback if server returned no records
-    const hasRecords = remote && (
-      (Array.isArray(remote.service_jobs) && remote.service_jobs.length > 0) ||
-      (Array.isArray(remote.purchasing_orders) && remote.purchasing_orders.length > 0) ||
-      (Array.isArray(remote.quotations) && remote.quotations.length > 0)
-    );
-
-    if (!hasRecords) {
+      // 1. Fetch authoritative state from server route
       try {
-        const cloudRes = await fetch("https://7ne1nlc0ugijs61k.public.blob.vercel-storage.com/nunes_cloud_store.json", {
-          cache: "no-store",
-          headers: { "cache-control": "no-cache" },
-        });
-        if (cloudRes.ok) {
-          const cloudJson = await cloudRes.json();
-          if (cloudJson) {
-            remote = {
-              success: true,
-              service_jobs: cloudJson.service_jobs || [],
-              purchasing_orders: cloudJson.purchasing_orders || [],
-              quotations: cloudJson.quotations || [],
-            };
+        const res = await fetch("/api/sync/save", { cache: "no-store" });
+        if (res.ok) {
+          remote = await res.json();
+        }
+      } catch {}
+
+      if (!remote || !remote.success) return { success: false, error: "Invalid sync response" };
+
+      let updatedAny = false;
+      lastClientSyncTime = Date.now();
+
+      // 1. Intelligent Two-Way Sync for Service Jobs (All Devices)
+      if (Array.isArray(remote.service_jobs)) {
+        const localRaw = localStorage.getItem("nunes:service_jobs");
+        const localJobs: any[] = localRaw ? JSON.parse(localRaw) : [];
+        const jobsMap = new Map<string, any>();
+
+        // Seed with server records
+        for (const rJob of remote.service_jobs) {
+          const key = String(rJob.jobNo || rJob.id);
+          if (key) jobsMap.set(key, rJob);
+        }
+
+        // Merge with local records: preserve newer local edits or missing jobs
+        const missingOnRemote: any[] = [];
+        for (const lJob of localJobs) {
+          const key = String(lJob.jobNo || lJob.id);
+          if (!key) continue;
+
+          if (!jobsMap.has(key)) {
+            jobsMap.set(key, lJob);
+            missingOnRemote.push(lJob);
+          } else {
+            const remoteJob = jobsMap.get(key);
+            const localTime = new Date(lJob.updatedAt || lJob.jobDate || 0).getTime();
+            const remoteTime = new Date(remoteJob.updatedAt || remoteJob.jobDate || 0).getTime();
+            const localHasPrice = Boolean(lJob.workflow?.customApprovedPrice || lJob.totals?.totalEstimateManual);
+            const remoteHasPrice = Boolean(remoteJob.workflow?.customApprovedPrice || remoteJob.totals?.totalEstimateManual);
+
+            if (localTime > remoteTime || (localHasPrice && !remoteHasPrice)) {
+              jobsMap.set(key, lJob);
+              missingOnRemote.push(lJob);
+            }
           }
         }
-      } catch {}
-    }
 
-    if (!remote || !remote.success) return { success: false, error: "Invalid sync response" };
+        const mergedJobs = sortJobsDeterministically(Array.from(jobsMap.values()));
+        const currentSortedLocal = sortJobsDeterministically(localJobs);
+        if (JSON.stringify(mergedJobs) !== JSON.stringify(currentSortedLocal) || JSON.stringify(mergedJobs) !== localRaw) {
+          localStorage.setItem("nunes:service_jobs", JSON.stringify(mergedJobs));
+          updatedAny = true;
+        }
 
-    let updatedAny = false;
-
-    // 1. Merge Service Jobs
-    if (Array.isArray(remote.service_jobs)) {
-      const localRaw = localStorage.getItem("nunes:service_jobs");
-      const localList: any[] = localRaw ? JSON.parse(localRaw) : [];
-      const map = new Map<string, any>();
-      // Put remote jobs
-      for (const item of remote.service_jobs) {
-        const key = String(item.id || item.jobNo);
-        if (key) map.set(key, item);
-      }
-      // Merge local jobs (prefer local if newer, push un-synced to cloud)
-      for (const item of localList) {
-        const key = String(item.id || item.jobNo);
-        if (!key) continue;
-        if (!map.has(key)) {
-          map.set(key, item);
-          void syncFormToCloud("servicing", String(item.jobNo || item.id), String(item.customer?.name || "Customer"), item);
+        // Push local missing/newer items to the cloud so all devices receive them
+        if (missingOnRemote.length > 0) {
+          for (const missing of missingOnRemote.slice(0, 5)) {
+            void fetch("/api/sync/save", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "servicing",
+                id: String(missing.jobNo || missing.id),
+                customer: String(missing.customer?.name || "Customer"),
+                data: missing,
+              }),
+            }).catch(() => {});
+          }
         }
       }
-      if (map.size > 0) {
-        localStorage.setItem("nunes:service_jobs", JSON.stringify(Array.from(map.values())));
-        updatedAny = true;
-      }
-    }
 
-    // 2. Merge Purchasing Orders
-    if (Array.isArray(remote.purchasing_orders)) {
-      const localRaw = localStorage.getItem("nunes:purchasing_orders");
-      const localList: any[] = localRaw ? JSON.parse(localRaw) : [];
-      const map = new Map<string, any>();
-      for (const item of remote.purchasing_orders) {
-        const key = String(item.id || item.order_id);
-        if (key) map.set(key, item);
-      }
-      for (const item of localList) {
-        const key = String(item.id || item.order_id);
-        if (!key) continue;
-        if (!map.has(key)) {
-          map.set(key, item);
-          void syncFormToCloud("purchasing", String(item.order_id || item.id), String(item.customer_name || "Customer"), item);
+      // 2. Intelligent Two-Way Sync for Purchasing Orders
+      if (Array.isArray(remote.purchasing_orders)) {
+        const localRaw = localStorage.getItem("nunes:purchasing_orders");
+        const localOrders: any[] = localRaw ? JSON.parse(localRaw) : [];
+        const ordersMap = new Map<string, any>();
+
+        for (const rOrder of remote.purchasing_orders) {
+          const key = String(rOrder.order_id || rOrder.id);
+          if (key) ordersMap.set(key, rOrder);
+        }
+
+        const missingOrdersOnRemote: any[] = [];
+        for (const lOrder of localOrders) {
+          const key = String(lOrder.order_id || lOrder.id);
+          if (!key) continue;
+          if (!ordersMap.has(key)) {
+            ordersMap.set(key, lOrder);
+            missingOrdersOnRemote.push(lOrder);
+          }
+        }
+
+        const mergedOrders = sortOrdersDeterministically(Array.from(ordersMap.values()));
+        const currentSortedLocalOrders = sortOrdersDeterministically(localOrders);
+        if (JSON.stringify(mergedOrders) !== JSON.stringify(currentSortedLocalOrders) || JSON.stringify(mergedOrders) !== localRaw) {
+          localStorage.setItem("nunes:purchasing_orders", JSON.stringify(mergedOrders));
+          updatedAny = true;
+        }
+
+        if (missingOrdersOnRemote.length > 0) {
+          for (const missing of missingOrdersOnRemote.slice(0, 5)) {
+            void fetch("/api/sync/save", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "purchasing",
+                id: String(missing.order_id || missing.id),
+                customer: String(missing.customer_name || "Customer"),
+                data: missing,
+              }),
+            }).catch(() => {});
+          }
         }
       }
-      if (map.size > 0) {
-        localStorage.setItem("nunes:purchasing_orders", JSON.stringify(Array.from(map.values())));
-        updatedAny = true;
-      }
-    }
 
-    // 3. Merge Quotations
-    if (Array.isArray(remote.quotations)) {
-      const localRaw = localStorage.getItem("nunes:quotations");
-      const localList: any[] = localRaw ? JSON.parse(localRaw) : [];
-      const map = new Map<string, any>();
-      for (const item of remote.quotations) {
-        const key = String(item.id || item.quotation_no);
-        if (key) map.set(key, item);
-      }
-      for (const item of localList) {
-        const key = String(item.id || item.quotation_no);
-        if (!key) continue;
-        if (!map.has(key)) {
-          map.set(key, item);
-          void syncFormToCloud("quotation", String(item.quotation_no || item.id), String(item.customer_name || "Customer"), item);
+      // 3. Sync Quotations from Server
+      if (Array.isArray(remote.quotations)) {
+        const localRaw = localStorage.getItem("nunes:quotations");
+        const localQuotes: any[] = localRaw ? JSON.parse(localRaw) : [];
+        const quotesMap = new Map<string, any>();
+
+        for (const rQuote of remote.quotations) {
+          const key = String(rQuote.quotation_no || rQuote.id);
+          if (key) quotesMap.set(key, rQuote);
+        }
+        for (const lQuote of localQuotes) {
+          const key = String(lQuote.quotation_no || lQuote.id);
+          if (key && !quotesMap.has(key)) quotesMap.set(key, lQuote);
+        }
+
+        const mergedQuotes = Array.from(quotesMap.values()).sort((a: any, b: any) => {
+          const tA = new Date(a?.quotation_date || a?.date || a?.created_at || 0).getTime();
+          const tB = new Date(b?.quotation_date || b?.date || b?.created_at || 0).getTime();
+          if (tB !== tA) return tB - tA;
+          return String(b?.quotation_no || b?.id || "").localeCompare(String(a?.quotation_no || a?.id || ""), undefined, { numeric: true });
+        });
+        const currentSortedQuotes = [...localQuotes].sort((a: any, b: any) => {
+          const tA = new Date(a?.quotation_date || a?.date || a?.created_at || 0).getTime();
+          const tB = new Date(b?.quotation_date || b?.date || b?.created_at || 0).getTime();
+          if (tB !== tA) return tB - tA;
+          return String(b?.quotation_no || b?.id || "").localeCompare(String(a?.quotation_no || a?.id || ""), undefined, { numeric: true });
+        });
+        if (JSON.stringify(mergedQuotes) !== JSON.stringify(currentSortedQuotes) || JSON.stringify(mergedQuotes) !== localRaw) {
+          localStorage.setItem("nunes:quotations", JSON.stringify(mergedQuotes));
+          updatedAny = true;
         }
       }
-      if (map.size > 0) {
-        localStorage.setItem("nunes:quotations", JSON.stringify(Array.from(map.values())));
-        updatedAny = true;
+
+      // 4. Sync Customers
+      if (Array.isArray(remote.customers)) {
+        const cRaw = localStorage.getItem("nunes:customers");
+        const newRaw = JSON.stringify(remote.customers);
+        if (cRaw !== newRaw) {
+          localStorage.setItem("nunes:customers", newRaw);
+          localStorage.setItem("nunes_customers", newRaw);
+          updatedAny = true;
+        }
       }
-    }
 
-    if (updatedAny) {
-      try {
-        window.dispatchEvent(new CustomEvent("nunes:records-synced"));
-      } catch {}
-    }
+      // 5. Sync Suppliers
+      if (Array.isArray(remote.suppliers)) {
+        const sRaw = localStorage.getItem("nunes:suppliers");
+        const newRaw = JSON.stringify(remote.suppliers);
+        if (sRaw !== newRaw) {
+          localStorage.setItem("nunes:suppliers", newRaw);
+          localStorage.setItem("nunes_suppliers", newRaw);
+          updatedAny = true;
+        }
+      }
 
-    return {
-      success: true,
-      pulled: {
-        service_jobs: remote.service_jobs?.length || 0,
-        purchasing_orders: remote.purchasing_orders?.length || 0,
-        quotations: remote.quotations?.length || 0,
-      },
-    };
-  } catch (err: any) {
-    return { success: false, error: err.message };
-  }
+      if (updatedAny) {
+        try {
+          window.dispatchEvent(new CustomEvent("nunes:records-synced"));
+          window.dispatchEvent(new CustomEvent("nunes:job-saved"));
+        } catch {}
+
+        try {
+          const bc = new BroadcastChannel("nunes_workflow_bus");
+          bc.postMessage({ type: "SYNC_UPDATED", timestamp: Date.now() });
+          bc.close();
+        } catch {}
+      }
+
+      return {
+        success: true,
+        updated: updatedAny,
+        pulled: {
+          service_jobs: remote.service_jobs?.length || 0,
+          purchasing_orders: remote.purchasing_orders?.length || 0,
+          quotations: remote.quotations?.length || 0,
+        },
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    } finally {
+      clientSyncInFlight = null;
+    }
+  })();
+
+  return clientSyncInFlight;
 }
 
 /**

@@ -321,7 +321,7 @@ export default function CustomersPage() {
                         </div>
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 shrink-0">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0">
                       {item.status}
                     </span>
                   </div>
@@ -412,7 +412,7 @@ export default function CustomersPage() {
                         ₹ {item.total_value.toLocaleString("en-IN")}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
                           {item.status}
                         </span>
                       </td>
@@ -427,7 +427,7 @@ export default function CustomersPage() {
                           </Link>
                           <Link
                             href={`/quotations?customer=${encodeURIComponent(item.name)}`}
-                            className="text-emerald-600 hover:text-emerald-700 font-semibold inline-flex items-center gap-1"
+                            className="text-blue-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1"
                           >
                             <FileText size={12} />
                             <span>Quote</span>
