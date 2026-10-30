@@ -1,0 +1,265 @@
+{
+  "service_jobs": [
+    {
+      "id": "SJ-2026-1001",
+      "jobNo": "SJ-2026-1001",
+      "legacySerialNo": "SRV-2026-001",
+      "jobDate": "2026-10-24",
+      "status": "CLOSED",
+      "marketType": "INDIA",
+      "officeType": "BRANCH_OFFICE",
+      "branchName": "Branch Office (Coimbatore)",
+      "createdBy": "suganya@nunesinstruments.com",
+      "customer": {
+        "name": "Texmo Precision Castings Ltd",
+        "phone": "+91 98421 54321",
+        "email": "maintenance@texmopowertools.com",
+        "address": "SF No. 342, Mettupalayam Road, GN Mills Post",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "33AAACT1984Q1Z8",
+        "currency": "INR",
+        "contactPerson": "R. Selvaraj (Plant Maintenance Head)"
+      },
+      "receipt": {
+        "mrNo": "MR-2026-1001",
+        "mrDate": "2026-10-24",
+        "mode": "FIELD_PICKUP",
+        "reference": "BR-COIM-001",
+        "personName": "Suganya R",
+        "handoverReason": "Pressure reading fluctuation beyond ±2.5% span",
+        "pickedUpBy": "Suganya R (Branch Desk)",
+        "clientContactPerson": "R. Selvaraj",
+        "clientPhone": "+91 98421 54321",
+        "pickupLocation": "Texmo Unit-2 Foundry Line",
+        "proofImages": [
+          "/images/servicing_tools.png"
+        ]
+      },
+      "products": [
+        {
+          "id": "prod-1001",
+          "productName": "Digital Pressure Transmitter",
+          "makeModel": "Yokogawa DPharp EJA110A",
+          "serialNo": "YKG-884219",
+          "qty": 1,
+          "status": "CLOSED",
+          "complaint": "Pressure output fluctuating on 4-20mA loop, zero-drift observed",
+          "repairWork": "Diaphragm cleaned, process O-rings replaced, span recalibrated",
+          "productValue": 12500,
+          "repairEstimate": 3750,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 12500,
+          "onlinePriceSource": "Yokogawa Industrial Catalog 2026",
+          "onlinePriceConfirmed": true,
+          "onlinePriceCheckedAt": "2026-10-24T09:15:00.000Z",
+          "estimateStatus": "APPROVED",
+          "productImageUrl": "/images/servicing_tools.png",
+          "productSpecifications": "Range: -100 to 100 kPa | Output: 4-20mA HART | Accuracy: ±0.065% Span",
+          "onlineProductUrl": "https://www.yokogawa.com/solutions/products/field-instruments/pressure-transmitters/",
+          "onlineDetailsTitle": "Yokogawa EJA110A Differential Pressure Transmitter",
+          "onlineDetailsFetchedAt": "2026-10-24T09:15:00.000Z",
+          "onlineLookupQuery": "Yokogawa DPharp EJA110A",
+          "productImageUrls": [
+            "/images/servicing_tools.png"
+          ],
+          "marketPriceMin": 11800,
+          "marketPriceMax": 14200,
+          "marketPriceMedian": 12500,
+          "marketPriceSampleCount": 4
+        }
+      ],
+      "totals": {
+        "productValue": 12500,
+        "repairEstimate": 3750,
+        "discount": 250,
+        "totalEstimate": 4720,
+        "totalEstimateManual": true
+      },
+      "dispatch": {
+        "testedBy": "Senthil Kumar",
+        "dcNo": "DC-2026-084",
+        "dcDate": "2026-10-25",
+        "mode": "COURIER",
+        "reference": "STC-98421045"
+      },
+      "payment": {
+        "invoiceNo": "INV-2026-0419",
+        "invoiceDate": "2026-10-25",
+        "mode": "UPI",
+        "reference": "UPI/2026/9842145",
+        "receivedBy": "Azhalaku Priya"
+      },
+      "signoff": {
+        "receivedBy": "Suganya R",
+        "inspectedBy": "Aravindh M",
+        "estimateConfirmedBy": "Azhalaku Priya",
+        "repairedBy": "Senthil Kumar"
+      },
+      "notes": "Calibration test certificate #NUNES-CAL-2026-0419 enclosed.",
+      "attachments": [],
+      "workflow": {
+        "stage": "JOB_COMPLETED",
+        "intakeBy": "suganya@nunesinstruments.com",
+        "intakeStaffName": "Suganya R (Branch)",
+        "intakeAt": "2026-10-24T09:30:00.000Z",
+        "receivedAt": "2026-10-24T09:30:00.000Z",
+        "isBranchDelivery": true,
+        "branchOfficeName": "Branch Office (Coimbatore)",
+        "aravindhAlertSentAt": "2026-10-24T09:31:00.000Z",
+        "intakeNote": "Branch received unit with original mounting bracket.",
+        "aravindhBranchPickupDone": true,
+        "aravindhBranchPickupAt": "2026-10-24T11:00:00.000Z",
+        "aravindhAcceptedBy": "aravindh@nunesinstruments.com",
+        "aravindhAcceptedAt": "2026-10-24T11:30:00.000Z",
+        "aravindhProductPhoto": "/images/servicing_tools.png",
+        "aravindhProductVideo": "",
+        "aravindhInspectionNotes": "Unit received at workshop. Serial number plate intact, zero external physical damage.",
+        "mechanicAssigned": "senthil@nunesinstruments.com",
+        "mechanicAssessment": "Cleaned sensor diaphragm, replaced seals, recalibrated zero and span point.",
+        "mechanicEstimateType": "MINIMUM_30",
+        "mechanicProposedCost": 3750,
+        "repairCompletedAt": "2026-10-24T14:30:00.000Z",
+        "repairProofPhotos": [
+          "/images/servicing_tools.png"
+        ],
+        "senthilScopeSentToPriyaAt": "2026-10-24T14:35:00.000Z",
+        "priyaPriceEnteredBy": "azhalakupriya@nunesinstruments.com",
+        "priyaPriceEnteredAt": "2026-10-24T15:00:00.000Z",
+        "priyaRepairEstimate": 3750,
+        "priyaSparePartsCost": 500,
+        "priyaDiscount": 250,
+        "priyaGstRate": 18,
+        "priyaTotalQuotationAmount": 4720,
+        "priyaPricingNotes": "Standard 30% overhaul with genuine spare seals & calibration test certificate.",
+        "priyaPriceSentToMdAt": "2026-10-24T15:05:00.000Z",
+        "approvedByMd": true,
+        "mdApprovedBy": "md@nunesinstruments.com",
+        "mdApprovedAt": "2026-10-24T15:20:00.000Z",
+        "mdConfirmedPrice": 4720,
+        "mdApprovedPrice": 4720,
+        "mdDiscount": 250,
+        "mdNotes": "Approved 30% repair rate with ₹250 client courtesy discount.",
+        "mdPriceAlertSentToPriyaAt": "2026-10-24T15:21:00.000Z",
+        "priyaHandoverType": "COURIER",
+        "priyaDeliveryPersonName": "Azhalaku Priya",
+        "priyaCourierName": "ST Courier",
+        "priyaCourierDocket": "STC-98421045",
+        "priyaQuotationSentAt": "2026-10-24T15:30:00.000Z",
+        "priyaCompletionNotes": "Quotation accepted by customer. Packed in antistatic bubble wrap and handed to ST Courier.",
+        "paymentMode": "UPI",
+        "paymentReference": "UPI/2026/9842145",
+        "paymentAmount": 4720,
+        "paymentReceivedAt": "2026-10-25T10:15:00.000Z",
+        "paymentReceivedBy": "Azhalaku Priya",
+        "paymentNotes": "Payment received in full via UPI. Job closed successfully."
+      },
+      "createdAt": "2026-10-24T09:30:00.000Z",
+      "updatedAt": "2026-10-25T10:15:00.000Z"
+    }
+  ],
+  "purchasing_orders": [],
+  "quotations": [],
+  "customers": [],
+  "suppliers": [],
+  "users": [
+    {
+      "email": "suganya@nunesinstruments.com",
+      "password": "suganya@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "suganya",
+      "password": "suganya@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "radha@nunesinstruments.com",
+      "password": "radha@2026",
+      "createdAt": "2026-10-24T06:00:00.000Z"
+    },
+    {
+      "email": "radha",
+      "password": "radha@2026",
+      "createdAt": "2026-10-24T06:00:00.000Z"
+    },
+    {
+      "email": "rekha@nunesinstruments.com",
+      "password": "rekha@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "rekha",
+      "password": "rekha@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "sabitha@nunesinstruments.com",
+      "password": "sabitha@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "sabitha",
+      "password": "sabitha@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "azhalakupriya@nunesinstruments.com",
+      "password": "priya@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "azhalakupriya",
+      "password": "priya@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "priya",
+      "password": "priya@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "senthil@nunesinstruments.com",
+      "password": "senthil@2026",
+      "createdAt": "2026-10-24T06:00:00.000Z"
+    },
+    {
+      "email": "senthil",
+      "password": "senthil@2026",
+      "createdAt": "2026-10-24T06:00:00.000Z"
+    },
+    {
+      "email": "aravindh@nunesinstruments.com",
+      "password": "aravindh@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "aravindh",
+      "password": "aravindh@2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "md@nunesinstruments.com",
+      "password": "md@nunes2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "md",
+      "password": "md@nunes2026",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "admin@nunes.com",
+      "password": "admin123",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    },
+    {
+      "email": "admin",
+      "password": "admin123",
+      "createdAt": "2026-10-23T06:00:00.000Z"
+    }
+  ],
+  "last_updated": "2026-10-24T06:00:00.000Z"
+}
