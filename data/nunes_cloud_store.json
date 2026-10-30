@@ -158,9 +158,2490 @@
       },
       "createdAt": "2026-10-24T09:30:00.000Z",
       "updatedAt": "2026-10-25T10:15:00.000Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-24",
+      "status": "ESTIMATE_PENDING",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Kumaraguru college ",
+        "phone": "+919976757645",
+        "email": "instruasia@gmail.com",
+        "address": "Sf No 5/48-1,5/86-1, Poolavadi Govt Student Hostel Opposite",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": "Ramesh"
+      },
+      "receipt": {
+        "mrNo": "234",
+        "mrDate": "2026-10-24",
+        "mode": "FIELD_PICKUP",
+        "reference": "Field Pickup by Aravindh from Azhakupriya",
+        "courierName": "",
+        "docketNo": "",
+        "courierDate": "2026-10-24",
+        "personName": "",
+        "personPhone": "",
+        "handoverReason": "",
+        "pickedUpBy": "Aravindh",
+        "clientContactPerson": "Azhakupriya",
+        "clientPhone": "+919976757645",
+        "pickupLocation": "Ghanhipuram",
+        "pickupReason": ""
+      },
+      "products": [
+        {
+          "id": "8cf11a4f-7229-4b36-aa57-7de480478662",
+          "productName": "Ph meter ",
+          "makeModel": "dt2319",
+          "serialNo": "23124",
+          "qty": 6,
+          "status": "READY",
+          "complaint": "Product wire cut ",
+          "repairWork": "Cleaned sensor diaphragm, replaced worn hydraulic seals, re-calibrated zero point.",
+          "productValue": 0,
+          "repairEstimate": 1200,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": "Senthil Kumar (Lead Service Mechanic)"
+      },
+      "notes": "",
+      "attachments": [],
+      "workflow": {
+        "stage": "AWAITING_MD_APPROVAL",
+        "receivedAt": "2026-10-24",
+        "intakeStaffName": "suganya@nunesinstruments.com",
+        "senthilAlertSentAt": "2026-10-24T03:35:17.208Z",
+        "mechanicAssessment": "Cleaned sensor diaphragm, replaced worn hydraulic seals, re-calibrated zero point.",
+        "mechanicEstimateType": "MINIMUM_30",
+        "mechanicProposedCost": 1200,
+        "repairCompletedAt": "2026-10-24T03:36:20.960Z"
+      },
+      "id": "SJ-8758",
+      "jobNo": "SJ-8758",
+      "proofImages": [],
+      "proofVideo": "",
+      "proofNotes": "",
+      "createdAt": "2026-10-24T03:32:47.313Z",
+      "updatedAt": "2026-10-24T03:36:21.151Z"
+    },
+    {
+      "id": "SJ-INIT-001",
+      "jobNo": "SJ-INIT-001",
+      "customer": {
+        "name": "Nunes Instruments"
+      },
+      "status": "Delivered",
+      "updatedAt": "2026-10-23T08:51:30.659Z",
+      "jobDate": "2026-10-23",
+      "marketType": "INDIA",
+      "officeType": "BRANCH_OFFICE",
+      "branchName": "Branch Office (Coimbatore)",
+      "products": [],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0
+      }
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Dewlix Creamy ",
+        "phone": "9629502813",
+        "email": "",
+        "address": "Delights, CBE",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1703",
+        "mrDate": "2026-10-13",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "fa31c564-2848-408d-9ee1-bb6ceb072689",
+          "productName": "MIlk Analyzer - 1no",
+          "makeModel": "Ekomilk / RS2326",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        },
+        {
+          "id": "deb2dbca-8348-4251-b527-2ea4a96cff99",
+          "productName": "Ultrasonic Milk Analyzer- 1no",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-7897",
+      "jobNo": "SJ-7897",
+      "createdAt": "2026-10-23T04:59:39.740Z",
+      "updatedAt": "2026-10-23T08:51:19.601Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Dinesh Kumar",
+        "phone": "9791237436",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.no-1704",
+        "mrDate": "2026-10-13",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "c6f76664-4b88-4cd8-87c1-d17c037aa81b",
+          "productName": "Anemometer - 1no",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Calibration",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-5548",
+      "jobNo": "SJ-5548",
+      "createdAt": "2026-10-23T05:01:56.379Z",
+      "updatedAt": "2026-10-23T08:51:11.001Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Traffic Police Station",
+        "phone": "83000159941 / 9500959671",
+        "email": "",
+        "address": "",
+        "city": "Ramanathapuram",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1498",
+        "mrDate": "2026-10-08",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "b929d73f-fa68-48f8-a31b-51cd566372e5",
+          "productName": "Alchol Breath Analyzer -1nos",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Caliberation only",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-7729",
+      "jobNo": "SJ-7729",
+      "createdAt": "2026-10-23T05:07:18.402Z",
+      "updatedAt": "2026-10-23T08:45:25.064Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Padmanaban",
+        "phone": "9443333395",
+        "email": "",
+        "address": "",
+        "city": "Salem-636402",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1701",
+        "mrDate": "2026-10-10",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "4e335c4b-34f3-4200-8792-2c4cdcbf7e72",
+          "productName": "DIgital Moisture Meter - 1 No",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Display & Sensor , Accuracy Problem ",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-6066",
+      "jobNo": "SJ-6066",
+      "createdAt": "2026-10-23T04:53:41.965Z",
+      "updatedAt": "2026-10-23T08:44:43.080Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "ESTIMATE_PENDING",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Commercial Client (SJ-9229)",
+        "phone": "",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "",
+        "mrDate": "2026-10-23",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "6e2be238-be5e-430f-b3c5-40bc575fb1a5",
+          "productName": "",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-9229",
+      "jobNo": "SJ-9229",
+      "createdAt": "2026-10-23T06:50:10.427Z",
+      "updatedAt": "2026-10-23T08:38:47.807Z",
+      "communication": {
+        "whatsappStatus": "QUOTED",
+        "whatsappSentAt": "2026-10-23T06:51:15.410Z",
+        "emailStatus": "QUOTED",
+        "emailSentAt": "2026-10-23T06:50:52.362Z"
+      }
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-22",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Commercial Client (SJ-6269)",
+        "phone": "",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "",
+        "mrDate": "2026-10-22",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "d19f99bd-0d01-4eb8-848a-f1f6132b4598",
+          "productName": "",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-6269",
+      "jobNo": "SJ-6269",
+      "createdAt": "2026-10-22T11:47:40.244Z",
+      "updatedAt": "2026-10-23T08:38:47.835Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-22",
+      "status": "READY",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Commercial Client (SJ-7577)",
+        "phone": "",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "",
+        "mrDate": "2026-10-22",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "031cf38f-6e3a-43fb-bae1-3118cf793ad7",
+          "productName": "",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MAXIMUM_50",
+          "repairPercent": 50,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-7577",
+      "jobNo": "SJ-7577",
+      "createdAt": "2026-10-22T10:02:09.141Z",
+      "updatedAt": "2026-10-23T08:31:36.346Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Suresh",
+        "phone": "9362931919",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1609",
+        "mrDate": "2026-10-05",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "206daf0c-7a81-4722-9c2d-b4761d9d4fa0",
+          "productName": "Insulation Tester",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Needle Not moving",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-2210",
+      "jobNo": "SJ-2210",
+      "createdAt": "2026-10-23T04:32:54.883Z",
+      "updatedAt": "2026-10-23T08:31:36.396Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Flosys Pumps",
+        "phone": "8925926454",
+        "email": "",
+        "address": "",
+        "city": "Malumichampatti",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO.1493",
+        "mrDate": "2026-10-05",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "b731b620-983a-49c1-a362-e9e7a6f8a50c",
+          "productName": "Digital Tachometer ",
+          "makeModel": "Lutron/ DT-223C",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Not working",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        },
+        {
+          "id": "386d50c6-2e8b-49cf-a468-fcf47c2b4496",
+          "productName": "Digital Tachometer Laser ",
+          "makeModel": "DT2236C/ Lutron",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Battery Board Change",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-2651",
+      "jobNo": "SJ-2651",
+      "createdAt": "2026-10-23T04:24:49.997Z",
+      "updatedAt": "2026-10-23T08:08:31.154Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Ace Pipline Contracts",
+        "phone": "7003855387",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC-NO-1495",
+        "mrDate": "2026-10-07",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "22b41051-61c9-49fc-8b29-4488abc6b0bb",
+          "productName": "Compression Testing MAchine",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Callibration",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-6343",
+      "jobNo": "SJ-6343",
+      "createdAt": "2026-10-23T04:34:40.755Z",
+      "updatedAt": "2026-10-23T08:08:54.627Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Valar Chicken ",
+        "phone": "9952708471",
+        "email": "",
+        "address": "7th street , 100ft road, gandhipuram",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1500",
+        "mrDate": "2026-10-09",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "a5464e44-d355-4e94-ba39-2209ce841389",
+          "productName": "Digital Moisture Meter - 1nos",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Reading Problem",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-5165",
+      "jobNo": "SJ-5165",
+      "createdAt": "2026-10-23T04:49:19.991Z",
+      "updatedAt": "2026-10-23T08:09:19.233Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Conecpt colour Techiks P Ltd",
+        "phone": "9845114640 / 9611104640",
+        "email": "",
+        "address": "",
+        "city": "Bangalore",
+        "state": "Karnataka",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO.1705",
+        "mrDate": "2026-10-13",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "036a80a7-3a1e-48e5-992a-257ae43637f6",
+          "productName": "Digital Moisture Meter- 1no ",
+          "makeModel": "Elecktophysik / Mini test 600",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "ON/OFF",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-7013",
+      "jobNo": "SJ-7013",
+      "createdAt": "2026-10-23T05:03:12.659Z",
+      "updatedAt": "2026-10-23T08:08:37.790Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Visaiyan Energies and Electormotor",
+        "phone": "8098756077",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "Dc.NO-1706",
+        "mrDate": "2026-10-15",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "e6bd652b-8ba3-4b46-b77a-15734a11195b",
+          "productName": "Dc Regulated Power supply 1 No",
+          "makeModel": "Metravi / RPS-3005",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "output Voltage Problem",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-5468",
+      "jobNo": "SJ-5468",
+      "createdAt": "2026-10-23T05:09:32.633Z",
+      "updatedAt": "2026-10-23T08:09:19.667Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Veegrow Substractes",
+        "phone": "9500766673",
+        "email": "",
+        "address": "Nallapan Thottam, salem",
+        "city": "Tirpur",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1702",
+        "mrDate": "2026-10-13",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "34c97141-f5f3-464c-8807-7dd07d276ff1",
+          "productName": "Flame Photometer - 1no",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Not standard Reading",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        },
+        {
+          "id": "415201d2-ac4b-40b2-8e2d-dec004f2ace1",
+          "productName": "Compresser Machine - 1nos",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Compressor Cleaning",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-6669",
+      "jobNo": "SJ-6669",
+      "createdAt": "2026-10-23T04:56:15.101Z",
+      "updatedAt": "2026-10-23T08:09:19.289Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Lakshman",
+        "phone": "7386663947",
+        "email": "",
+        "address": "",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1610",
+        "mrDate": "2026-10-07",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "9f6254a3-e55c-42d1-9495-1a32f9447f21",
+          "productName": "Metravi T110P Packet - 2QTY",
+          "makeModel": "Thermal Imager",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Callibration Only",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-3710",
+      "jobNo": "SJ-3710",
+      "createdAt": "2026-10-23T04:36:28.170Z",
+      "updatedAt": "2026-10-23T08:08:51.729Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Technico ",
+        "phone": "9790421276",
+        "email": "",
+        "address": "Ram nagar",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1707",
+        "mrDate": "2026-10-15",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "7ba43b2c-08ec-4a4e-8973-500105a99417",
+          "productName": "Condectivity Meter - 1No",
+          "makeModel": "Elico / Cm180",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "+,- Reading Problem",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-2891",
+      "jobNo": "SJ-2891",
+      "createdAt": "2026-10-23T05:11:58.304Z",
+      "updatedAt": "2026-10-23T08:07:54.813Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Sundram Textiles pvt LTd, Naguneri",
+        "phone": "8667833619",
+        "email": "",
+        "address": "",
+        "city": "Thirunelveli",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "",
+        "mrDate": "2026-10-23",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "b103afe7-6783-4208-aeaf-b6290849bf1f",
+          "productName": "Photo contact Tachometer- 1 no",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Display Block Remove",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-9199",
+      "jobNo": "SJ-9199",
+      "createdAt": "2026-10-23T04:51:32.583Z",
+      "updatedAt": "2026-10-23T08:09:18.959Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Luker Electric ",
+        "phone": "8778821297 /9037387060`",
+        "email": "",
+        "address": "",
+        "city": "chettipalayam ,Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1499",
+        "mrDate": "2026-10-09",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "dcff1bda-7b31-4ede-99c4-f18d5b585a34",
+          "productName": "Surge Generator - 2nos",
+          "makeModel": "Lighting -Prima / SI.SUG61005BG",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-2162",
+      "jobNo": "SJ-2162",
+      "createdAt": "2026-10-23T04:45:43.872Z",
+      "updatedAt": "2026-10-23T08:09:19.337Z"
+    },
+    {
+      "id": "SJ-MULTI-DEV-001",
+      "jobNo": "SJ-MULTI-DEV-001",
+      "customer": {
+        "name": "Multi Device Customer",
+        "phone": "9840199999",
+        "city": "Chennai"
+      },
+      "products": [
+        {
+          "productName": "Digital Oscilloscope",
+          "model": "DSO-X 2002A"
+        }
+      ],
+      "status": "In Servicing",
+      "updatedAt": "2026-10-23T08:08:31.169Z",
+      "jobDate": "2026-10-23",
+      "marketType": "INDIA",
+      "officeType": "BRANCH_OFFICE",
+      "branchName": "Branch Office (Coimbatore)",
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0
+      }
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Murugan",
+        "phone": "9865511126",
+        "email": "",
+        "address": "",
+        "city": "Bhavani",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO-1492",
+        "mrDate": "2026-10-01",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "d532266f-2644-4534-9b44-f524eaf56473",
+          "productName": "Insulation Tester 1000V",
+          "makeModel": "Essma",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        },
+        {
+          "id": "df89d331-9709-41b6-b925-2ef1748148f9",
+          "productName": "Insulation Tester 1000V",
+          "makeModel": "Shanti / ITS-10026/S/No-5818L",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-3954",
+      "jobNo": "SJ-3954",
+      "createdAt": "2026-10-23T04:17:53.531Z",
+      "updatedAt": "2026-10-23T08:09:18.633Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Unicorn Values Pvt Ltd",
+        "phone": "8300842302",
+        "email": "",
+        "address": "",
+        "city": "Nachipalayam , CBE",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.no-1496",
+        "mrDate": "2026-10-07",
+        "mode": "DIRECT",
+        "reference": "Naren"
+      },
+      "products": [
+        {
+          "id": "1479e3ff-5cdd-45a5-a310-b510d0415808",
+          "productName": "Loop Calibrator -1nos",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Display Change & Not work",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-9480",
+      "jobNo": "SJ-9480",
+      "createdAt": "2026-10-23T04:40:50.177Z",
+      "updatedAt": "2026-10-23T08:09:18.653Z"
+    },
+    {
+      "legacySerialNo": "",
+      "jobDate": "2026-10-23",
+      "status": "RECEIVED",
+      "marketType": "INDIA",
+      "officeType": "HEAD_OFFICE",
+      "branchName": "Head Office - Rathinapuri",
+      "customer": {
+        "name": "Remmy Substrates",
+        "phone": "99655560557 / 9715777477",
+        "email": "",
+        "address": "",
+        "city": "Pollachi,Coimbatore",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "gstin": "",
+        "currency": "INR",
+        "contactPerson": ""
+      },
+      "receipt": {
+        "mrNo": "DC.NO.1494",
+        "mrDate": "2026-10-05",
+        "mode": "DIRECT",
+        "reference": ""
+      },
+      "products": [
+        {
+          "id": "6bbddb1f-8b5c-4956-b813-66b9cd10d0d1",
+          "productName": "Sieve Shaker Machine",
+          "makeModel": "",
+          "serialNo": "",
+          "qty": 1,
+          "status": "RECEIVED",
+          "complaint": "",
+          "repairWork": "Automatic not run + Spring Broken",
+          "productValue": 0,
+          "repairEstimate": 0,
+          "repairCategory": "MINIMUM_30",
+          "repairPercent": 30,
+          "onlinePrice": 0,
+          "onlinePriceSource": "",
+          "onlinePriceConfirmed": false,
+          "onlinePriceCheckedAt": "",
+          "estimateStatus": "PENDING_PRICE",
+          "productImageUrl": "",
+          "productSpecifications": "",
+          "onlineProductUrl": "",
+          "onlineDetailsTitle": "",
+          "onlineDetailsFetchedAt": "",
+          "onlineLookupQuery": "",
+          "productImageUrls": [],
+          "marketPriceMin": 0,
+          "marketPriceMax": 0,
+          "marketPriceMedian": 0,
+          "marketPriceSampleCount": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0,
+        "totalEstimateManual": false
+      },
+      "dispatch": {
+        "testedBy": "",
+        "dcNo": "",
+        "dcDate": "",
+        "mode": "COURIER",
+        "reference": ""
+      },
+      "payment": {
+        "invoiceNo": "",
+        "invoiceDate": "",
+        "mode": "UPI",
+        "reference": "",
+        "receivedBy": ""
+      },
+      "signoff": {
+        "receivedBy": "",
+        "inspectedBy": "",
+        "estimateConfirmedBy": "",
+        "repairedBy": ""
+      },
+      "notes": "",
+      "attachments": [],
+      "id": "SJ-4009",
+      "jobNo": "SJ-4009",
+      "createdAt": "2026-10-23T04:30:20.644Z",
+      "updatedAt": "2026-10-23T08:08:51.630Z"
+    },
+    {
+      "id": "SJ-CROSS-DEV-VERIFY",
+      "jobNo": "SJ-CROSS-DEV-VERIFY",
+      "customer": {
+        "name": "Priya Calibration Lab"
+      },
+      "status": "In Servicing",
+      "jobDate": "2026-10-23",
+      "marketType": "INDIA",
+      "officeType": "BRANCH_OFFICE",
+      "branchName": "Branch Office (Coimbatore)",
+      "products": [],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "discount": 0,
+        "totalEstimate": 0
+      }
+    },
+    {
+      "id": "SJ-3841",
+      "jobNo": "SJ-3841",
+      "jobDate": "2026-10-17",
+      "status": "READY",
+      "marketType": "INDIA",
+      "officeType": "BRANCH_OFFICE",
+      "branchName": "Branch Office (Coimbatore)",
+      "createdBy": "radha@nunesinstruments.com",
+      "customer": {
+        "name": "Branch Customer",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "currency": "INR"
+      },
+      "receipt": {
+        "mrNo": "MR-SJ-3841",
+        "mode": "FIELD_PICKUP",
+        "reference": "Branch Intake"
+      },
+      "products": [
+        {
+          "id": "prod-SJ-3841",
+          "productName": "Industrial Instrument",
+          "qty": 1,
+          "status": "READY",
+          "complaint": "Standard servicing",
+          "repairEstimate": 0
+        }
+      ],
+      "totals": {
+        "productValue": 0,
+        "repairEstimate": 0,
+        "totalEstimate": 0
+      },
+      "workflow": {
+        "stage": "READY",
+        "receivedAt": "2026-10-17"
+      }
+    },
+    {
+      "id": "SJ-8821",
+      "jobNo": "SJ-8821",
+      "jobDate": "2026-10-17",
+      "status": "DRAFT",
+      "marketType": "INDIA",
+      "officeType": "BRANCH_OFFICE",
+      "branchName": "Branch Office (Coimbatore)",
+      "createdBy": "radha@nunesinstruments.com",
+      "customer": {
+        "name": "Arun Kumar Enterprises",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "currency": "INR"
+      },
+      "receipt": {
+        "mrNo": "MR-SJ-8821",
+        "mode": "FIELD_PICKUP",
+        "reference": "Branch Intake"
+      },
+      "products": [
+        {
+          "id": "prod-SJ-8821",
+          "productName": "3HP induction motor",
+          "qty": 1,
+          "status": "READY",
+          "complaint": "Winding burnt",
+          "repairEstimate": 18200
+        }
+      ],
+      "totals": {
+        "productValue": 18200,
+        "repairEstimate": 18200,
+        "totalEstimate": 18200
+      },
+      "workflow": {
+        "stage": "RECEIVED",
+        "receivedAt": "2026-10-17"
+      }
     }
   ],
-  "purchasing_orders": [],
+  "purchasing_orders": [
+    {
+      "id": "NM-6351",
+      "poNo": "NM-6351",
+      "poDate": "2026-10-17",
+      "status": "APPROVED",
+      "supplier": {
+        "name": "Commercial Supplier",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "phone": ""
+      },
+      "items": [
+        {
+          "id": "item-NM-6351",
+          "itemName": "Industrial Supplies",
+          "qty": 1,
+          "unitPrice": 0,
+          "totalPrice": 0
+        }
+      ],
+      "totals": {
+        "subtotal": 0,
+        "tax": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "NM-1042",
+      "poNo": "NM-1042",
+      "poDate": "2026-10-17",
+      "status": "APPROVED",
+      "supplier": {
+        "name": "Kaveri Textiles Pvt Ltd",
+        "city": "Coimbatore",
+        "state": "Tamil Nadu",
+        "phone": "98430 12345"
+      },
+      "items": [
+        {
+          "id": "item-NM-1042",
+          "itemName": "Cotton yarn 40s",
+          "qty": 1,
+          "unitPrice": 84500,
+          "totalPrice": 84500
+        }
+      ],
+      "totals": {
+        "subtotal": 84500,
+        "tax": 0,
+        "total": 84500
+      }
+    },
+    {
+      "id": "PO-2026-3001",
+      "poNo": "PO-2026-3001",
+      "poDate": "2026-10-24",
+      "status": "APPROVED",
+      "supplier": {
+        "name": "WIKA Instruments India Pvt Ltd",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "phone": "+91 20 6629 8000"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "itemName": "Diaphragm Pressure Gauge 0-10 Bar",
+          "qty": 10,
+          "unitPrice": 4500,
+          "totalPrice": 45000
+        }
+      ],
+      "totals": {
+        "subtotal": 45000,
+        "tax": 8100,
+        "total": 53100
+      }
+    },
+    {
+      "id": "PO-2026-3002",
+      "poNo": "PO-2026-3002",
+      "poDate": "2026-10-23",
+      "status": "ORDERED",
+      "supplier": {
+        "name": "Fluke Technologies South Asia",
+        "city": "Bangalore",
+        "state": "Karnataka",
+        "phone": "+91 80 4060 2200"
+      },
+      "items": [
+        {
+          "id": "item-2",
+          "itemName": "Fluke 87V True-RMS Digital Multimeter",
+          "qty": 2,
+          "unitPrice": 31000,
+          "totalPrice": 62000
+        }
+      ],
+      "totals": {
+        "subtotal": 62000,
+        "tax": 11160,
+        "total": 73160
+      }
+    },
+    {
+      "id": "PO-2026-3003",
+      "poNo": "PO-2026-3003",
+      "poDate": "2026-10-22",
+      "status": "RECEIVED",
+      "supplier": {
+        "name": "Testo India Pvt Ltd",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "phone": "+91 20 2592 0000"
+      },
+      "items": [
+        {
+          "id": "item-3",
+          "itemName": "Testo 868 Thermal Imaging Camera",
+          "qty": 1,
+          "unitPrice": 125000,
+          "totalPrice": 125000
+        }
+      ],
+      "totals": {
+        "subtotal": 125000,
+        "tax": 22500,
+        "total": 147500
+      }
+    },
+    {
+      "id": "PO-2026-3004",
+      "poNo": "PO-2026-3004",
+      "poDate": "2026-10-21",
+      "status": "APPROVED",
+      "supplier": {
+        "name": "Yokogawa India Ltd - Spares Division",
+        "city": "Bangalore",
+        "state": "Karnataka",
+        "phone": "+91 80 4158 6000"
+      },
+      "items": [
+        {
+          "id": "item-4",
+          "itemName": "EJA110A Differential Pressure Capsule Replacement Kit",
+          "qty": 3,
+          "unitPrice": 26166,
+          "totalPrice": 78500
+        }
+      ],
+      "totals": {
+        "subtotal": 78500,
+        "tax": 14130,
+        "total": 92630
+      }
+    },
+    {
+      "id": "PO-2026-3005",
+      "poNo": "PO-2026-3005",
+      "poDate": "2026-10-20",
+      "status": "RECEIVED",
+      "supplier": {
+        "name": "Mitutoyo South Asia Pvt Ltd",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "phone": "+91 11 2637 2090"
+      },
+      "items": [
+        {
+          "id": "item-5",
+          "itemName": "Mitutoyo 500-196-30 Digimatic Caliper 150mm",
+          "qty": 6,
+          "unitPrice": 5700,
+          "totalPrice": 34200
+        }
+      ],
+      "totals": {
+        "subtotal": 34200,
+        "tax": 6156,
+        "total": 40356
+      }
+    }
+  ],
   "quotations": [],
   "customers": [],
   "suppliers": [],
