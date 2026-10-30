@@ -3,12 +3,14 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import TopNavbar from "@/components/TopNavbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/AppSidebar";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import WorkflowNotificationManager from "@/components/WorkflowNotificationManager";
-import { syncPullFromCloud, sortJobsDeterministically } from "@/lib/sync";
+import { syncPullFromCloud } from "@/lib/sync";
 import { isRouteAllowedForRole } from "@/lib/role-routing";
 import { getPersistentSession } from "@/lib/auth-session";
+import { clearAllOlderForms } from "@/lib/data";
 
 const ThreeInteractiveAuth = dynamic(
   () => import("@/components/auth/ThreeInteractiveAuth"),
@@ -30,6 +32,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const releaseRef = useRef<string>("");
   const reloadingRef = useRef(false);
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     const session = getPersistentSession();
@@ -57,29 +60,18 @@ export default function Shell({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const handleDeleteForms = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.confirm("Are you sure you want to delete all older forms, stored job drafts, and cached records?")
+    ) {
+      clearAllOlderForms();
+      window.location.reload();
+    }
+  };
+
   // Sync pull across devices & check local auth session
   useEffect(() => {
-    // 0. Ensure client-side legacy demo data is completely eradicated
-    try {
-      const purgeKey = "nunes_purged_all_demo_v4";
-      if (localStorage.getItem(purgeKey) !== "true") {
-        localStorage.setItem("nunes:service_jobs", "[]");
-        localStorage.setItem("nunes:purchasing_orders", "[]");
-        localStorage.setItem("nunes:quotations", "[]");
-        localStorage.setItem("nunes:customers", "[]");
-        localStorage.setItem("nunes_customers", "[]");
-        localStorage.setItem("nunes:suppliers", "[]");
-        localStorage.setItem("nunes_suppliers", "[]");
-        localStorage.removeItem("nunes:service_current_draft");
-        localStorage.removeItem("nunes:purchasing_current_draft");
-        localStorage.removeItem("nunes:dashboard_snapshot");
-        localStorage.removeItem("nunes_recent_activity");
-        localStorage.setItem(purgeKey, "true");
-        void fetch("/api/data/reset-all", { method: "POST" });
-      }
-    } catch {}
-
-    // 1. Cross-device synchronization on page load
     void syncPullFromCloud();
 
     const handleFocus = () => {
@@ -114,7 +106,6 @@ export default function Shell({ children }: { children: ReactNode }) {
   // Role-based route enforcement
   useEffect(() => {
     if (!isAuthenticated || !userEmail) return;
-    // Allow public landing and login pages without forced station redirect
     if (path === "/" || path === "/landing" || path === "/login") return;
     const { allowed, redirectPath } = isRouteAllowedForRole(userEmail, path);
     if (!allowed && path !== redirectPath) {
@@ -211,19 +202,26 @@ export default function Shell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="shell relative flex flex-col min-h-screen w-full bg-white dark:bg-black transition-colors duration-150">
-      {/* TOPBAR NAVIGATION - EXPANSIVE FULL WIDTH (NO SIDEBAR) */}
-      <TopNavbar />
+    <SidebarProvider>
+      <div className={`shell ${path === "/" ? "dashboard-shell" : ""} relative flex min-h-screen w-full bg-[var(--bg,#f7f8fb)]`}>
+        {/* EXACT ORIGINAL SIDEBAR (ALL FORMS, SEARCH, ALERTS, OPERATOR SWITCH) */}
+        <AppSidebar onDeleteForms={handleDeleteForms} />
 
-      {/* MAIN VIEWPORT - 100% EXPANSIVE FULL WIDTH */}
-      <div className="app-main-viewport flex-1 min-w-0 flex flex-col min-h-[calc(100vh-64px)] overflow-x-hidden w-full bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-150">
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        {/* FLOATING MOBILE MENU TRIGGER (< 768px) */}
+        <div className="fixed top-3 left-3 z-30 md:hidden">
+          <SidebarTrigger className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/90 bg-white/95 text-slate-700 shadow-md backdrop-blur-md hover:bg-slate-50 transition-colors" />
+        </div>
+
+        {/* MAIN VIEWPORT */}
+        <div className="app-main-viewport flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden w-full bg-[#f8fafc]">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </div>
+
+        {/* WORKFLOW OPERATIONS NOTIFICATION POPUP & TRAY */}
+        <WorkflowNotificationManager />
       </div>
-
-      {/* WORKFLOW OPERATIONS NOTIFICATION POPUP & TRAY */}
-      <WorkflowNotificationManager />
-    </div>
+    </SidebarProvider>
   );
 }
