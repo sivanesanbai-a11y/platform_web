@@ -8,9 +8,9 @@ import {
   FileDown, Image as ImageIcon, Sparkles, AlertCircle, Plus
 } from 'lucide-react';
 import type { ServiceJob, ServiceProduct } from '@/types/service-job';
-import { exportElementToPdf, triggerFileDownload, copyElementAsImage } from '@/lib/pdf-service';
-import { syncFormToCloud } from '@/lib/sync';
+import { exportElementToPdf, triggerFileDownload, copyElementAsImage, sharePdfFile } from '@/lib/pdf-service';
 import { cleanNumberString, parseCleanNumber, copyToClipboard } from '@/lib/utils';
+import { syncFormToCloud } from '@/lib/sync';
 
 export interface ServiceQuotationModalProps {
   job: Partial<ServiceJob> & {
@@ -25,10 +25,14 @@ export interface ServiceQuotationModalProps {
   };
   onClose: () => void;
   onSaved?: () => void;
+  onStartNewJob?: () => void;
 }
 
 function cleanPhone(raw: string): string {
-  const digits = String(raw || '').replace(/\D/g, '');
+  let digits = String(raw || '').replace(/\D/g, '');
+  if (digits.startsWith('0') && digits.length === 11) {
+    digits = digits.slice(1);
+  }
   if (digits.length === 10) return '91' + digits;
   return digits;
 }
@@ -49,44 +53,6 @@ function getFutureDate(days = 15): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
-}
-
-function sanitizeCustomerScope(text: string): string {
-  if (!text) return 'Comprehensive technical inspection, sensor calibration & precision overhaul';
-  let clean = text
-    .replace(/Priya:?\s*Please fill commercial pricing form[^\n.]*/gi, '')
-    .replace(/submit for MD approval[^\n.]*/gi, '')
-    .replace(/Senthil finished overhaul \(\d+\s*mins?\)\s*(for [^.]*)?/gi, 'Comprehensive technical overhaul & servicing')
-    .replace(/Senthil finished overhaul[^\n.]*/gi, 'Comprehensive technical overhaul & servicing')
-    .replace(/\bCategory:\s*(Min\s*30%|Max\s*50%|MINIMUM_30|MAXIMUM_50)\b/gi, '')
-    .replace(/Stage:\s*[A-Z_]+/gi, '')
-    .replace(/Proof photos:?\s*\d*/gi, '')
-    .replace(/Take product from [^\n.]*/gi, '')
-    .replace(/Awaiting MD approval[^\n.]*/gi, '')
-    .replace(/MD Executive Approved[^\n.]*/gi, '')
-    .trim();
-
-  clean = clean.replace(/^[-,:.]+\s*/, '').replace(/\s*[-,:.]+$/, '').trim();
-  if (!clean || clean.length < 5) {
-    return 'Precision overhaul, component calibration & standard verification';
-  }
-  return clean;
-}
-
-function sanitizeCustomerProblem(text: string, defaultProblem = 'Electrode calibration drift & diagnostic inspection'): string {
-  if (!text) return defaultProblem;
-  let clean = text
-    .replace(/Priya:?\s*Please fill commercial pricing form[^\n.]*/gi, '')
-    .replace(/submit for MD approval[^\n.]*/gi, '')
-    .replace(/Senthil finished overhaul[^\n.]*/gi, '')
-    .replace(/\bCategory:\s*(Min\s*30%|Max\s*50%|MINIMUM_30|MAXIMUM_50)\b/gi, '')
-    .replace(/Stage:\s*[A-Z_]+/gi, '')
-    .trim();
-  clean = clean.replace(/^[-,:.]+\s*/, '').replace(/\s*[-,:.]+$/, '').trim();
-  if (!clean || clean.length < 4) {
-    return defaultProblem;
-  }
-  return clean;
 }
 
 function numberToWordsINR(amount: number): string {
@@ -129,7 +95,7 @@ export default function ServiceQuotationModal({ job, onClose, onSaved, onStartNe
     'Thank you for contacting NUNES Instrumentation. Based on our technical inspection and requested features, please find our service and repair quotation below.'
   );
   const [terms, setTerms] = useState(
-    '1. Quotation subject to customer approval.\n2. Work commences after confirmation.\n3. 90-day warranty on replaced components.\n4. Standard GST 18% as applicable.'
+    '1. Prices are Ex-Works, Coimbatore.\n2. Work commences upon confirmation.\n3. 90-day warranty on replaced components & calibration.\n4. Standard GST 18% as applicable.'
   );
 
   const [copied, setCopied] = useState(false);
@@ -139,28 +105,6 @@ export default function ServiceQuotationModal({ job, onClose, onSaved, onStartNe
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [pdfNotice, setPdfNotice] = useState<{ title: string; desc: string; type: 'whatsapp' | 'email' | 'download' } | null>(null);
-
-  // Delivery & Dispatch mode state (Direct Walk-in vs Cannot Get Direct / Courier)
-  const initialCannotGetDirect = useMemo(() => {
-    const wf = job.workflow || {};
-    const rc = (job as any).receipt || {};
-    const dp = (job as any).dispatch || {};
-    return (
-      wf.priyaHandoverType === 'COURIER' ||
-      (!wf.priyaHandoverType && rc.mode === 'COURIER') ||
-      Boolean(wf.cannotGetDirect) ||
-      Boolean(wf.isBranchDelivery) ||
-      (typeof dp.mode === 'string' && dp.mode.toLowerCase().includes('courier'))
-    );
-  }, [job]);
-
-  const [cannotGetDirect, setCannotGetDirect] = useState(initialCannotGetDirect);
-  const [courierPartner, setCourierPartner] = useState(
-    job.workflow?.priyaCourierName || (job as any).receipt?.courierName || 'ST Courier'
-  );
-  const [courierDocket, setCourierDocket] = useState(
-    job.workflow?.priyaCourierDocket || (job as any).receipt?.docketNo || ''
-  );
 
   // Products
   const products: ServiceProduct[] = (job.products && job.products.length > 0)
@@ -263,11 +207,19 @@ Regards,
   const formattedPhone = cleanPhone(recipientPhone);
 
   const whatsappWebUrl = useMemo(() => {
-    return `https://web.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}&text=${encodeURIComponent(whatsappMessage)}`;
-  }, [formattedPhone, whatsappMessage]);
+    return formattedPhone ? `https://web.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}` : 'https://web.whatsapp.com';
+  }, [formattedPhone]);
+
+  const whatsappDirectUrl = useMemo(() => {
+    return formattedPhone ? `https://api.whatsapp.com/send?phone=${encodeURIComponent(formattedPhone)}` : 'https://api.whatsapp.com';
+  }, [formattedPhone]);
 
   const gmailWebUrl = useMemo(() => {
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+  }, [recipientEmail, subject, emailBody]);
+
+  const mailtoUrl = useMemo(() => {
+    return `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
   }, [recipientEmail, subject, emailBody]);
 
   // Helper: Export and download PDF
@@ -313,8 +265,15 @@ Regards,
     }
   }
 
-  // 1-Click WhatsApp Web with Exact PDF Generation
+  // 1-Click WhatsApp with Exact PDF Generation + Automatic Phone Number Copy to Clipboard
   async function handleWhatsAppWithPdf() {
+    const phoneToCopy = recipientPhone.trim() || (formattedPhone ? `+${formattedPhone}` : '');
+    if (phoneToCopy) {
+      await copyToClipboard(phoneToCopy);
+      setPhoneCopied(true);
+      setTimeout(() => setPhoneCopied(false), 5000);
+    }
+
     const el = document.getElementById('service-quotation-sheet');
     if (!el) {
       window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
@@ -324,28 +283,25 @@ Regards,
     setGeneratingPdf(true);
     const pdfFileName = `NUNES-Quotation-${reference}.pdf`;
     try {
-      // 1. Generate & download exact PDF
       const res = await exportElementToPdf(el, pdfFileName);
-      triggerFileDownload(res.blob, pdfFileName);
-
-      // 2. Also copy exact image to clipboard for instant Ctrl+V pasting in WhatsApp Web
-      try {
-        await copyElementAsImage(el);
-      } catch {}
-
-      // 3. Mark communication
+      const shared = await sharePdfFile(res.file, phoneToCopy);
+      if (!shared) {
+        triggerFileDownload(res.blob, pdfFileName);
+        window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
+        setPdfNotice({
+          title: 'Quotation PDF Ready for WhatsApp',
+          desc: `"${pdfFileName}" has been downloaded. Phone number (${phoneToCopy}) copied! Attach this PDF in WhatsApp chat.`,
+          type: 'whatsapp'
+        });
+      } else {
+        setPdfNotice({
+          title: `Phone Number Copied: ${phoneToCopy}`,
+          desc: `In WhatsApp Desktop "Send message to" search bar, just press Ctrl+V (Paste) to select this contact immediately! The quotation PDF is attached.`,
+          type: 'whatsapp'
+        });
+      }
       markCommunicationSent('whatsapp');
       saveQuotationSnapshot();
-
-      // 4. Open WhatsApp Web
-      window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
-
-      // 5. Show instructions banner
-      setPdfNotice({
-        title: 'Exact Quotation PDF Ready for WhatsApp Web',
-        desc: `"${pdfFileName}" has been downloaded to your PC and the exact quotation card has been copied to your clipboard. Simply drag and drop the downloaded PDF file or press Ctrl+V in WhatsApp Web to send the exact visual quotation!`,
-        type: 'whatsapp'
-      });
     } catch (err) {
       console.error(err);
       window.open(whatsappWebUrl, '_blank', 'noopener,noreferrer');
@@ -354,7 +310,40 @@ Regards,
     }
   }
 
-  // 1-Click Gmail with Exact PDF Generation
+  // 1-Click Email with Exact PDF Attached via System Mail / Outlook
+  async function handleEmailWithPdf() {
+    const el = document.getElementById('service-quotation-sheet');
+    if (!el) {
+      window.open(mailtoUrl, '_blank');
+      return;
+    }
+
+    setGeneratingPdf(true);
+    const pdfFileName = `NUNES-Quotation-${reference}.pdf`;
+    try {
+      const res = await exportElementToPdf(el, pdfFileName);
+      const shared = await sharePdfFile(res.file, emailBody, subject);
+      if (shared) {
+        markCommunicationSent('email');
+        saveQuotationSnapshot();
+        setPdfNotice({
+          title: 'Quotation PDF Attached to Email Draft',
+          desc: `"${pdfFileName}" has been attached directly to your email draft with recipient, subject, and quotation details pre-filled.`,
+          type: 'email'
+        });
+      } else {
+        // Fallback to Gmail Web if system share was cancelled or not supported
+        await handleGmailWithPdf();
+      }
+    } catch (err) {
+      console.error(err);
+      window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }
+
+  // 1-Click Gmail Web with Downloaded PDF + Full Body Pre-filled + Clipboard Image
   async function handleGmailWithPdf() {
     const el = document.getElementById('service-quotation-sheet');
     if (!el) {
@@ -365,20 +354,18 @@ Regards,
     setGeneratingPdf(true);
     const pdfFileName = `NUNES-Quotation-${reference}.pdf`;
     try {
-      // 1. Generate & download exact PDF
       const res = await exportElementToPdf(el, pdfFileName);
+      // Download the PDF file directly to user's computer so it appears in Chrome's top download bar
       triggerFileDownload(res.blob, pdfFileName);
-
-      // 2. Mark communication
+      // Copy quotation image to clipboard so user can press Ctrl+V in Gmail to paste the card
+      await copyElementAsImage(el);
       markCommunicationSent('email');
-
-      // 3. Open Gmail
+      saveQuotationSnapshot();
+      // Open Gmail with recipient, subject, AND full quotation body pre-filled
       window.open(gmailWebUrl, '_blank', 'noopener,noreferrer');
-
-      // 4. Show instruction
       setPdfNotice({
-        title: 'Exact Quotation PDF Ready for Gmail',
-        desc: `"${pdfFileName}" has been downloaded. Gmail has opened in your browser — simply attach the downloaded PDF file to your email draft!`,
+        title: 'Quotation PDF Ready for Gmail',
+        desc: `"${pdfFileName}" downloaded. Email body pre-filled in Gmail! Drag the PDF from Chrome's download icon (↓) into Gmail compose to attach, or press Ctrl+V to paste the card.`,
         type: 'email'
       });
     } catch (err) {
@@ -432,14 +419,10 @@ Regards,
         customerName,
         customerPhone: recipientPhone,
         customerEmail: recipientEmail,
-        cannotGetDirect,
-        courierPartner: cannotGetDirect ? courierPartner : undefined,
-        courierDocket: cannotGetDirect ? courierDocket : undefined,
-        deliveryMode: cannotGetDirect ? 'COURIER' : 'DIRECT_HANDOVER',
         intro,
         terms,
-        subtotal: subtotal,
-        discount: discount,
+        subtotal,
+        discount,
         taxRate,
         taxAmount,
         grandTotal,
@@ -480,6 +463,7 @@ Regards,
       void syncFormToCloud('quotation', reference, customerName, snapshot);
 
       markCommunicationSent('whatsapp');
+      saveQuotationSnapshot();
       markCommunicationSent('email');
 
       setSavedSuccess(true);
@@ -513,14 +497,24 @@ Regards,
           <div className="paperPreviewActions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginLeft: 'auto' }}>
             <button
               type="button"
-              className="btn"
+              className="btn btn-whatsapp-action"
               onClick={handleWhatsAppWithPdf}
               disabled={generatingPdf}
-              style={{ background: '#25D366', color: '#fff', borderColor: '#25D366', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
-              title="Generate exact PDF and open WhatsApp Web"
+              title="Generate and send exact quotation PDF via WhatsApp"
             >
               <MessageCircle size={16} />
-              <span>{generatingPdf ? 'Generating PDF...' : 'WhatsApp Web (with PDF)'}</span>
+              <span>{generatingPdf ? 'Generating PDF...' : 'Send PDF via WhatsApp'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-gmail-action"
+              onClick={handleEmailWithPdf}
+              disabled={generatingPdf}
+              title="Attach PDF directly to Email draft via system Mail / Outlook"
+            >
+              <Mail size={16} />
+              <span>{generatingPdf ? 'Generating PDF...' : 'Send PDF via Email (Attached)'}</span>
             </button>
 
             <button
@@ -528,11 +522,11 @@ Regards,
               className="btn"
               onClick={handleGmailWithPdf}
               disabled={generatingPdf}
-              style={{ background: '#EA4335', color: '#fff', borderColor: '#EA4335', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}
-              title="Generate exact PDF and open Gmail Composer"
+              style={{ background: '#EA4335', color: '#fff', borderColor: '#EA4335', fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              title="Open Gmail Web draft with pre-filled body, downloaded PDF & copied card"
             >
-              <Mail size={16} />
-              <span>{generatingPdf ? 'Generating PDF...' : 'Send via Gmail (with PDF)'}</span>
+              <ExternalLink size={14} />
+              <span>Gmail Web</span>
             </button>
 
             <button
@@ -540,22 +534,10 @@ Regards,
               className="btn primary"
               onClick={handleDownloadPdf}
               disabled={generatingPdf}
-              style={{ background: '#1d4ed8', borderColor: '#1d4ed8', fontWeight: 600 }}
               title="Download exact official quotation PDF"
             >
               <FileDown size={16} />
               <span>Download PDF</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn"
-              onClick={handleCopyExactImage}
-              disabled={generatingPdf}
-              title="Copy exact quotation card as image (press Ctrl+V to paste into WhatsApp Web)"
-            >
-              {imageCopied ? <Check size={16} style={{ color: '#10b981' }} /> : <ImageIcon size={16} />}
-              <span>{imageCopied ? 'Image Copied!' : 'Copy Image (Ctrl+V)'}</span>
             </button>
 
             <button
@@ -569,7 +551,7 @@ Regards,
 
             <button
               type="button"
-              className="btn"
+              className="btn btn-quotation-header"
               onClick={saveQuotationSnapshot}
               disabled={saving}
               title="Save a snapshot of this quotation"
@@ -577,6 +559,18 @@ Regards,
               <Save size={16} />
               <span>{savedSuccess ? 'Saved!' : 'Save Quote'}</span>
             </button>
+
+            {onStartNewJob && (
+              <button
+                type="button"
+                className="btn primary"
+                onClick={onStartNewJob}
+                title="Complete current job and start next new job"
+                style={{ background: '#059669', borderColor: '#059669', color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                <Plus size={15} /> Start Next Job
+              </button>
+            )}
 
             <button
               type="button"
@@ -711,65 +705,15 @@ Regards,
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <label style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>
-                  GST Tax Rate (%):
-                </label>
-                {taxRate > 0 ? (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#059669', background: '#ecfdf5', padding: '1px 6px', borderRadius: '4px', border: '1px solid #a7f3d0' }}>
-                    GST Applied ({taxRate}%)
-                  </span>
-                ) : (
-                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '1px 6px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
-                    No GST (0% Nil)
-                  </span>
-                )}
-              </div>
-
-              {/* Quick 1-click GST Toggle buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => setTaxRate(0)}
-                  style={{
-                    padding: '6px 8px',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    borderRadius: '6px',
-                    border: taxRate === 0 ? '2px solid #0f2e5a' : '1px solid #cbd5e1',
-                    background: taxRate === 0 ? '#0f2e5a' : '#ffffff',
-                    color: taxRate === 0 ? '#ffffff' : '#475569',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  ✓ No GST (0%)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTaxRate(18)}
-                  style={{
-                    padding: '6px 8px',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    borderRadius: '6px',
-                    border: taxRate === 18 ? '2px solid #2563eb' : '1px solid #93c5fd',
-                    background: taxRate === 18 ? '#2563eb' : '#eff6ff',
-                    color: taxRate === 18 ? '#ffffff' : '#1d4ed8',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  + Add 18% GST
-                </button>
-              </div>
-
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                GST Tax Rate (%):
+              </label>
               <select
                 value={taxRate}
                 onChange={e => setTaxRate(Number(e.target.value))}
-                style={{ width: '100%', padding: '6px 10px', fontSize: '12px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff' }}
+                style={{ width: '100%', padding: '6px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff' }}
               >
-                <option value={0}>0% (No GST / Nil / Tax Exempt)</option>
+                <option value={0}>0% (Tax Exempt / Nil)</option>
                 <option value={5}>5% GST</option>
                 <option value={12}>12% GST</option>
                 <option value={18}>18% GST (Standard Services)</option>
@@ -851,35 +795,6 @@ Regards,
                 style={{ width: '100%', padding: '7px 12px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
               />
             </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                Collection / Delivery Mode:
-              </label>
-              <select
-                value={cannotGetDirect ? 'COURIER' : 'DIRECT'}
-                onChange={e => setCannotGetDirect(e.target.value === 'COURIER')}
-                style={{ width: '100%', padding: '7px 10px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', fontWeight: 600, color: cannotGetDirect ? '#b45309' : '#047857' }}
-              >
-                <option value="DIRECT">🤝 Direct Walk-in (Counter Collection)</option>
-                <option value="COURIER">📦 Cannot Get Direct (Courier Dispatch)</option>
-              </select>
-            </div>
-
-            {cannotGetDirect && (
-              <div>
-                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                  Courier Partner Name:
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. ST Courier, DTDC, Professional"
-                  value={courierPartner}
-                  onChange={e => setCourierPartner(e.target.value)}
-                  style={{ width: '100%', padding: '7px 12px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
-                />
-              </div>
-            )}
           </div>
         </div>
 
@@ -888,62 +803,66 @@ Regards,
           id="service-quotation-sheet"
           className="paperJobCard quotationSheet" 
           style={{ 
-            fontFamily: '"Times New Roman", Times, serif', 
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', 
             background: '#ffffff',
-            boxShadow: '0 15px 45px rgba(0,0,0,0.12)',
-            padding: '40px 48px',
-            minHeight: '1050px',
-            position: 'relative'
+            boxShadow: '0 10px 35px rgba(0,0,0,0.08)',
+            padding: '36px 42px',
+            maxWidth: '850px',
+            margin: '0 auto',
+            color: '#1e293b',
+            position: 'relative',
+            borderRadius: '4px'
           }}
         >
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #164f91', paddingBottom: '16px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2.5px solid #0f2e5a', paddingBottom: '16px', marginBottom: '16px' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ 
-                  width: '38px', 
-                  height: '38px', 
-                  borderRadius: '8px', 
-                  background: 'linear-gradient(135deg, #1d4ed8, #0284c7)', 
+                  width: '42px', 
+                  height: '42px', 
+                  borderRadius: '10px', 
+                  background: 'linear-gradient(135deg, #0f2e5a 0%, #1e40af 100%)', 
                   display: 'grid', 
                   placeItems: 'center',
-                  color: '#fff',
+                  color: '#ffffff',
                   fontWeight: 900,
-                  fontSize: '22px',
-                  fontFamily: 'sans-serif'
+                  fontSize: '24px',
+                  boxShadow: '0 4px 10px rgba(15, 46, 90, 0.25)'
                 }}>
                   N
                 </div>
                 <div>
-                  <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#164f91', letterSpacing: '1px', lineHeight: 1.1 }}>
+                  <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: '#0f2e5a', letterSpacing: '0.8px', lineHeight: 1.1 }}>
                     NUNES INSTRUMENTATION
                   </h1>
-                  <span style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0.5px' }}>
                     Testing, Calibration, Service &amp; Maintenance Operations
                   </span>
                 </div>
               </div>
               <p style={{ margin: '6px 0 0 0', fontSize: '11.5px', color: '#64748b', lineHeight: 1.4 }}>
-                Office / Works: Head Office: Kolkata &amp; Branches: Chennai, Mumbai, Delhi<br/>
-                Email: servicing@nunesinstruments.com | Web: https://nunes-operations-v44.vercel.app
+                Head Office &amp; Works: Coimbatore, Tamil Nadu - 641027, India<br/>
+                Email: servicing@nunesinstruments.com
               </p>
             </div>
 
             <div style={{ textAlign: 'right' }}>
               <div style={{ 
-                background: '#164f91', 
-                color: '#fff', 
+                background: '#0f2e5a', 
+                color: '#ffffff', 
                 padding: '6px 14px', 
-                borderRadius: '4px', 
+                borderRadius: '6px', 
                 display: 'inline-block',
                 fontWeight: 700,
-                fontSize: '14px',
-                letterSpacing: '1px'
+                fontSize: '13px',
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase'
               }}>
-                OFFICIAL SERVICE QUOTATION
+                Service Quotation
               </div>
-              <div style={{ marginTop: '8px', fontSize: '12px' }}>
-                <div><b>Quote Ref:</b> <span style={{ color: '#0f172a', fontWeight: 700 }}>{reference}</span></div>
+              <div style={{ marginTop: '8px', fontSize: '12px', lineHeight: 1.6, color: '#334155' }}>
+                <div><b>Quote Ref:</b> <span style={{ color: '#0f2e5a', fontWeight: 800 }}>{reference}</span></div>
                 <div><b>Date:</b> {formatDate(quoteDate)}</div>
                 <div><b>Job Ref:</b> {jobNo}</div>
                 {validUntil && <div><b>Valid Until:</b> {formatDate(validUntil)}</div>}
@@ -954,48 +873,49 @@ Regards,
           {/* Customer & Job Info Box */}
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: '1.2fr 0.8fr', 
+            gridTemplateColumns: '1.25fr 0.75fr', 
             gap: '16px', 
             background: '#f8fafc', 
             border: '1px solid #e2e8f0', 
-            borderRadius: '6px', 
-            padding: '14px 18px',
-            marginBottom: '20px'
+            borderRadius: '8px', 
+            padding: '12px 16px',
+            marginBottom: '16px'
           }}>
             <div>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
                 QUOTATION ISSUED TO:
               </div>
-              <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
+              <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#0f172a' }}>
                 {customerName}
               </div>
               {customerContact && (
-                <div style={{ fontSize: '12px', color: '#334155', marginTop: '2px' }}>
+                <div style={{ fontSize: '11.5px', color: '#334155', marginTop: '2px' }}>
                   <b>Attn:</b> {customerContact}
                 </div>
               )}
               {job.customer?.address && (
-                <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
+                <div style={{ fontSize: '11.5px', color: '#475569', marginTop: '2px' }}>
                   {job.customer.address}{job.customer.city ? `, ${job.customer.city}` : ''}{job.customer.state ? `, ${job.customer.state}` : ''}
                 </div>
               )}
-              <div style={{ fontSize: '12px', color: '#475569', marginTop: '4px' }}>
+              <div style={{ fontSize: '11.5px', color: '#475569', marginTop: '3px' }}>
                 {recipientPhone && <span><b>Phone:</b> {recipientPhone} &nbsp;|&nbsp; </span>}
                 {recipientEmail && <span><b>Email:</b> {recipientEmail}</span>}
               </div>
               {job.customer?.gstin && (
-                <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
                   <b>GSTIN:</b> {job.customer.gstin}
                 </div>
               )}
             </div>
 
             <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '16px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
                 SERVICE SPECIFICATIONS:
               </div>
-              <div style={{ fontSize: '12px', color: '#334155', lineHeight: 1.6 }}>
-                <div><b>Branch:</b> {job.branchName || 'Main Service Centre'}</div>
+              <div style={{ fontSize: '11.5px', color: '#334155', lineHeight: 1.55 }}>
+                <div><b>Location / Works:</b> Coimbatore, Tamil Nadu</div>
+                <div><b>Branch:</b> {job.branchName || 'Coimbatore'}</div>
                 <div><b>Date Received:</b> {formatDate(job.jobDate || quoteDate)}</div>
                 <div><b>Overall Status:</b> <span style={{ color: '#0284c7', fontWeight: 700 }}>{job.status || 'ESTIMATE READY'}</span></div>
                 <div><b>Equipments Included:</b> {products.length} Unit(s)</div>
@@ -1004,20 +924,22 @@ Regards,
           </div>
 
           {/* Intro text */}
-          <div style={{ fontSize: '12.5px', color: '#334155', marginBottom: '16px', lineHeight: 1.5, fontStyle: 'italic' }}>
-            {intro}
-          </div>
+          {intro && (
+            <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              {intro}
+            </div>
+          )}
 
           {/* Equipment & Features Table */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '20px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
             <thead>
-              <tr style={{ background: '#164f91', color: '#ffffff', textAlign: 'left' }}>
-                <th style={{ padding: '8px 10px', width: '35px', textAlign: 'center' }}>#</th>
-                <th style={{ padding: '8px 10px' }}>Equipment / Make &amp; Model</th>
-                <th style={{ padding: '8px 10px' }}>Features, Diagnostics &amp; Scope of Work</th>
-                <th style={{ padding: '8px 10px', textAlign: 'center', width: '50px' }}>Qty</th>
-                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px' }}>Estimate Rate</th>
-                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px' }}>Total Amount</th>
+              <tr style={{ background: '#0f2e5a', color: '#ffffff', textAlign: 'left' }}>
+                <th style={{ padding: '8px 10px', width: '35px', textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>#</th>
+                <th style={{ padding: '8px 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Equipment / Make &amp; Model</th>
+                <th style={{ padding: '8px 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Scope of Work &amp; Diagnostics</th>
+                <th style={{ padding: '8px 10px', textAlign: 'center', width: '50px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Qty</th>
+                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Rate (₹)</th>
+                <th style={{ padding: '8px 10px', textAlign: 'right', width: '110px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px' }}>Total Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -1026,31 +948,31 @@ Regards,
                 const rate = Number(p.repairEstimate || 0);
                 const lineTotal = qty * rate;
                 return (
-                  <tr key={p.id || idx} style={{ borderBottom: '1px solid #cbd5e1' }}>
-                    <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'top', color: '#64748b' }}>
+                  <tr key={p.id || idx} style={{ borderBottom: '1px solid #e2e8f0', background: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
+                    <td style={{ padding: '8px', textAlign: 'center', verticalAlign: 'top', color: '#64748b' }}>
                       {idx + 1}
                     </td>
-                    <td style={{ padding: '10px 8px', verticalAlign: 'top' }}>
-                      <b style={{ color: '#0f172a', display: 'block', fontSize: '12.5px' }}>{p.productName || 'Equipment'}</b>
-                      {p.makeModel && <span style={{ color: '#475569', fontSize: '11.5px', display: 'block' }}>Model: {p.makeModel}</span>}
+                    <td style={{ padding: '8px', verticalAlign: 'top' }}>
+                      <b style={{ color: '#0f2e5a', display: 'block', fontSize: '13px', fontWeight: 800 }}>{p.productName || 'Equipment'}</b>
+                      {p.makeModel && <span style={{ color: '#1e40af', fontSize: '11.5px', display: 'inline-block', fontWeight: 650, marginTop: '2px' }}>Model: {p.makeModel}</span>}
                       {p.serialNo && <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>S/N: {p.serialNo}</span>}
                     </td>
-                    <td style={{ padding: '10px 8px', verticalAlign: 'top', color: '#334155' }}>
+                    <td style={{ padding: '8px', verticalAlign: 'top', color: '#334155', fontSize: '11.5px' }}>
                       {p.repairWork && <div style={{ fontWeight: 600 }}>{p.repairWork}</div>}
-                      {p.complaint && <div style={{ color: '#64748b', fontSize: '11.5px' }}>Reported issue: {p.complaint}</div>}
+                      {p.complaint && <div style={{ color: '#64748b', fontSize: '11px' }}>Issue: {p.complaint}</div>}
                       {p.repairCategory && (
-                        <div style={{ fontSize: '10.5px', color: '#0284c7', marginTop: '2px' }}>
-                          Category: {p.repairCategory === 'MINIMUM_30' ? 'Min 30% Benchmark' : 'Max 50% Benchmark'}
+                        <div style={{ fontSize: '10px', color: '#0284c7', marginTop: '2px' }}>
+                          Category: {p.repairCategory === 'MINIMUM_30' ? 'Min 30%' : 'Max 50%'}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '10px 8px', textAlign: 'center', verticalAlign: 'top' }}>
+                    <td style={{ padding: '8px', textAlign: 'center', verticalAlign: 'top' }}>
                       {qty}
                     </td>
-                    <td style={{ padding: '10px 8px', textAlign: 'right', verticalAlign: 'top' }}>
+                    <td style={{ padding: '8px', textAlign: 'right', verticalAlign: 'top' }}>
                       {formatMoney(rate)}
                     </td>
-                    <td style={{ padding: '10px 8px', textAlign: 'right', verticalAlign: 'top', fontWeight: 700, color: '#0f172a' }}>
+                    <td style={{ padding: '8px', textAlign: 'right', verticalAlign: 'top', fontWeight: 700, color: '#0f172a' }}>
                       {formatMoney(lineTotal)}
                     </td>
                   </tr>
@@ -1060,82 +982,65 @@ Regards,
           </table>
 
           {/* Pricing Totals */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ maxWidth: '420px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', gap: '20px' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
                 AMOUNT IN WORDS:
               </div>
-              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#164f91', background: '#f8fafc', padding: '8px 12px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f2e5a', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', lineHeight: 1.4 }}>
                 {amountInWords}
               </div>
 
               {job.notes && (
-                <div style={{ marginTop: '12px' }}>
-                  <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+                <div style={{ marginTop: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
                     SERVICE &amp; INSPECTION NOTES:
                   </div>
-                  <div style={{ fontSize: '11.5px', color: '#475569', marginTop: '2px', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px', lineHeight: 1.4 }}>
                     {job.notes}
                   </div>
                 </div>
               )}
             </div>
 
-            <div style={{ width: '320px', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '12px' }}>
+            <div style={{ width: '310px', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '11.5px' }}>
                 <span>Subtotal:</span>
                 <b>{formatMoney(subtotal)}</b>
               </div>
               {discount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '12px', color: '#dc2626' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '11.5px', color: '#dc2626' }}>
                   <span>Discount:</span>
                   <b>-{formatMoney(discount)}</b>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontSize: '11.5px' }}>
                 <span>Taxable Value:</span>
                 <b>{formatMoney(taxableAmount)}</b>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', borderBottom: '2px solid #164f91', fontSize: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '2px solid #0f2e5a', fontSize: '11.5px' }}>
                 <span>GST ({taxRate}%):</span>
                 <b>{formatMoney(taxAmount)}</b>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#f1f5f9', fontSize: '14px', fontWeight: 800, color: '#164f91' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#0f2e5a', color: '#ffffff', fontSize: '13.5px', fontWeight: 800 }}>
                 <span>GRAND TOTAL:</span>
                 <span>{formatMoney(grandTotal)}</span>
               </div>
             </div>
           </div>
 
-          {/* Terms & Conditions */}
-          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', marginBottom: '4px' }}>
-              TERMS &amp; CONDITIONS:
-            </div>
-            <div style={{ fontSize: '11.5px', color: '#64748b', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-              {terms}
-            </div>
-          </div>
-
-          {/* Signatures */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '36px', paddingTop: '16px' }}>
-            <div style={{ textAlign: 'center', width: '200px' }}>
-              <div style={{ borderTop: '1px solid #94a3b8', paddingTop: '6px', fontSize: '11.5px', color: '#475569', fontWeight: 600 }}>
-                Customer Confirmation &amp; Stamp
+          {/* Signatures & Authorization */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', paddingTop: '10px' }}>
+            <div style={{ textAlign: 'center', width: '240px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f2e5a', marginBottom: '38px', letterSpacing: '0.5px' }}>
+                For NUNES INSTRUMENTATION, Coimbatore
               </div>
-            </div>
-
-            <div style={{ textAlign: 'center', width: '220px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#164f91', marginBottom: '35px' }}>
-                For NUNES INSTRUMENTATION
-              </div>
-              <div style={{ borderTop: '1px solid #94a3b8', paddingTop: '6px', fontSize: '11.5px', color: '#475569', fontWeight: 600 }}>
+              <div style={{ borderTop: '1.5px solid #0f2e5a', paddingTop: '6px', fontSize: '11.5px', color: '#334155', fontWeight: 700 }}>
                 Authorized Technical Signatory
               </div>
             </div>
           </div>
         </article>
-
       </div>
     </div>
   );

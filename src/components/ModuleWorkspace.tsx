@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, RefreshCw, Layout, Server } from "lucide-react";
 import { clearDataCache, companyFetch, getModuleStatus, moduleUrl } from "@/lib/data";
 import PurchasingOrderForm from "./forms/PurchasingOrderForm";
@@ -29,35 +28,6 @@ function directOfficeUrl(key: keyof typeof PORTS) {
 }
 
 export default function ModuleWorkspace({ kind }: { kind: "purchasing" | "servicing" }) {
-  const router = useRouter();
-
-  // Role Redirection Guard (Preserving active job query params)
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("nunes_auth_session");
-      if (raw) {
-        const email = (JSON.parse(raw)?.email || "").toLowerCase().trim();
-        if (
-          email &&
-          !email.includes("admin") &&
-          !email.includes("md") &&
-          !email.startsWith("md@") &&
-          !email.startsWith("admin@") &&
-          !email.includes("director")
-        ) {
-          const sp = typeof window !== "undefined" ? window.location.search : "";
-          if (email.includes("aravind") || email.includes("senthil")) {
-            router.replace(`/workshop${sp}`);
-            return;
-          }
-          if (email.includes("priya") || email.includes("azhalaku")) {
-            router.replace(`/quotations${sp}`);
-            return;
-          }
-        }
-      }
-    } catch {}
-  }, [router]);
   const key = kind === "purchasing" ? "order_forms" : "service_operations";
   const storageKey = `nunes:module-url:${key}`;
   const initialUrl = useMemo(() => {
@@ -71,11 +41,6 @@ export default function ModuleWorkspace({ kind }: { kind: "purchasing" | "servic
   const title = kind === "purchasing" ? "Purchasing Form" : "Servicing Form";
 
   useEffect(() => {
-    // On Cloud / Vercel, the form runs entirely in-browser with cloud sync — avoid unnecessary engine probing
-    if (typeof window !== "undefined" && !isOfficeHost(window.location.hostname) && !useLocalEngine) {
-      return;
-    }
-
     let stopped = false;
     const check = async () => {
       try {
@@ -94,7 +59,7 @@ export default function ModuleWorkspace({ kind }: { kind: "purchasing" | "servic
     };
     check();
     return () => { stopped = true; };
-  }, [key, useLocalEngine]);
+  }, [key]);
 
   return (
     <div className="module-shell">

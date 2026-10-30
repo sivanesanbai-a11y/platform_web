@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { performLogout } from "@/lib/auth";
 import {
   Users,
   ShieldCheck,
@@ -39,7 +38,6 @@ import {
   COMPANY_STAFF_PROFILES,
 } from "@/lib/team-profiles";
 import { syncFormToCloud } from "@/lib/sync";
-import { getPersistentSession, savePersistentSession, clearPersistentSession } from "@/lib/auth-session";
 
 export default function TeamClient() {
   const [staffList, setStaffList] = useState<StaffProfile[]>(COMPANY_STAFF_PROFILES);
@@ -92,13 +90,18 @@ export default function TeamClient() {
       const sRaw = localStorage.getItem("nunes:service_jobs");
       const pRaw = localStorage.getItem("nunes:purchasing_orders");
       const qRaw = localStorage.getItem("nunes:quotations");
+      const sessionRaw = localStorage.getItem("nunes_auth_session");
+
       setCounts({
         serviceCount: sRaw ? JSON.parse(sRaw).length : 0,
         purchaseCount: pRaw ? JSON.parse(pRaw).length : 0,
         quoteCount: qRaw ? JSON.parse(qRaw).length : 0,
       });
-      const session = getPersistentSession();
-      if (session?.email) setCurrentUser(session.email.toLowerCase());
+
+      if (sessionRaw) {
+        const session = JSON.parse(sessionRaw);
+        if (session?.email) setCurrentUser(session.email.toLowerCase());
+      }
     } catch {}
   };
 
@@ -280,7 +283,7 @@ export default function TeamClient() {
         department: staff.department,
         loginAt: new Date().toISOString(),
       };
-      savePersistentSession(sessionData);
+      localStorage.setItem("nunes_auth_session", JSON.stringify(sessionData));
       setCurrentUser(staff.email.toLowerCase());
       setNotification(`✓ Switched active operator to ${staff.name}`);
       setTimeout(() => setNotification(""), 3500);
@@ -289,7 +292,9 @@ export default function TeamClient() {
   };
 
   const handleSignOut = () => {
-    clearPersistentSession();
+    try {
+      localStorage.removeItem("nunes_auth_session");
+    } catch {}
     window.location.href = "/login";
   };
 
@@ -314,9 +319,6 @@ export default function TeamClient() {
       s.modules.some((m) => m.toLowerCase().includes(q))
     );
   });
-
-  // Regular workers only see their own profile details. Admin & MD see all workers.
-  const effectiveTab = isAdminOrMd ? activeTab : "mine";
 
   return (
     <main
@@ -379,15 +381,7 @@ export default function TeamClient() {
               gap: "6px",
             }}
           >
-            {isAdminOrMd ? (
-              <>
-                <Sparkles size={13} style={{ color: "#d97706" }} /> Nunes Instruments • Company Personnel Directory (Master Admin)
-              </>
-            ) : (
-              <>
-                <ShieldCheck size={13} style={{ color: "#0f766e" }} /> Nunes Instruments • Personal Personnel Account
-              </>
-            )}
+            <Sparkles size={13} style={{ color: "#d97706" }} /> Nunes Instruments • Company Personnel Directory
           </div>
           <h1
             style={{
@@ -397,45 +391,41 @@ export default function TeamClient() {
               marginTop: "4px",
             }}
           >
-            {isAdminOrMd && activeTab === "all"
-              ? "Team Personnel & Worker Accounts"
-              : `My Personal Profile: ${myProfile.name}`}
+            {activeTab === "all" ? "Team Personnel & Worker Accounts" : `Personal Profile: ${myProfile.name}`}
           </h1>
           <p style={{ color: "#64748b", fontSize: "13.5px", marginTop: "2px" }}>
-            {isAdminOrMd && activeTab === "all"
-              ? `Unified company workforce directory (${staffList.length} registered profiles). Master administration view.`
-              : `${myProfile.role} • ${myProfile.department} (Personal Workstation Records)`}
+            {activeTab === "all"
+              ? `Unified company workforce directory (${staffList.length} registered profiles). Anyone can register new worker accounts or switch active operator.`
+              : `${myProfile.role} • ${myProfile.department} (Signed-in Operator)`}
           </p>
         </div>
 
         {/* Top Control Buttons: Register Worker, Fit Page, View Tabs */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          {/* Create New Worker Account Button - Visible to MD and Admin only */}
-          {isAdminOrMd && (
-            <button
-              type="button"
-              onClick={openCreateModal}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "10px",
-                border: "none",
-                background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
-                color: "#ffffff",
-                fontSize: "13px",
-                fontWeight: 750,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "7px",
-                boxShadow: "0 4px 14px rgba(15,118,110,0.3)",
-                transition: "transform 0.15s ease",
-              }}
-              title="Register a new employee or worker profile"
-            >
-              <UserPlus size={15} />
-              <span>+ Create New Worker Profile</span>
-            </button>
-          )}
+          {/* Create New Worker Account Button */}
+          <button
+            type="button"
+            onClick={openCreateModal}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "10px",
+              border: "none",
+              background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
+              color: "#ffffff",
+              fontSize: "13px",
+              fontWeight: 750,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "7px",
+              boxShadow: "0 4px 14px rgba(15,118,110,0.3)",
+              transition: "transform 0.15s ease",
+            }}
+            title="Register a new employee or worker profile"
+          >
+            <UserPlus size={15} />
+            <span>+ Create New Worker Profile</span>
+          </button>
 
           {/* Fit Page Toggle Button */}
           <button
@@ -468,75 +458,56 @@ export default function TeamClient() {
             )}
           </button>
 
-          {/* Tab Switcher - Only shown to MD & Admin so normal workers only see their own profile */}
-          {isAdminOrMd ? (
-            <div
+          {/* Tab Switcher: All Staff vs My Profile */}
+          <div
+            style={{
+              display: "flex",
+              background: "#f1f5f9",
+              padding: "3px",
+              borderRadius: "10px",
+              border: "1px solid #cbd5e1",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveTab("all")}
               style={{
-                display: "flex",
-                background: "#f1f5f9",
-                padding: "3px",
-                borderRadius: "10px",
-                border: "1px solid #cbd5e1",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setActiveTab("all")}
-                style={{
-                  padding: "6px 13px",
-                  borderRadius: "7px",
-                  border: "none",
-                  background: activeTab === "all" ? "#0f766e" : "transparent",
-                  color: activeTab === "all" ? "#ffffff" : "#475569",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                All Workers ({staffList.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("mine")}
-                style={{
-                  padding: "6px 13px",
-                  borderRadius: "7px",
-                  border: "none",
-                  background: activeTab === "mine" ? "#0f766e" : "transparent",
-                  color: activeTab === "mine" ? "#ffffff" : "#475569",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                My Profile ({myProfile.name.split(" ")[0]})
-              </button>
-            </div>
-          ) : (
-            <div
-              style={{
-                background: "#f0fdfa",
-                border: "1px solid #99f6e4",
-                color: "#0f766e",
-                padding: "6px 14px",
-                borderRadius: "10px",
+                padding: "6px 13px",
+                borderRadius: "7px",
+                border: "none",
+                background: activeTab === "all" ? "#0f766e" : "transparent",
+                color: activeTab === "all" ? "#ffffff" : "#475569",
                 fontSize: "12px",
-                fontWeight: 750,
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
+                fontWeight: 700,
+                cursor: "pointer",
               }}
             >
-              <UserCheck size={14} /> My Account Only ({myProfile.name})
-            </div>
-          )}
+              All Workers ({staffList.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("mine")}
+              style={{
+                padding: "6px 13px",
+                borderRadius: "7px",
+                border: "none",
+                background: activeTab === "mine" ? "#0f766e" : "transparent",
+                color: activeTab === "mine" ? "#ffffff" : "#475569",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              My Profile ({myProfile.name.split(" ")[0]})
+            </button>
+          </div>
         </div>
       </div>
 
       {/* =========================================================================
-          MY PROFILE TAB VIEW (ONLY VIEW SHOWN FOR INDIVIDUAL WORKERS)
+          MY PROFILE TAB VIEW
           ========================================================================= */}
-      {effectiveTab === "mine" && (
+      {activeTab === "mine" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
           {/* Active Operator Banner */}
           <div
@@ -977,9 +948,9 @@ export default function TeamClient() {
       )}
 
       {/* =========================================================================
-          ALL WORKERS & PERSONNEL DIRECTORY (ACCESSIBLE TO ADMIN & MD ONLY)
+          ALL WORKERS & PERSONNEL DIRECTORY (COMMON TO ALL USERS)
           ========================================================================= */}
-      {isAdminOrMd && effectiveTab === "all" && (
+      {activeTab === "all" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
           {/* Top Stats Overview Bar */}
           <div

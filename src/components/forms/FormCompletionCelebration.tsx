@@ -111,7 +111,7 @@ export default function FormCompletionCelebration({
             <CheckCircle2 size={42} className="text-white drop-shadow-md" strokeWidth={2.5} />
           </div>
           <div 
-            className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg animate-bounce"
+            className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-amber-400 flex items-center justify-center text-slate-900 shadow-lg animate-bounce"
             style={{ animationDuration: '1.5s' }}
           >
             <Sparkles size={16} />
@@ -124,7 +124,7 @@ export default function FormCompletionCelebration({
         </h2>
 
         {recordNumber && (
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-200 text-xs font-semibold mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3">
             <span>Ref:</span>
             <span className="font-mono text-white tracking-wide">{recordNumber}</span>
           </div>

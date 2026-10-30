@@ -175,38 +175,7 @@ async function handleLocalDataRoute(subpath: string) {
     const serviceJobs = store.service_jobs;
     const purchasingOrders = store.purchasing_orders;
     const pVal = purchasingOrders.reduce((sum: number, x: any) => sum + Number(x.total_order_value || x.bill_amount || 0), 0);
-    const sVal = serviceJobs.reduce((sum: number, j: any) => sum + Number(j.workflow?.customApprovedPrice || j.workflow?.mdApprovedPrice || j.totals?.totalEstimate || 0), 0);
-
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const currentMonthStr = todayStr.slice(0, 7);
-
-    const getJobDate = (j: any) => String(j.customer?.date || j.receipt?.mrDate || j.jobDate || (j.createdAt ? j.createdAt.slice(0, 10) : "") || "").slice(0, 10);
-    const getOrderDate = (o: any) => String(o.order_date || o.created_at || o.updated_at || "").slice(0, 10);
-
-    const todayServiceJobs = serviceJobs.filter((j: any) => getJobDate(j) === todayStr);
-    const monthServiceJobs = serviceJobs.filter((j: any) => getJobDate(j).startsWith(currentMonthStr));
-
-    const todayPurchasing = purchasingOrders.filter((o: any) => getOrderDate(o) === todayStr);
-    const monthPurchasing = purchasingOrders.filter((o: any) => getOrderDate(o).startsWith(currentMonthStr));
-
-    // Daily buckets for last 14 days
-    const days14 = Array.from({ length: 14 }, (_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (13 - i));
-      return d.toISOString().slice(0, 10);
-    });
-
-    const sDaily = days14.map((dStr) => ({
-      key: dStr,
-      label: new Date(dStr + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
-      forms: serviceJobs.filter((j: any) => getJobDate(j) === dStr).length,
-    }));
-
-    const fDaily = days14.map((dStr) => ({
-      key: dStr,
-      label: new Date(dStr + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
-      orders: purchasingOrders.filter((o: any) => getOrderDate(o) === dStr).length,
-    }));
+    const sVal = serviceJobs.reduce((sum: number, j: any) => sum + Number(j.totals?.totalEstimate || 0), 0);
 
     return NextResponse.json(
       {
@@ -220,27 +189,23 @@ async function handleLocalDataRoute(subpath: string) {
         system_health: "OPTIMAL",
         forms: {
           total_orders: purchasingOrders.length,
-          active_orders: purchasingOrders.filter((o: any) => o.status !== "COMPLETED" && o.current_status !== "Completed").length,
-          completed_orders: purchasingOrders.filter((o: any) => o.status === "COMPLETED" || o.current_status === "Completed").length,
-          today_forms: todayPurchasing.length,
-          this_month_forms: monthPurchasing.length,
+          active_orders: purchasingOrders.length,
+          completed_orders: 0,
+          today_forms: purchasingOrders.length,
+          this_month_forms: purchasingOrders.length,
           order_value: pVal,
           outstanding: 0,
-          statuses: { "In Progress": purchasingOrders.length || 0 },
-          daily: fDaily,
-          monthly: [{ key: currentMonthStr, label: currentMonthStr, orders: monthPurchasing.length }],
+          statuses: { "In Progress": purchasingOrders.length || 1 },
           recent: purchasingOrders.slice(0, 8),
         },
         service: {
-          open_jobs: serviceJobs.filter((j: any) => j.status !== "CLOSED" && j.workflow?.stage !== "JOB_COMPLETED").length,
+          open_jobs: serviceJobs.length,
           total_jobs: serviceJobs.length,
           ready: 0,
-          today_forms: todayServiceJobs.length,
-          this_month_forms: monthServiceJobs.length,
+          today_forms: serviceJobs.length,
+          this_month_forms: serviceJobs.length,
           total_estimate: sVal,
-          statuses: { RECEIVED: serviceJobs.length || 0 },
-          daily: sDaily,
-          monthly: [{ key: currentMonthStr, label: currentMonthStr, jobs: monthServiceJobs.length }],
+          statuses: { RECEIVED: serviceJobs.length || 1 },
           recent: serviceJobs.slice(0, 8),
         },
       },

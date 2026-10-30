@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   Clock,
@@ -40,45 +39,11 @@ export interface QuotationRecord {
 }
 
 export default function QuotationsPage() {
-  const router = useRouter();
   const [quotations, setQuotations] = useState<QuotationRecord[]>([]);
   const [q, setQ] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<"ALL" | "SENT" | "ACCEPTED" | "PENDING">("ALL");
   const [modalOpen, setModalOpen] = useState(false);
   const [viewQuotation, setViewQuotation] = useState<QuotationRecord | null>(null);
-  const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
-
-  // Role Redirection Guard
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("nunes_auth_session");
-      if (raw) {
-        const email = (JSON.parse(raw)?.email || "").toLowerCase().trim();
-        if (
-          email &&
-          !email.includes("admin") &&
-          !email.includes("md") &&
-          !email.startsWith("md@") &&
-          !email.startsWith("admin@") &&
-          !email.includes("director")
-        ) {
-          if (email.includes("aravind") || email.includes("senthil")) {
-            router.replace("/workshop");
-            return;
-          }
-          if (
-            email.includes("suganya") ||
-            email.includes("radha") ||
-            email.includes("sabitha") ||
-            email.includes("rekha")
-          ) {
-            router.replace("/forms/servicing");
-            return;
-          }
-        }
-      }
-    } catch {}
-  }, [router]);
 
   // Form State for creating new quotation
   const [newCustName, setNewCustName] = useState("");
@@ -289,10 +254,10 @@ export default function QuotationsPage() {
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${
                           item.status === "ACCEPTED"
-                            ? "bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200"
+                            ? "bg-emerald-50 text-emerald-700"
                             : item.status === "SENT"
-                            ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-amber-50 text-amber-700"
                         }`}
                       >
                         {item.status}
@@ -605,24 +570,6 @@ export default function QuotationsPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      {/* Full Resolution Media Preview Modal */}
-      {previewMediaUrl && (
-        <div
-          className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setPreviewMediaUrl(null)}
-        >
-          <div className="relative max-w-2xl max-h-[85vh] bg-white p-2 rounded-2xl shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setPreviewMediaUrl(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-            <img src={previewMediaUrl} alt="Preview" className="max-w-full max-h-[80vh] rounded-xl object-contain" />
           </div>
         </div>
       )}

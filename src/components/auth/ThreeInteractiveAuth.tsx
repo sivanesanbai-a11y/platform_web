@@ -4,9 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
 import { syncFormToCloud } from "@/lib/sync";
-import { getRoleDestination } from "@/lib/role-routing";
-import { setAuthSession } from "@/lib/auth";
-import { savePersistentSession } from "@/lib/auth-session";
 
 interface ThreeInteractiveAuthProps {
   onSuccess?: () => void;
@@ -70,7 +67,7 @@ export default function ThreeInteractiveAuth({
     }
     if (cardRef.current) {
       cardRef.current.style.boxShadow =
-        "0 25px 60px -15px rgba(15, 23, 42, 0.4), 0 0 35px rgba(99, 102, 241, 0.25)";
+        "0 30px 90px -20px rgba(0, 0, 0, 0.9), 0 0 30px rgba(99, 102, 241, 0.2)";
     }
     setErrorMessage("");
   };
@@ -139,13 +136,9 @@ export default function ThreeInteractiveAuth({
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
     camera.position.set(0, 0, 7.5);
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
-    });
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
@@ -272,7 +265,6 @@ export default function ThreeInteractiveAuth({
     // Animation Loop
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      if (document.hidden) return;
       const time = performance.now() * 0.003;
       const s = animStateRef.current;
 
@@ -375,23 +367,13 @@ export default function ThreeInteractiveAuth({
     > = {
       suganya: {
         email: "suganya@nunesinstruments.com",
-        displayName: "Suganya (Branch Office Intake)",
+        displayName: "Suganya",
         allowed: ["suganya@2026", "suganya", "suganya123", "123456", "nunes2026", "nunes", "admin123"],
       },
       "suganya@nunesinstruments.com": {
         email: "suganya@nunesinstruments.com",
-        displayName: "Suganya (Branch Office Intake)",
+        displayName: "Suganya",
         allowed: ["suganya@2026", "suganya", "suganya123", "123456", "nunes2026", "nunes", "admin123"],
-      },
-      radha: {
-        email: "radha@nunesinstruments.com",
-        displayName: "Radha (Branch Office Intake)",
-        allowed: ["radha@2026", "radha", "radha123", "branch", "123456", "nunes2026", "nunes", "admin123"],
-      },
-      "radha@nunesinstruments.com": {
-        email: "radha@nunesinstruments.com",
-        displayName: "Radha (Branch Office Intake)",
-        allowed: ["radha@2026", "radha", "radha123", "branch", "123456", "nunes2026", "nunes", "admin123"],
       },
       rekha: {
         email: "rekha@nunesinstruments.com",
@@ -448,16 +430,6 @@ export default function ThreeInteractiveAuth({
         displayName: "Aravindh",
         allowed: ["aravindh@2026", "aravindh", "aravind", "aravind@2026", "aravindh123", "123456", "nunes2026", "nunes", "admin123"],
       },
-      senthil: {
-        email: "senthil@nunesinstruments.com",
-        displayName: "Senthil Kumar (Service Mechanic)",
-        allowed: ["senthil@2026", "senthil", "senthil123", "mechanic", "123456", "nunes2026", "nunes", "admin123"],
-      },
-      "senthil@nunesinstruments.com": {
-        email: "senthil@nunesinstruments.com",
-        displayName: "Senthil Kumar (Service Mechanic)",
-        allowed: ["senthil@2026", "senthil", "senthil123", "mechanic", "123456", "nunes2026", "nunes", "admin123"],
-      },
       md: {
         email: "md@nunesinstruments.com",
         displayName: "MD (Management)",
@@ -488,6 +460,16 @@ export default function ThreeInteractiveAuth({
         displayName: "Administrator",
         allowed: ["admin123", "admin", "nunes2026", "123456"],
       },
+      "instruasia": {
+        email: "instruasia@gmail.com",
+        displayName: "Instruasia Admin",
+        allowed: ["instruasia", "instruasia@2026", "admin123", "nunes2026", "123456"],
+      },
+      "instruasia@gmail.com": {
+        email: "instruasia@gmail.com",
+        displayName: "Instruasia Admin",
+        allowed: ["instruasia", "instruasia@2026", "admin123", "nunes2026", "123456"],
+      },
     };
 
     let users: { email: string; password: string }[] = [];
@@ -510,40 +492,18 @@ export default function ThreeInteractiveAuth({
       setTimeout(() => {
         const canonical = STAFF_REGISTRY[cleanId]?.email || cleanId;
         const session = { email: canonical, loggedInAt: new Date().toISOString() };
-        savePersistentSession(session);
-        localStorage.setItem("nunes_active_staff_id", cleanId);
-        window.dispatchEvent(new CustomEvent("nunes:records-synced"));
-        const targetRoute = (!redirectTo || redirectTo === "/dashboard" || redirectTo === "/login") ? getRoleDestination(canonical) : redirectTo;
-        if (onSuccess) {
-          try {
-            onSuccess();
-          } catch {}
-        }
-        window.location.href = targetRoute;
-      }, 600);
+        localStorage.setItem("nunes_auth_session", JSON.stringify(session));
+        if (onSuccess) onSuccess();
+        else router.push(redirectTo);
+      }, 1200);
     } else {
       // Sign In
       let authenticatedEmail = "";
 
-      // Check user-modified passwords from Settings first
-      let customPasswords: Record<string, string> = {};
-      try {
-        customPasswords = JSON.parse(localStorage.getItem("nunes_custom_passwords") || "{}");
-      } catch {}
-
-      const customPass = customPasswords[cleanId] || customPasswords[cleanId.split('@')[0]];
-      if (customPass) {
-        if (cleanPassword === customPass) {
-          authenticatedEmail = STAFF_REGISTRY[cleanId]?.email || (cleanId.includes('@') ? cleanId : `${cleanId}@nunesinstruments.com`);
-        }
-      }
-
-      if (!authenticatedEmail) {
-        const staff = STAFF_REGISTRY[cleanId];
-        if (staff) {
-          if (staff.allowed.includes(cleanPassword)) {
-            authenticatedEmail = staff.email;
-          }
+      const staff = STAFF_REGISTRY[cleanId];
+      if (staff) {
+        if (staff.allowed.includes(cleanPassword)) {
+          authenticatedEmail = staff.email;
         }
       }
 
@@ -568,17 +528,10 @@ export default function ThreeInteractiveAuth({
 
       setTimeout(() => {
         const session = { email: authenticatedEmail, loggedInAt: new Date().toISOString() };
-        savePersistentSession(session);
-        localStorage.setItem("nunes_active_staff_id", cleanId);
-        window.dispatchEvent(new CustomEvent("nunes:records-synced"));
-        const targetRoute = (!redirectTo || redirectTo === "/dashboard" || redirectTo === "/login") ? getRoleDestination(authenticatedEmail) : redirectTo;
-        if (onSuccess) {
-          try {
-            onSuccess();
-          } catch {}
-        }
-        window.location.href = targetRoute;
-      }, 600);
+        localStorage.setItem("nunes_auth_session", JSON.stringify(session));
+        if (onSuccess) onSuccess();
+        else router.push(redirectTo);
+      }, 1200);
     }
   };
 
@@ -589,9 +542,7 @@ export default function ThreeInteractiveAuth({
         justifyContent: "center",
         alignItems: "center",
         minHeight: isModal ? "auto" : "100vh",
-        background: isModal
-          ? "transparent"
-          : "linear-gradient(rgba(8, 12, 22, 0.45), rgba(8, 12, 22, 0.72)), url('/login-bg.png') center/cover no-repeat, #090d16",
+        background: isModal ? "transparent" : "radial-gradient(circle at 50% 15%, #1e1b4b 0%, #090d16 85%)",
         padding: "1.5rem",
         fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
       }}
@@ -599,15 +550,15 @@ export default function ThreeInteractiveAuth({
       <div
         ref={cardRef}
         style={{
-          background: "rgba(15, 23, 42, 0.95)",
-          border: "1.5px solid rgba(255, 255, 255, 0.18)",
+          background: "rgba(22, 28, 45, 0.92)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
           backdropFilter: "blur(25px)",
           WebkitBackdropFilter: "blur(25px)",
-          borderRadius: "28px",
-          padding: "1.5rem 1.8rem 2rem",
+          borderRadius: "32px",
+          padding: "1.5rem 2.2rem 2.4rem",
           width: "100%",
-          maxWidth: "430px",
-          boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+          maxWidth: "400px",
+          boxShadow: "0 30px 90px -20px rgba(0, 0, 0, 0.9), 0 0 30px rgba(99, 102, 241, 0.2)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -623,9 +574,9 @@ export default function ThreeInteractiveAuth({
               position: "absolute",
               top: "16px",
               right: "16px",
-              background: "rgba(255, 255, 255, 0.12)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              color: "#ffffff",
+              background: "rgba(255, 255, 255, 0.1)",
+              border: "none",
+              color: "#94a3b8",
               width: "32px",
               height: "32px",
               borderRadius: "50%",
@@ -633,45 +584,18 @@ export default function ThreeInteractiveAuth({
               display: "grid",
               placeItems: "center",
               fontSize: "14px",
-              fontWeight: 700,
             }}
           >
             ✕
           </button>
         )}
 
-        {/* Company Branding Badge */}
-        <div style={{ textAlign: "center", marginBottom: "4px", width: "100%" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "rgba(99, 102, 241, 0.2)",
-              border: "1px solid rgba(129, 140, 248, 0.4)",
-              padding: "4px 12px",
-              borderRadius: "999px",
-              fontSize: "11px",
-              fontWeight: 800,
-              letterSpacing: "0.08em",
-              color: "#e0e7ff",
-              textTransform: "uppercase",
-            }}
-          >
-            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
-            <span>NUNES INSTRUMENTS</span>
-          </div>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginTop: "3px" }}>
-            Coimbatore Operations Gateway
-          </div>
-        </div>
-
         {/* Pure 3D Canvas Box */}
         <div
           ref={containerRef}
           style={{
             width: "100%",
-            height: "210px",
+            height: "230px",
             cursor: "grab",
             marginBottom: "0.5rem",
           }}
@@ -681,12 +605,12 @@ export default function ThreeInteractiveAuth({
         <div
           style={{
             display: "flex",
-            background: "#1e293b",
-            border: "1.5px solid #334155",
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
             borderRadius: "14px",
             padding: "4px",
             width: "100%",
-            marginBottom: "1.1rem",
+            marginBottom: "1.3rem",
           }}
         >
           <button
@@ -698,15 +622,15 @@ export default function ThreeInteractiveAuth({
             style={{
               flex: 1,
               padding: "10px",
-              background: mode === "signin" ? "#4f46e5" : "transparent",
+              background: mode === "signin" ? "#6366f1" : "transparent",
               border: "none",
-              color: "#ffffff",
-              fontWeight: 700,
+              color: mode === "signin" ? "#ffffff" : "#94a3b8",
+              fontWeight: 600,
               fontSize: "0.85rem",
               borderRadius: "10px",
               cursor: "pointer",
               transition: "all 0.25s",
-              boxShadow: mode === "signin" ? "0 4px 15px rgba(79, 70, 229, 0.5)" : "none",
+              boxShadow: mode === "signin" ? "0 4px 15px rgba(99, 102, 241, 0.4)" : "none",
             }}
           >
             Sign In
@@ -720,18 +644,18 @@ export default function ThreeInteractiveAuth({
             style={{
               flex: 1,
               padding: "10px",
-              background: mode === "signup" ? "#4f46e5" : "transparent",
+              background: mode === "signup" ? "#6366f1" : "transparent",
               border: "none",
-              color: "#ffffff",
-              fontWeight: 700,
+              color: mode === "signup" ? "#ffffff" : "#94a3b8",
+              fontWeight: 600,
               fontSize: "0.85rem",
               borderRadius: "10px",
               cursor: "pointer",
               transition: "all 0.25s",
-              boxShadow: mode === "signup" ? "0 4px 15px rgba(79, 70, 229, 0.5)" : "none",
+              boxShadow: mode === "signup" ? "0 4px 15px rgba(99, 102, 241, 0.4)" : "none",
             }}
           >
-            Register / Reset
+            Sign Up
           </button>
         </div>
 
@@ -742,109 +666,62 @@ export default function ThreeInteractiveAuth({
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            gap: "1rem",
+            gap: "1.1rem",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label
-              htmlFor="auth-email-input"
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                color: "#f8fafc",
-                textTransform: "uppercase",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>👤 Username, Email, or Staff ID</span>
-              <span style={{ fontSize: "11px", color: "#38bdf8", fontWeight: 600, textTransform: "none" }}>Required</span>
-            </label>
-            <input
-              id="auth-email-input"
-              className="nunes-auth-input"
-              type="text"
-              placeholder="e.g. radha, senthil, suganya, md, admin"
-              required
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => {
-                stopWaving();
-                resetStates();
-              }}
-              style={{
-                width: "100%",
-                background: "#0f172a",
-                border: "1.5px solid #475569",
-                padding: "13px 16px",
-                borderRadius: "12px",
-                color: "#ffffff",
-                fontSize: "14px",
-                fontWeight: 600,
-                outline: "none",
-                boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.4)",
-              }}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Username or Email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onFocus={() => {
+              stopWaving();
+              resetStates();
+            }}
+            style={{
+              width: "100%",
+              background: "rgba(255, 255, 255, 0.04)",
+              border: "1.5px solid rgba(255, 255, 255, 0.1)",
+              padding: "14px 18px",
+              borderRadius: "14px",
+              color: "#ffffff",
+              fontSize: "0.95rem",
+              outline: "none",
+              transition: "all 0.25s ease",
+            }}
+          />
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label
-              htmlFor="auth-password-input"
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                color: "#f8fafc",
-                textTransform: "uppercase",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>🔒 Password</span>
-              <span style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: 500, textTransform: "none" }}>[name]@2026 or admin123</span>
-            </label>
-            <input
-              id="auth-password-input"
-              ref={pwdRef}
-              className="nunes-auth-input"
-              type="password"
-              placeholder="Enter your security password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={coverEyes3D}
-              onBlur={uncoverEyes3D}
-              style={{
-                width: "100%",
-                background: "#0f172a",
-                border: "1.5px solid #475569",
-                padding: "13px 16px",
-                borderRadius: "12px",
-                color: "#ffffff",
-                fontSize: "14px",
-                fontWeight: 600,
-                outline: "none",
-                boxShadow: "inset 0 2px 4px rgba(0, 0, 0, 0.4)",
-              }}
-            />
-          </div>
+          <input
+            ref={pwdRef}
+            type="password"
+            placeholder="Password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onFocus={coverEyes3D}
+            onBlur={uncoverEyes3D}
+            style={{
+              width: "100%",
+              background: "rgba(255, 255, 255, 0.04)",
+              border: "1.5px solid rgba(255, 255, 255, 0.1)",
+              padding: "14px 18px",
+              borderRadius: "14px",
+              color: "#ffffff",
+              fontSize: "0.95rem",
+              outline: "none",
+              transition: "all 0.25s ease",
+            }}
+          />
 
           {errorMessage && (
             <div
               style={{
-                color: "#fca5a5",
-                background: "rgba(239, 68, 68, 0.15)",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
-                padding: "8px 12px",
-                borderRadius: "8px",
+                color: "#f87171",
                 fontSize: "12px",
                 textAlign: "center",
                 fontWeight: 600,
+                marginTop: "-4px",
               }}
             >
               {errorMessage}
@@ -855,42 +732,36 @@ export default function ThreeInteractiveAuth({
             type="submit"
             disabled={isSubmitting}
             style={{
-              marginTop: "0.4rem",
+              marginTop: "0.5rem",
               padding: "14px",
-              background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "14px",
-              fontSize: "1.05rem",
+              fontSize: "1.1rem",
               fontWeight: 700,
-              letterSpacing: "0.02em",
               cursor: isSubmitting ? "not-allowed" : "pointer",
-              boxShadow: "0 8px 25px rgba(79, 70, 229, 0.45)",
+              boxShadow: "0 8px 25px rgba(99, 102, 241, 0.4)",
               transition: "all 0.3s ease",
             }}
           >
-            {isSubmitting ? "Authenticating..." : mode === "signup" ? "Create / Update Account →" : "Sign In to Operations →"}
+            {isSubmitting ? "..." : mode === "signup" ? "Create Account →" : "Sign In →"}
           </button>
         </form>
 
         {/* Staff 1-Click Quick Select */}
-        <div style={{ width: "100%", marginTop: "1.2rem", paddingTop: "1rem", borderTop: "1px solid rgba(255, 255, 255, 0.15)" }}>
+        <div style={{ width: "100%", marginTop: "1.2rem", paddingTop: "1rem", borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
           <div
             style={{
-              fontSize: "12px",
-              color: "#f8fafc",
+              fontSize: "11px",
+              color: "#94a3b8",
               textAlign: "center",
-              marginBottom: "10px",
-              fontWeight: 800,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
+              marginBottom: "8px",
+              fontWeight: 600,
+              letterSpacing: "0.02em",
             }}
           >
-            <span>⚡ 1-Click Staff Fill:</span>
+            Staff 1-Click Quick Select:
           </div>
           <div
             style={{
@@ -901,89 +772,45 @@ export default function ThreeInteractiveAuth({
             }}
           >
             {[
-              { label: "Suganya", role: "Branch", color: "#22c55e", id: "suganya", pass: "suganya@2026" },
-              { label: "Radha", role: "Branch", color: "#22c55e", id: "radha", pass: "radha@2026" },
-              { label: "Rekha", role: "Billing", color: "#06b6d4", id: "rekha", pass: "rekha@2026" },
-              { label: "Sabitha", role: "Accounts", color: "#06b6d4", id: "sabitha", pass: "sabitha@2026" },
-              { label: "Priya", role: "Desk", color: "#06b6d4", id: "priya", pass: "priya@2026" },
-              { label: "Senthil", role: "Repair", color: "#f59e0b", id: "senthil", pass: "senthil@2026" },
-              { label: "Aravindh", role: "Lead", color: "#38bdf8", id: "aravindh", pass: "aravindh@2026" },
-              { label: "MD", role: "Mgmt", color: "#a855f7", id: "md", pass: "md@nunes2026" },
-              { label: "Admin", role: "Admin", color: "#ec4899", id: "admin", pass: "admin123" },
-            ].map((staff) => {
-              let cp: Record<string, string> = {};
-              try {
-                cp = JSON.parse(localStorage.getItem("nunes_custom_passwords") || "{}");
-              } catch {}
-              const currentPass = cp[staff.id] || cp[staff.id + "@nunesinstruments.com"] || staff.pass;
-              return (
-                <button
-                  key={staff.id}
-                  type="button"
-                  className="nunes-chip-btn"
-                  onClick={() => {
-                    setMode("signin");
-                    setEmail(staff.id);
-                    setPassword(currentPass);
-                    stopWaving();
-                    resetStates();
-                  }}
-                  style={{
-                    padding: "6px 11px",
-                    borderRadius: "10px",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: staff.color }} />
-                  <span>{staff.label}</span>
-                  <span style={{ fontSize: "10px", color: "#cbd5e1", fontWeight: 500 }}>({staff.role})</span>
-                </button>
-              );
-            })}
+              { label: "Suganya", id: "suganya", pass: "suganya@2026" },
+              { label: "Rekha", id: "rekha", pass: "rekha@2026" },
+              { label: "Sabitha", id: "sabitha", pass: "sabitha@2026" },
+              { label: "Priya", id: "priya", pass: "priya@2026" },
+              { label: "Aravindh", id: "aravindh", pass: "aravindh@2026" },
+              { label: "MD", id: "md", pass: "md@nunes2026" },
+              { label: "Admin", id: "admin", pass: "admin123" },
+              { label: "Instruasia", id: "instruasia", pass: "instruasia@2026" },
+            ].map((staff) => (
+              <button
+                key={staff.id}
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setEmail(staff.id);
+                  setPassword(staff.pass);
+                  stopWaving();
+                  resetStates();
+                }}
+                style={{
+                  padding: "5px 10px",
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  borderRadius: "8px",
+                  color: "#cbd5e1",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {staff.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       <style jsx global>{`
-        .nunes-auth-input {
-          background-color: #0f172a !important;
-          color: #ffffff !important;
-          border: 1.5px solid #475569 !important;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .nunes-auth-input:focus {
-          border-color: #818cf8 !important;
-          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-        }
-        .nunes-auth-input::placeholder {
-          color: #94a3b8 !important;
-          opacity: 1 !important;
-          font-weight: 500 !important;
-        }
-        .nunes-auth-input:-webkit-autofill,
-        .nunes-auth-input:-webkit-autofill:hover,
-        .nunes-auth-input:-webkit-autofill:focus {
-          -webkit-text-fill-color: #ffffff !important;
-          -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
-          box-shadow: 0 0 0px 1000px #0f172a inset !important;
-          transition: background-color 5000s ease-in-out 0s;
-        }
-        .nunes-chip-btn {
-          background: #1e293b !important;
-          color: #ffffff !important;
-          border: 1.5px solid #475569 !important;
-          transition: all 0.15s ease !important;
-        }
-        .nunes-chip-btn:hover {
-          background: #334155 !important;
-          border-color: #818cf8 !important;
-          transform: translateY(-1px);
-        }
         .input-error {
           animation: shake 0.4s ease-in-out;
           border-color: #ef4444 !important;

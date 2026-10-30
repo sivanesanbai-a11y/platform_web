@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { put } from "@vercel/blob";
-import { DEFAULT_OPERATIONAL_JOBS } from "@/lib/service-defaults";
 
 export interface ServiceJobRecord {
   id: string;
@@ -49,8 +48,6 @@ export interface AuthUserRecord {
 export const DEFAULT_COMPANY_USERS: AuthUserRecord[] = [
   { email: "suganya@nunesinstruments.com", password: "suganya@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "suganya", password: "suganya@2026", createdAt: "2026-10-23T06:00:00.000Z" },
-  { email: "radha@nunesinstruments.com", password: "radha@2026", createdAt: "2026-10-24T06:00:00.000Z" },
-  { email: "radha", password: "radha@2026", createdAt: "2026-10-24T06:00:00.000Z" },
   { email: "rekha@nunesinstruments.com", password: "rekha@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "rekha", password: "rekha@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "sabitha@nunesinstruments.com", password: "sabitha@2026", createdAt: "2026-10-23T06:00:00.000Z" },
@@ -58,14 +55,14 @@ export const DEFAULT_COMPANY_USERS: AuthUserRecord[] = [
   { email: "azhalakupriya@nunesinstruments.com", password: "priya@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "azhalakupriya", password: "priya@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "priya", password: "priya@2026", createdAt: "2026-10-23T06:00:00.000Z" },
-  { email: "senthil@nunesinstruments.com", password: "senthil@2026", createdAt: "2026-10-24T06:00:00.000Z" },
-  { email: "senthil", password: "senthil@2026", createdAt: "2026-10-24T06:00:00.000Z" },
   { email: "aravindh@nunesinstruments.com", password: "aravindh@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "aravindh", password: "aravindh@2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "md@nunesinstruments.com", password: "md@nunes2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "md", password: "md@nunes2026", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "admin@nunes.com", password: "admin123", createdAt: "2026-10-23T06:00:00.000Z" },
   { email: "admin", password: "admin123", createdAt: "2026-10-23T06:00:00.000Z" },
+  { email: "instruasia@gmail.com", password: "instruasia@2026", createdAt: "2026-10-23T06:00:00.000Z" },
+  { email: "instruasia", password: "instruasia@2026", createdAt: "2026-10-23T06:00:00.000Z" },
 ];
 
 export interface NunesStoreData {
@@ -101,45 +98,42 @@ function loadFromDisk(): NunesStoreData {
   let loadedUsers: AuthUserRecord[] = [...DEFAULT_COMPANY_USERS];
   try {
     const filePath = getStoreFilePath();
-    let fileToRead = filePath;
-    if (!fs.existsSync(fileToRead)) {
-      const fallbackData = path.join(process.cwd(), "data", "nunes_cloud_store.json");
-      if (fs.existsSync(fallbackData)) {
-        fileToRead = fallbackData;
+    let raw = "";
+    if (fs.existsSync(filePath)) {
+      raw = fs.readFileSync(filePath, "utf8");
+    } else {
+      const seedPath = path.join(process.cwd(), "data", "nunes_cloud_store.json");
+      if (fs.existsSync(seedPath)) {
+        raw = fs.readFileSync(seedPath, "utf8");
+        try {
+          fs.writeFileSync(filePath, raw, "utf8");
+        } catch {}
       }
     }
-    if (fs.existsSync(fileToRead)) {
-      const raw = fs.readFileSync(fileToRead, "utf8");
-      if (raw.trim()) {
-        const parsed = JSON.parse(raw);
-        const existingUsers: AuthUserRecord[] = Array.isArray(parsed.users) ? parsed.users : [];
-        for (const u of existingUsers) {
-          if (!loadedUsers.some((x) => x.email.toLowerCase() === u.email.toLowerCase())) {
-            loadedUsers.push(u);
-          }
+    if (raw && raw.trim()) {
+      const parsed = JSON.parse(raw);
+      const existingUsers: AuthUserRecord[] = Array.isArray(parsed.users) ? parsed.users : [];
+      for (const u of existingUsers) {
+        if (!loadedUsers.some((x) => x.email.toLowerCase() === u.email.toLowerCase())) {
+          loadedUsers.push(u);
         }
-        const rawServiceJobs = Array.isArray(parsed.service_jobs) ? parsed.service_jobs : [];
-        const serviceJobsMap = new Map<string, any>();
-        for (const j of DEFAULT_OPERATIONAL_JOBS) serviceJobsMap.set(String(j.id || j.jobNo), j);
-        for (const j of rawServiceJobs) serviceJobsMap.set(String(j.id || j.jobNo), j);
-
-        return {
-          service_jobs: Array.from(serviceJobsMap.values()),
-          purchasing_orders: Array.isArray(parsed.purchasing_orders) ? parsed.purchasing_orders : [],
-          quotations: Array.isArray(parsed.quotations) ? parsed.quotations : [],
-          customers: Array.isArray(parsed.customers) ? parsed.customers : [],
-          suppliers: Array.isArray(parsed.suppliers) ? parsed.suppliers : [],
-          users: loadedUsers,
-          last_updated: parsed.last_updated || new Date().toISOString(),
-        };
       }
+      return {
+        service_jobs: Array.isArray(parsed.service_jobs) ? parsed.service_jobs : [],
+        purchasing_orders: Array.isArray(parsed.purchasing_orders) ? parsed.purchasing_orders : [],
+        quotations: Array.isArray(parsed.quotations) ? parsed.quotations : [],
+        customers: Array.isArray(parsed.customers) ? parsed.customers : [],
+        suppliers: Array.isArray(parsed.suppliers) ? parsed.suppliers : [],
+        users: loadedUsers,
+        last_updated: parsed.last_updated || new Date().toISOString(),
+      };
     }
   } catch (e) {
     console.warn("Failed reading store file, using in-memory baseline:", e);
   }
 
   return {
-    service_jobs: [...DEFAULT_OPERATIONAL_JOBS],
+    service_jobs: [],
     purchasing_orders: [],
     quotations: [],
     customers: [],
@@ -182,71 +176,49 @@ export async function pushToRemoteCloudStore(store: NunesStoreData): Promise<voi
   }
 }
 
-let lastCloudFetchTime = 0;
-let cloudFetchInFlight: Promise<NunesStoreData> | null = null;
-const CLOUD_CACHE_TTL_MS = 6000;
-
 export async function refreshServerStoreFromCloud(): Promise<NunesStoreData> {
   const store = getServerStore();
-
-  if (Date.now() - lastCloudFetchTime < CLOUD_CACHE_TTL_MS) {
-    return store;
-  }
-
-  if (cloudFetchInFlight) {
-    return cloudFetchInFlight;
-  }
-
-  cloudFetchInFlight = (async () => {
-    try {
-      const res = await fetch(VERCEL_BLOB_PUBLIC_URL, {
-        cache: "no-store",
-        headers: { "cache-control": "no-cache" },
-      });
-      if (res.ok) {
-        const d = await res.json();
-        if (d) {
-          if (Array.isArray(d.service_jobs)) {
-            const map = new Map<string, any>();
-            for (const item of DEFAULT_OPERATIONAL_JOBS) map.set(String(item.id || item.jobNo), item);
-            for (const item of DEFAULT_OPERATIONAL_JOBS) map.set(String(item.id || item.jobNo), item);
-            for (const item of store.service_jobs) map.set(String(item.id || item.jobNo), item);
-            for (const item of d.service_jobs) map.set(String(item.id || item.jobNo), item);
-            store.service_jobs = Array.from(map.values());
-          }
-          if (Array.isArray(d.purchasing_orders)) {
-            const map = new Map<string, any>();
-            for (const item of store.purchasing_orders) map.set(String(item.id || item.order_id), item);
-            for (const item of d.purchasing_orders) map.set(String(item.id || item.order_id), item);
-            store.purchasing_orders = Array.from(map.values());
-          }
-          if (Array.isArray(d.quotations)) {
-            const map = new Map<string, any>();
-            for (const item of store.quotations) map.set(String(item.id || item.quotation_no), item);
-            for (const item of d.quotations) map.set(String(item.id || item.quotation_no), item);
-            store.quotations = Array.from(map.values());
-          }
-          if (Array.isArray(d.users)) {
-            for (const u of d.users) {
-              if (!store.users.some((x) => x.email.toLowerCase() === u.email.toLowerCase())) {
-                store.users.push(u);
-              }
+  try {
+    const res = await fetch(VERCEL_BLOB_PUBLIC_URL, {
+      cache: "no-store",
+      headers: { "cache-control": "no-cache" },
+    });
+    if (res.ok) {
+      const d = await res.json();
+      if (d) {
+        if (Array.isArray(d.service_jobs)) {
+          const map = new Map<string, any>();
+          for (const item of store.service_jobs) map.set(String(item.id || item.jobNo), item);
+          for (const item of d.service_jobs) map.set(String(item.id || item.jobNo), item);
+          store.service_jobs = Array.from(map.values());
+        }
+        if (Array.isArray(d.purchasing_orders)) {
+          const map = new Map<string, any>();
+          for (const item of store.purchasing_orders) map.set(String(item.id || item.order_id), item);
+          for (const item of d.purchasing_orders) map.set(String(item.id || item.order_id), item);
+          store.purchasing_orders = Array.from(map.values());
+        }
+        if (Array.isArray(d.quotations)) {
+          const map = new Map<string, any>();
+          for (const item of store.quotations) map.set(String(item.id || item.quotation_no), item);
+          for (const item of d.quotations) map.set(String(item.id || item.quotation_no), item);
+          store.quotations = Array.from(map.values());
+        }
+        if (Array.isArray(d.users)) {
+          for (const u of d.users) {
+            if (!store.users.some((x) => x.email.toLowerCase() === u.email.toLowerCase())) {
+              store.users.push(u);
             }
           }
-          store.last_updated = d.last_updated || new Date().toISOString();
-          saveToDisk(store);
-          lastCloudFetchTime = Date.now();
         }
+        store.last_updated = d.last_updated || new Date().toISOString();
+        saveToDisk(store);
       }
-    } catch (e: any) {
-      console.warn("Could not pull from Vercel Blob store:", e.message);
-    } finally {
-      cloudFetchInFlight = null;
     }
-    return store;
-  })();
-
-  return cloudFetchInFlight;
+  } catch (e: any) {
+    console.warn("Could not pull from Vercel Blob store:", e.message);
+  }
+  return store;
 }
 
 export function getServerStore(): NunesStoreData {
@@ -254,18 +226,6 @@ export function getServerStore(): NunesStoreData {
     globalThis.__NUNES_STORE__ = loadFromDisk();
   }
   return globalThis.__NUNES_STORE__;
-}
-
-export async function purgeAllStoreDataAsync(): Promise<void> {
-  const store = getServerStore();
-  store.service_jobs = [...DEFAULT_OPERATIONAL_JOBS];
-  store.purchasing_orders = [];
-  store.quotations = [];
-  store.customers = [];
-  store.suppliers = [];
-  store.last_updated = new Date().toISOString();
-  saveToDisk(store);
-  await pushToRemoteCloudStore(store);
 }
 
 export async function upsertServiceJobAsync(job: ServiceJobRecord): Promise<void> {

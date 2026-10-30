@@ -39,7 +39,7 @@ const CATEGORIES = [
 ] as const;
 
 export default function ProductsClient() {
-  const [products, setProducts] = useState<ProductProfile[]>([]);
+  const [products, setProducts] = useState<ProductProfile[]>(BASELINE_PRODUCT_PROFILES);
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState<string>("All");
   const [selectedProduct, setSelectedProduct] = useState<ProductProfile | null>(null);
@@ -248,12 +248,8 @@ export default function ProductsClient() {
             <Layers size={22} />
           </div>
           <div>
-            <div style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a" }}>
-              {products.length === 0 ? "0 Categories" : `${new Set(products.map(p => p.category)).size} Categories`}
-            </div>
-            <div style={{ fontSize: "12px", color: "#64748b", fontWeight: 500 }}>
-              {products.length === 0 ? "Ready to add equipment" : "Active Equipment Groups"}
-            </div>
+            <div style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a" }}>6 Categories</div>
+            <div style={{ fontSize: "12px", color: "#64748b", fontWeight: 500 }}>Pressure, Temp, Metrology</div>
           </div>
         </div>
         <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "14px", padding: "16px", display: "flex", alignItems: "center", gap: "14px" }}>
@@ -513,36 +509,10 @@ export default function ProductsClient() {
       {filtered.length === 0 && (
         <div style={{ padding: "60px 20px", textAlign: "center", background: "#ffffff", borderRadius: "16px", border: "1px dashed #cbd5e1" }}>
           <Package size={40} style={{ color: "#94a3b8", margin: "0 auto 12px" }} />
-          <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>
-            {products.length === 0 ? "No Equipment Profiles in Catalog" : "No products matching your search"}
-          </h3>
+          <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>No products matching your search</h3>
           <p style={{ color: "#64748b", fontSize: "13px", marginTop: "4px" }}>
-            {products.length === 0
-              ? "All demo/dummy equipment has been removed. Click \"+ Add Product Profile\" above to add official equipment."
-              : 'Try adjusting your search keywords or select "All" categories.'}
+            Try adjusting your search keywords or select "All" categories.
           </p>
-          {products.length === 0 && (
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              style={{
-                marginTop: "16px",
-                padding: "10px 20px",
-                borderRadius: "10px",
-                background: "#0f766e",
-                color: "#ffffff",
-                border: "none",
-                fontSize: "13px",
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px"
-              }}
-            >
-              <Plus size={16} /> Add First Equipment Profile
-            </button>
-          )}
         </div>
       )}
 

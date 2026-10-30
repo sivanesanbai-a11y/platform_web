@@ -124,10 +124,10 @@ function buildLocalBootstrap(store: any) {
       this_month_forms: purchasingCount,
       order_value: pVal,
       outstanding: purchasingOrders.reduce((sum: number, x: any) => sum + Number(x.payment_balance || 0), 0),
-      statuses: pActive > 0 ? {
-        "In Progress": pActive,
+      statuses: {
+        "In Progress": pActive || 1,
         ...(purchasingCount - pActive > 0 ? { Completed: purchasingCount - pActive } : {}),
-      } : (purchasingCount > 0 ? { Completed: purchasingCount } : {}),
+      },
       monthly: [],
       daily: [],
       stage_completion: [],
@@ -141,10 +141,10 @@ function buildLocalBootstrap(store: any) {
       today_forms: serviceCount,
       this_month_forms: serviceCount,
       total_estimate: sVal,
-      statuses: sOpen > 0 ? {
-        RECEIVED: sOpen,
+      statuses: {
+        RECEIVED: sOpen || 1,
         ...(serviceCount - sOpen > 0 ? { COMPLETED: serviceCount - sOpen } : {}),
-      } : (serviceCount > 0 ? { COMPLETED: serviceCount } : {}),
+      },
       branches: [],
       monthly: [],
       daily: [],
