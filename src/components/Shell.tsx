@@ -388,35 +388,6 @@ export default function Shell({ children }: { children: ReactNode }) {
     // If accessing root, allow it to render or redirect
   }
 
-  // During SSR or before hydration check
-  if (!authChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs text-slate-400 font-medium">Connecting NUNES Workstation...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // If user is accessing protected routes without session, show the 3D Interactive Auth Gate
-  if (authChecked && !isAuthenticated && path !== "/" && path !== "/login" && path !== "/landing") {
-    return (
-      <ThreeInteractiveAuth
-        onSuccess={() => {
-          const email = checkAuthSession();
-          if (email) {
-            window.location.reload();
-          } else {
-            window.location.reload();
-          }
-        }}
-        redirectTo={path || "/dashboard"}
-      />
-    );
-  }
-
   const emailLower = (userEmail || "").toLowerCase().trim();
   const currentStaff = AVAILABLE_STAFF.find((s) => emailLower.includes(s.id)) || {
     id: "admin",
