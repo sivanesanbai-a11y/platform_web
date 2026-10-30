@@ -61,6 +61,22 @@ interface StaffOption {
 
 const AVAILABLE_STAFF: StaffOption[] = [
   {
+    id: "admin",
+    name: "Admin / Instruasia",
+    email: "instruasia@gmail.com",
+    roleTitle: "Master Operations Command",
+    badge: "Master Admin",
+    initials: "IN",
+  },
+  {
+    id: "md",
+    name: "Managing Director (MD)",
+    email: "md@nunesinstruments.com",
+    roleTitle: "Executive Operations Command",
+    badge: "Full Access",
+    initials: "MD",
+  },
+  {
     id: "radha",
     name: "Radha",
     email: "radha@nunesinstruments.com",
@@ -99,14 +115,6 @@ const AVAILABLE_STAFF: StaffOption[] = [
     roleTitle: "Commercial & Quotations Lead",
     badge: "Quotations",
     initials: "AP",
-  },
-  {
-    id: "md",
-    name: "Managing Director (MD)",
-    email: "md@nunesinstruments.com",
-    roleTitle: "Executive Operations Command",
-    badge: "Full Access",
-    initials: "MD",
   },
 ];
 
@@ -399,7 +407,13 @@ export default function Shell({ children }: { children: ReactNode }) {
   };
 
   const handleSwitchStaff = (staff: StaffOption) => {
-    savePersistentSession(staff.email, staff.id);
+    savePersistentSession({
+      email: staff.email,
+      role: staff.id,
+      name: staff.name,
+      loggedInAt: new Date().toISOString(),
+    });
+    setUserEmail(staff.email);
     setShowSwitchModal(false);
     window.dispatchEvent(new CustomEvent("nunes:auth-changed"));
     window.location.reload();
