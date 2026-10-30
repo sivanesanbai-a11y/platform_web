@@ -40,7 +40,7 @@ const STATIC_ITEMS: PaletteItem[] = [
   { id: "dashboard", title: "Dashboard", category: "Navigation", icon: LayoutGrid, href: "/dashboard", shortcut: "G D" },
   { id: "tasks", title: "My tasks", category: "Navigation", icon: CheckSquare, href: "/tasks", shortcut: "G T" },
   { id: "activity", title: "Activity", category: "Navigation", icon: Activity, href: "/activity", shortcut: "G A" },
-  { id: "forms", title: "Forms", category: "Operations", icon: FileText, href: "/forms", shortcut: "G F", subtitle: "All-in-one servicing & purchasing forms hub" },
+  { id: "forms", title: "Forms", category: "Operations", icon: FileText, href: "/forms", shortcut: "G F", subtitle: "Operations servicing forms workstation" },
   { id: "quotations", title: "Quotations", category: "Operations", icon: FileText, href: "/quotations", shortcut: "G Q", subtitle: "Quotation generator & sent records" },
   { id: "customers", title: "Customers", category: "Operations", icon: Users, href: "/customers", shortcut: "G C", subtitle: "Customer directory & service history" },
   { id: "suppliers", title: "Suppliers", category: "Operations", icon: Package, href: "/suppliers", subtitle: "Vendor directory & component suppliers" },
@@ -79,21 +79,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         });
       }
 
-      // Purchasing orders
-      const rawPurchase = localStorage.getItem("nunes:purchasing_orders");
-      if (rawPurchase) {
-        const list: PurchasingOrder[] = JSON.parse(rawPurchase);
-        list.slice(0, 5).forEach((p) => {
-          results.push({
-            id: `purchase-${p.id}`,
-            title: `${p.order_id || p.id} · ${p.customer_name || "Customer"}`,
-            category: "Recent Forms",
-            icon: ShoppingCart,
-            href: `/forms/purchasing?id=${p.id}`,
-            subtitle: `Purchasing Order · ₹ ${Number(p.total_order_value || 0).toLocaleString("en-IN")}`,
-          });
-        });
-      }
+
 
       setDynamicItems(results);
     } catch {}

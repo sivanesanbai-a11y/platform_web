@@ -12,95 +12,17 @@ import {
   Clock3,
   ExternalLink,
   RotateCw,
-  ShoppingCart,
-  Wrench
+  Wrench,
+  Plus
 } from "lucide-react";
 import { clearDataCache, companyFetch, getModules, getOverview, getTasks, moduleUrl } from "@/lib/data";
 import { MODULE_REGISTRY, type ModuleDefinition } from "@/lib/module-registry";
-import CartLottieAnimation from "@/components/CartLottieAnimation";
 import ServicingLottieAnimation from "@/components/ServicingLottieAnimation";
 import AddOlderFormModal from "@/components/AddOlderFormModal";
 
 // =========================================================================
-// 1. ProcessHero 3D Animated Components
+// 1. Servicing Hero 3D Animated Component
 // =========================================================================
-
-function PurchasingHero3D({ isReady }: { isReady: boolean }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -(y * 14), y: x * 14 });
-  };
-
-  const handleMouseLeave = () => {
-    setTilt({ x: 0, y: 0 });
-  };
-
-  return (
-    <Link
-      href="/forms/purchasing"
-      className="process-hero purchasing"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      title="Click to Open Purchasing Form"
-      style={{ textDecoration: 'none', cursor: 'pointer' }}
-    >
-      {/* Background Animated Glow */}
-      <div className="hero-mesh-glow blue" />
-
-      {/* Left Content / Typography */}
-      <div className="hero-content-left">
-        <div className="hero-kicker-pill">
-          <ShoppingCart size={12} />
-          <span>PROCUREMENT WORKFLOW</span>
-        </div>
-        <h2 className="hero-title">PURCHASING</h2>
-        <p className="hero-subtitle">Order Management &amp; Direct Quotation PDF</p>
-        <div className="hero-status-badge">
-          <span className={`status-pulse-dot ${isReady ? "ready" : "offline"}`} />
-          <span>{isReady ? "Live System Operational • 4 Stages" : "Starting up in background..."}</span>
-        </div>
-        <div style={{ marginTop: '6px' }}>
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: '11px',
-            fontWeight: 700,
-            color: '#ffffff',
-            background: 'rgba(255, 255, 255, 0.25)',
-            padding: '3px 10px',
-            borderRadius: '999px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-          }}>
-            Open Purchasing Form <ArrowRight size={12} />
-          </span>
-        </div>
-      </div>
-
-      {/* Right 3D Moving Animated Scene - Only Cart Moves */}
-      <div className="hero-scene-right">
-        <div
-          className="hero-3d-stage"
-          style={{
-            transform: `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-          }}
-        >
-          {/* Ground Contact Shadow */}
-          <div className="hero-3d-shadow" />
-
-          {/* Floating 3D Core Cart - Running Lottie JSON Animation */}
-          <div className="hero-3d-cart-floater">
-            <CartLottieAnimation />
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 function ServicingHero3D({ isReady }: { isReady: boolean }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -134,31 +56,31 @@ function ServicingHero3D({ isReady }: { isReady: boolean }) {
           <Wrench size={12} />
           <span>DIAGNOSTICS &amp; LAB</span>
         </div>
-        <h2 className="hero-title">SERVICING</h2>
-        <p className="hero-subtitle">Calibration, Quality Control &amp; Job Cards</p>
+        <h2 className="hero-title">SERVICING WORKSTATION</h2>
+        <p className="hero-subtitle">Calibration, Quality Control, Diagnostics &amp; Job Cards</p>
         <div className="hero-status-badge">
           <span className={`status-pulse-dot ${isReady ? "ready" : "offline"}`} />
-          <span>{isReady ? "Live Diagnostic Engine • 4 Stages" : "Starting up in background..."}</span>
+          <span>{isReady ? "Live Diagnostic Engine • Operational" : "Starting up in background..."}</span>
         </div>
-        <div style={{ marginTop: '6px' }}>
+        <div style={{ marginTop: '8px' }}>
           <span style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
-            fontSize: '11px',
+            gap: '6px',
+            fontSize: '12px',
             fontWeight: 700,
             color: '#ffffff',
             background: 'rgba(255, 255, 255, 0.25)',
-            padding: '3px 10px',
+            padding: '5px 14px',
             borderRadius: '999px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
           }}>
-            Open Servicing Form <ArrowRight size={12} />
+            Open Servicing Form <ArrowRight size={14} />
           </span>
         </div>
       </div>
 
-      {/* Right 3D Moving Animated Scene - Only Servicing Equipment Moves */}
+      {/* Right 3D Moving Animated Scene */}
       <div className="hero-scene-right">
         <div
           className="hero-3d-stage"
@@ -179,17 +101,7 @@ function ServicingHero3D({ isReady }: { isReady: boolean }) {
   );
 }
 
-interface ProcessHeroProps {
-  id: "purchasing" | "servicing";
-  name: string;
-  isReady: boolean;
-  bannerImg?: string;
-}
-
-export function ProcessHero({ id, name, isReady }: ProcessHeroProps) {
-  if (id === "purchasing") {
-    return <PurchasingHero3D isReady={isReady} />;
-  }
+export function ProcessHero({ id, name, isReady }: { id: string; name: string; isReady: boolean }) {
   return <ServicingHero3D isReady={isReady} />;
 }
 
@@ -216,7 +128,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
         </div>
         <div className="metric-data">
           <strong>{metrics.active}</strong>
-          <span>Active</span>
+          <span>Active Repairs</span>
         </div>
       </div>
 
@@ -226,7 +138,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
         </div>
         <div className="metric-data">
           <strong>{metrics.waiting}</strong>
-          <span>Waiting</span>
+          <span>Estimate / Approval</span>
         </div>
       </div>
 
@@ -236,7 +148,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
         </div>
         <div className="metric-data">
           <strong>{metrics.attention}</strong>
-          <span>Attention</span>
+          <span>Attention Needed</span>
         </div>
       </div>
 
@@ -246,7 +158,7 @@ export function ProcessMetrics({ metrics }: ProcessMetricsProps) {
         </div>
         <div className="metric-data">
           <strong>{metrics.completed}</strong>
-          <span>Completed</span>
+          <span>Delivered / Closed</span>
         </div>
       </div>
     </div>
@@ -277,27 +189,39 @@ export function WorkflowStages({ stages }: WorkflowStagesProps) {
 // 4. ProcessActions Component
 // =========================================================================
 interface ProcessActionsProps {
-  id: "purchasing" | "servicing";
+  id: string;
   name: string;
   route: string;
+  onAddOlder?: () => void;
 }
 
-export function ProcessActions({ id, name, route }: ProcessActionsProps) {
+export function ProcessActions({ id, name, route, onAddOlder }: ProcessActionsProps) {
   return (
     <div className="process-actions-row">
-      <Link href={route} className={`process-action-btn primary ${id}`} title={`Open ${name} Form immediately`}>
+      <Link href={route} className="process-action-btn primary servicing" title="Open Servicing Form immediately">
         <ExternalLink size={16} />
-        <span>Open {name} Form</span>
+        <span>Open Servicing Form</span>
         <ArrowRight size={16} />
       </Link>
-      <Link href={`/tasks?source=${id}`} className="process-action-btn secondary">
+      <Link href="/tasks?source=servicing" className="process-action-btn secondary">
         <Clock3 size={16} />
         <span>Work Queue</span>
       </Link>
-      <Link href={`/reports?source=${id}`} className="process-action-btn secondary">
+      <Link href="/reports?source=servicing" className="process-action-btn secondary">
         <BarChart2 size={16} />
         <span>Reports</span>
       </Link>
+      {onAddOlder && (
+        <button
+          type="button"
+          onClick={onAddOlder}
+          className="process-action-btn secondary"
+          style={{ cursor: "pointer", border: "1px dashed var(--brand)", color: "var(--brand)" }}
+        >
+          <Plus size={16} />
+          <span>Add Historical Job</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -309,21 +233,16 @@ interface ProcessCardProps {
   moduleDef: ModuleDefinition;
   isReady: boolean;
   metrics: MetricsData;
+  onAddOlder?: () => void;
 }
 
-export function ProcessCard({ moduleDef, isReady, metrics }: ProcessCardProps) {
-  const bannerImg =
-    moduleDef.id === "servicing"
-      ? "/images/servicing_banner.png"
-      : "/images/purchasing_banner.png";
-
+export function ProcessCard({ moduleDef, isReady, metrics, onAddOlder }: ProcessCardProps) {
   return (
-    <article className={`process-card ${moduleDef.id}`} id={`process-card-${moduleDef.id}`}>
+    <article className="process-card servicing" id={`process-card-${moduleDef.id}`}>
       <ProcessHero
         id={moduleDef.id}
         name={moduleDef.name}
         isReady={isReady}
-        bannerImg={bannerImg}
       />
       <div className="process-card-content">
         <ProcessMetrics metrics={metrics} />
@@ -332,6 +251,7 @@ export function ProcessCard({ moduleDef, isReady, metrics }: ProcessCardProps) {
           id={moduleDef.id}
           name={moduleDef.name}
           route={moduleDef.route}
+          onAddOlder={onAddOlder}
         />
       </div>
     </article>
@@ -342,7 +262,7 @@ export function ProcessCard({ moduleDef, isReady, metrics }: ProcessCardProps) {
 // 6. LoadingSkeleton Component
 // =========================================================================
 export function LoadingSkeleton() {
-  return <CylindricalLoader text="LOADING" />;
+  return <CylindricalLoader text="LOADING SERVICING HUB" />;
 }
 
 // =========================================================================
@@ -376,67 +296,21 @@ export function ErrorState({ error, onRetry }: { error: string; onRetry: () => v
 }
 
 // =========================================================================
-// 9. ProcessSelection (Main Page View)
+// 9. FormsClient (Main Page View - Servicing Only)
 // =========================================================================
-export default function ProcessSelection() {
+export default function FormsClient() {
   const router = useRouter();
+  const [modules, setModules] = useState<any>({});
   const [overview, setOverview] = useState<any>(null);
   const [tasks, setTasks] = useState<any>(null);
-  const [modules, setModules] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddOlderModal, setShowAddOlderModal] = useState(false);
 
-  const handleOlderFormSuccess = () => {
-    setLoading(true);
-    void loadData();
-  };
-
-  // Role Redirection Guard
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("nunes_auth_session");
-      if (raw) {
-        const email = (JSON.parse(raw)?.email || "").toLowerCase().trim();
-        const isMdUser = Boolean(
-          email &&
-            !email.includes("admin") &&
-            (email === "md" ||
-              email.startsWith("md@") ||
-              email.includes("md@nunesinstruments.com") ||
-              email.includes("director") ||
-              email.includes("managing"))
-        );
-        if (isMdUser) {
-          router.replace("/dashboard");
-          return;
-        }
-
-        if (
-          email &&
-          !email.includes("admin") &&
-          !email.includes("md") &&
-          !email.startsWith("md@") &&
-          !email.startsWith("admin@") &&
-          !email.includes("director")
-        ) {
-          if (email.includes("aravind") || email.includes("senthil")) {
-            router.replace("/workshop");
-            return;
-          }
-          if (email.includes("priya") || email.includes("azhalaku")) {
-            router.replace("/quotations");
-            return;
-          }
-        }
-      }
-    } catch {}
-  }, [router]);
-
   const loadData = async () => {
     try {
+      setLoading(true);
       setError(null);
-      clearDataCache("/api/data/modules");
       const [m, o, t] = await Promise.all([
         getModules().catch(() => ({})),
         getOverview().catch(() => null),
@@ -445,12 +319,10 @@ export default function ProcessSelection() {
       setModules(m || {});
       setOverview(o);
       setTasks(t);
-      for (const k of ["service_operations", "order_forms"]) {
-        const x = (m as any)?.[k];
-        if (x?.ready || x?.public_url) {
-          const u = moduleUrl(x);
-          if (u) sessionStorage.setItem(`nunes:module-url:${k}`, u);
-        }
+      const x = (m as any)?.service_operations;
+      if (x?.ready || x?.public_url) {
+        const u = moduleUrl(x);
+        if (u) sessionStorage.setItem("nunes:module-url:service_operations", u);
       }
     } catch (err: any) {
       setError(err?.message || "Failed to load operational systems.");
@@ -469,25 +341,20 @@ export default function ProcessSelection() {
         const m = await getModules();
         if (!alive) return;
         setModules(m);
-        for (const k of ["service_operations", "order_forms"]) {
-          const x = m?.[k];
-          if (x?.ready || x?.public_url) {
-            const u = moduleUrl(x);
-            if (u) sessionStorage.setItem(`nunes:module-url:${k}`, u);
-          }
+        const x = m?.service_operations;
+        if (x?.ready || x?.public_url) {
+          const u = moduleUrl(x);
+          if (u) sessionStorage.setItem("nunes:module-url:service_operations", u);
         }
-        const allReady = Boolean(m?.service_operations?.ready && m?.order_forms?.ready);
-        if (!allReady) timer = window.setTimeout(refreshModules, 1000);
+        if (!m?.service_operations?.ready) {
+          timer = window.setTimeout(refreshModules, 1000);
+        }
       } catch {
         if (alive) timer = window.setTimeout(refreshModules, 2000);
       }
     };
 
     companyFetch("/api/data/modules/service_operations/start", { method: "POST", cache: "no-store" }).catch(() => {});
-    const purchaseWarm = window.setTimeout(
-      () => companyFetch("/api/data/modules/order_forms/start", { method: "POST", cache: "no-store" }).catch(() => {}),
-      4000
-    );
 
     loadData();
     refreshModules();
@@ -500,55 +367,11 @@ export default function ProcessSelection() {
     return () => {
       alive = false;
       if (timer) window.clearTimeout(timer);
-      window.clearTimeout(purchaseWarm);
       document.removeEventListener("visibilitychange", visible);
     };
   }, []);
 
   // Compute live statistics dynamically from actual records (localStorage + live API)
-  const purchasingMetrics: MetricsData = useMemo(() => {
-    try {
-      const pRaw = typeof window !== "undefined" ? localStorage.getItem("nunes:purchasing_orders") : null;
-      const pStorage: any[] = pRaw ? JSON.parse(pRaw) : [];
-      const pTasks: any[] = tasks?.purchasing || [];
-
-      // Combine unique active records
-      const combined = [
-        ...pStorage,
-        ...pTasks.filter((t) => !pStorage.some((s) => s.order_id === t.record_no || s.id === t.id))
-      ];
-
-      const active = combined.filter((x) => {
-        const st = String(x.current_status || x.status || "").toLowerCase();
-        return st !== "completed" && st !== "cancelled";
-      }).length;
-
-      const waiting = combined.filter((x) => {
-        const hours = Number(x.waiting_hours || 0);
-        const st = String(x.current_status || x.status || "").toLowerCase();
-        return hours >= 2 || st.includes("approval") || st.includes("waiting");
-      }).length;
-
-      const attention = combined.filter((x) => Boolean(x.needs_attention)).length;
-
-      const completed =
-        (overview?.forms?.completed_orders || 0) +
-        combined.filter((x) => {
-          const st = String(x.current_status || x.status || "").toLowerCase();
-          return st === "completed";
-        }).length;
-
-      return {
-        active,
-        waiting,
-        attention,
-        completed
-      };
-    } catch {
-      return { active: 0, waiting: 0, attention: 0, completed: 0 };
-    }
-  }, [tasks, overview]);
-
   const servicingMetrics: MetricsData = useMemo(() => {
     try {
       const sRaw = typeof window !== "undefined" ? localStorage.getItem("nunes:service_jobs") : null;
@@ -591,7 +414,10 @@ export default function ProcessSelection() {
     }
   }, [tasks, overview]);
 
-  const purchasingDef = MODULE_REGISTRY.find((x) => x.id === "purchasing");
+  const handleOlderFormSuccess = () => {
+    loadData();
+  };
+
   const servicingDef = MODULE_REGISTRY.find((x) => x.id === "servicing");
 
   if (loading) {
@@ -610,29 +436,53 @@ export default function ProcessSelection() {
     );
   }
 
-  if (!purchasingDef || !servicingDef) {
+  if (!servicingDef) {
     return (
       <main className="forms-hub-page">
-        <EmptyState message="Purchasing and Servicing module definitions are not registered." />
+        <EmptyState message="Servicing module definition is not registered." />
       </main>
     );
   }
 
-  const isPurchasingReady = Boolean(modules?.order_forms?.ready || modules?.order_forms?.public_url);
   const isServicingReady = Boolean(modules?.service_operations?.ready || modules?.service_operations?.public_url);
 
   return (
-    <main className="forms-hub-page">
-      <div className="hub-forms-grid">
-        <ProcessCard
-          moduleDef={purchasingDef}
-          isReady={isPurchasingReady}
-          metrics={purchasingMetrics}
-        />
+    <main className="forms-hub-page" style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px 16px' }}>
+      <div className="section-head" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--brand)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>OPERATIONS FORM WORKSTATION</span>
+          <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text)', margin: '4px 0' }}>Servicing Operations Hub</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', margin: 0 }}>Intake, diagnostics, technician scope, quotation approval &amp; customer delivery.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAddOlderModal(true)}
+          className="btn"
+          style={{
+            background: '#ffffff',
+            border: '1px solid var(--line)',
+            color: 'var(--text)',
+            fontSize: '12px',
+            fontWeight: 700,
+            padding: '9px 16px',
+            borderRadius: '10px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+          }}
+        >
+          <ClipboardList size={15} style={{ color: 'var(--brand)' }} />
+          <span>+ Add Historical / Missing Service Job</span>
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
         <ProcessCard
           moduleDef={servicingDef}
           isReady={isServicingReady}
           metrics={servicingMetrics}
+          onAddOlder={() => setShowAddOlderModal(true)}
         />
       </div>
 

@@ -121,16 +121,12 @@ function purchasingOrderToTaskItem(o: any): TaskItem {
 
 export default function TasksClient() {
   const params = useSearchParams();
-  const initial = params.get("source");
-  const [source, setSource] = useState(
-    initial === "purchasing" || initial === "servicing" ? initial : "all"
-  );
+  const [source, setSource] = useState("servicing");
   const [filter, setFilter] = useState<"all" | "active" | "waiting" | "attention" | "completed">("active");
   const [q, setQ] = useState("");
   const [data, setData] = useState<TasksPayload | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const [localServicingTasks, setLocalServicingTasks] = useState<TaskItem[]>([]);
-  const [localPurchasingTasks, setLocalPurchasingTasks] = useState<TaskItem[]>([]);
 
   const load = () => {
     void syncPullFromCloud();
@@ -164,10 +160,6 @@ export default function TasksClient() {
         }
       }
       setLocalServicingTasks(sList.map(serviceJobToTaskItem));
-
-      const rawP = localStorage.getItem("nunes:purchasing_orders");
-      const pList: any[] = rawP ? JSON.parse(rawP) : [];
-      setLocalPurchasingTasks(pList.map(purchasingOrderToTaskItem));
     } catch {}
   };
 
@@ -178,7 +170,7 @@ export default function TasksClient() {
     window.addEventListener("nunes:job-saved", handleSync);
 
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === "nunes:service_jobs" || e.key === "nunes:purchasing_orders" || e.key === "nunes:service_current_draft") {
+      if (e.key === "nunes:service_jobs" || e.key === "nunes:service_current_draft") {
         load();
       }
     };
@@ -200,7 +192,7 @@ export default function TasksClient() {
     };
   }, []);
 
-  const { combinedServicing, combinedPurchasing } = useMemo(() => {
+  const combinedServicing = useMemo(() => {
     const sMerged: TaskItem[] = [...localServicingTasks];
     const sSeen = new Set(localServicingTasks.map((t) => String(t.record_no || t.id).toLowerCase()));
     for (const item of (data?.servicing || [])) {
@@ -208,24 +200,10 @@ export default function TasksClient() {
         sMerged.push(item);
       }
     }
+    return sMerged;
+  }, [data, localServicingTasks]);
 
-    const pMerged: TaskItem[] = [...localPurchasingTasks];
-    const pSeen = new Set(localPurchasingTasks.map((t) => String(t.record_no || t.id).toLowerCase()));
-    for (const item of (data?.purchasing || [])) {
-      if (!pSeen.has(String(item.record_no || item.id).toLowerCase())) {
-        pMerged.push(item);
-      }
-    }
-
-    return { combinedServicing: sMerged, combinedPurchasing: pMerged };
-  }, [data, localServicingTasks, localPurchasingTasks]);
-
-  const allFilteredBySource = useMemo(() => {
-    return [
-      ...(source !== "servicing" ? combinedPurchasing : []),
-      ...(source !== "purchasing" ? combinedServicing : []),
-    ];
-  }, [source, combinedPurchasing, combinedServicing]);
+  const allFilteredBySource = combinedServicing;
 
   const activeCount = useMemo(() => {
     return allFilteredBySource.filter(
@@ -390,24 +368,21 @@ export default function TasksClient() {
 
       <div className="filter-toolbar">
         <div className="tabs">
-          <button
-            className={source === "all" ? "active" : ""}
-            onClick={() => setSource("all")}
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "6px 14px",
+              background: "#eef4ff",
+              color: "#1d4ed8",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: 700,
+            }}
           >
-            All Sources
-          </button>
-          <button
-            className={source === "purchasing" ? "active" : ""}
-            onClick={() => setSource("purchasing")}
-          >
-            Purchasing
-          </button>
-          <button
-            className={source === "servicing" ? "active" : ""}
-            onClick={() => setSource("servicing")}
-          >
-            Servicing
-          </button>
+            <Clock3 size={14} /> Service Work Queue
+          </span>
         </div>
 
         <div className="tabs">
@@ -507,17 +482,17 @@ function TaskCard({ item: x, userEmail }: { item: TaskItem; userEmail: string })
       }
     >
       <div
-        className={`task-source ${x.source}`}
+        className="task-source servicing"
         style={isDone ? { background: "#16a34a", color: "#ffffff" } : undefined}
       >
-        {isDone ? "✓" : x.source === "purchasing" ? "P" : "S"}
+        {isDone ? "✓" : "S"}
       </div>
       <div className="task-main">
         <div className="task-title-row">
           <div>
             <span className="source-badge-wrap">
-              <span className={`source-badge ${x.source}`}>
-                {x.source === "purchasing" ? "Purchasing" : "Servicing"}
+              <span className="source-badge servicing">
+                Servicing Job
               </span>
               {isDone ? (
                 <span

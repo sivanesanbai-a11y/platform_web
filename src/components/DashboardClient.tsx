@@ -150,8 +150,8 @@ function semanticStatusClass(name: string) {
 
 function SourceBadge({ source }: { source: string }) {
   return (
-    <span className={`source-badge ${source}`}>
-      {source === "purchasing" ? "Purchasing" : "Servicing"}
+    <span className="source-badge servicing">
+      Servicing Job
     </span>
   );
 }
@@ -195,13 +195,12 @@ function Kpi({
 function PeriodTile({
   label,
   total,
-  purchasing,
   servicing,
   icon: Icon,
 }: {
   label: string;
   total: number;
-  purchasing: number;
+  purchasing?: number;
   servicing: number;
   icon: any;
 }) {
@@ -214,8 +213,7 @@ function PeriodTile({
         <small>{label}</small>
         <strong>{total}</strong>
         <p>
-          <span className="p-dot" /> {purchasing} Purchasing{" "}
-          <span className="s-dot" /> {servicing} Servicing
+          <span className="s-dot" /> {servicing} Servicing Jobs
         </p>
       </div>
     </div>
@@ -1066,7 +1064,10 @@ export default function DashboardClient() {
   ];
 
   const recentForms = (() => {
-    const combined = [...localPurchasing, ...localServicing, ...apiRecent];
+    const combined = [
+      ...localServicing,
+      ...apiRecent.filter((x) => x.source === "servicing"),
+    ];
     const seen = new Set<string>();
     const unique = [];
     for (const item of combined) {
@@ -1092,9 +1093,6 @@ export default function DashboardClient() {
   const getJobInwardDate = (j: any): string => {
     return String(j.customer?.date || j.receipt?.mrDate || j.jobDate || (j.createdAt ? j.createdAt.slice(0, 10) : "") || "").slice(0, 10);
   };
-  const getOrderInwardDate = (p: any): string => {
-    return String(p.order_date || p.created_at || (p.updated_at ? p.updated_at.slice(0, 10) : "") || "").slice(0, 10);
-  };
 
   const localTodayServiceJobs = fullServiceJobs.filter((j) => {
     const d = getJobInwardDate(j);
@@ -1109,21 +1107,11 @@ export default function DashboardClient() {
     return d.startsWith(currentMonthStr);
   });
 
-  const localTodayPurchasingOrders = localPurchasing.filter(
-    (p) => getOrderInwardDate(p) === todayStr
-  );
-  const localWeekPurchasingOrders = localPurchasing.filter(
-    (p) => getOrderInwardDate(p) >= sevenDaysAgoStr && getOrderInwardDate(p) <= todayStr
-  );
-  const localMonthPurchasingOrders = localPurchasing.filter(
-    (p) => getOrderInwardDate(p).startsWith(currentMonthStr)
-  );
+  const kpiToday = localTodayServiceJobs.length;
+  const kpiTodaySub = `${localTodayServiceJobs.length} Service intake records`;
 
-  const kpiToday = localTodayPurchasingOrders.length + localTodayServiceJobs.length;
-  const kpiTodaySub = `${localTodayPurchasingOrders.length} Purchasing · ${localTodayServiceJobs.length} Servicing`;
-
-  const kpiActive = localPurchasing.length + pipelineMetrics.activeJobs.length;
-  const kpiActiveSub = `${localPurchasing.length} Purchasing · ${pipelineMetrics.activeJobs.length} Servicing`;
+  const kpiActive = pipelineMetrics.activeJobs.length;
+  const kpiActiveSub = `${pipelineMetrics.activeJobs.length} Service jobs in workshop`;
 
   const localNeedsCount = fullServiceJobs.filter(
     (j) =>
@@ -1139,16 +1127,16 @@ export default function DashboardClient() {
   const kpiNeeds = localNeedsCount;
   const kpiNeedsSub = `${localNeedsCount} waiting for action`;
   const kpiValue = compactMoney(pipelineMetrics.totalProcessValue);
-  const kpiValueSub = "Purchasing value + service estimate";
+  const kpiValueSub = "Total servicing estimate value";
 
-  const pToday = kpiToday;
-  const pTodayP = localTodayPurchasingOrders.length;
+  const pToday = localTodayServiceJobs.length;
+  const pTodayP = 0;
   const pTodayS = localTodayServiceJobs.length;
-  const pWeek = localWeekPurchasingOrders.length + localWeekServiceJobs.length;
-  const pWeekP = localWeekPurchasingOrders.length;
+  const pWeek = localWeekServiceJobs.length;
+  const pWeekP = 0;
   const pWeekS = localWeekServiceJobs.length;
-  const pMonth = localMonthPurchasingOrders.length + localMonthServiceJobs.length;
-  const pMonthP = localMonthPurchasingOrders.length;
+  const pMonth = localMonthServiceJobs.length;
+  const pMonthP = 0;
   const pMonthS = localMonthServiceJobs.length;
   const pComp = pipelineMetrics.completedJobs.filter((j) => (j.workflow?.finalHandoverCompletedAt || getJobInwardDate(j)) === todayStr).length;
 
@@ -1663,9 +1651,9 @@ export default function DashboardClient() {
         <article className="dash-card dash-chart-card">
           <div className="dash-card-head">
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Forms Throughput</span>
-              <h2>Purchasing vs Servicing</h2>
-              <p>Real saved operational form volume over time.</p>
+              <span>Workshop Diagnostics &amp; Intake</span>
+              <h2>Servicing Volume Over Time</h2>
+              <p>Real saved operational service jobs and repairs over time.</p>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="period-control">
               <button
@@ -1684,12 +1672,8 @@ export default function DashboardClient() {
           </div>
           <div className="chart-legend">
             <span>
-              <i className="purchase-dot" />
-              Purchasing
-            </span>
-            <span>
-              <i className="service-dot" />
-              Servicing
+              <i className="service-dot" style={{ background: "#1677FF" }} />
+              Service Jobs Handled
             </span>
           </div>
           <div className="dash-chart-area">
@@ -1734,49 +1718,16 @@ export default function DashboardClient() {
         </article>
       </section>
 
-      {/* 4. OPERATIONAL MODULE SNAPSHOTS */}
-      <section className="dash-module-row">
-        <article className="module-snapshot purchasing">
-          <div className="module-snapshot-head">
-            <span className="module-snapshot-icon">
-              <FileText />
-            </span>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <small>Procurement &amp; Orders</small>
-              <h3>Purchasing Activity</h3>
-            </div>
-            <Link href="/reports?type=purchasing">
-              Reports <ArrowRight size={13} />
-            </Link>
-          </div>
-          <div className="module-snapshot-stats">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Today</span>
-              <b>{f.today_forms || 0}</b>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Active</span>
-              <b>{(f.active_orders || 0) + localPurchasing.length}</b>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Completed</span>
-              <b>{f.completed_orders || 0}</b>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Order value</span>
-              <b>{compactMoney(f.order_value || 0)}</b>
-            </div>
-          </div>
-        </article>
-
+      {/* 4. OPERATIONAL MODULE SNAPSHOTS (Servicing Operations) */}
+      <section className="dash-module-row" style={{ gridTemplateColumns: "1fr" }}>
         <article className="module-snapshot servicing">
           <div className="module-snapshot-head">
             <span className="module-snapshot-icon">
               <Wrench />
             </span>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <small>Calibration &amp; Repairs</small>
-              <h3>Service Activity</h3>
+              <small>Diagnostics, Calibration &amp; Repairs</small>
+              <h3>Service Operations Activity</h3>
             </div>
             <Link href="/reports?type=servicing">
               Reports <ArrowRight size={13} />
@@ -1785,21 +1736,23 @@ export default function DashboardClient() {
           <div className="module-snapshot-stats">
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Today</span>
-              <b>{s.today_forms || 0}</b>
+              <b>{s.today_forms || localTodayServiceJobs.length}</b>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Open</span>
-              <b>{(s.open_jobs || 0) + localServicing.length}</b>
+              <span>Active</span>
+              <b>{pipelineMetrics.activeJobs.length}</b>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Ready</span>
-              <b>{s.ready || 0}</b>
+              <span>Completed</span>
+              <b>{pipelineMetrics.completedJobs.length}</b>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Estimate</span>
-              <b>{compactMoney(s.total_estimate || 0)}</b>
+              <span>Estimate Value</span>
+              <b>{compactMoney(pipelineMetrics.totalProcessValue || 0)}</b>
             </div>
           </div>
+        </article>
+      </section>
         </article>
       </section>
 
@@ -2605,9 +2558,9 @@ export default function DashboardClient() {
           <div className="dash-card-head">
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Live Form Records</span>
-              <h2>Recent Forms &amp; Dispatches</h2>
+              <h2>Recent Service Jobs &amp; Dispatches</h2>
               <p>
-                Live saved Purchasing and Servicing records with product specifications.
+                Live saved Servicing records with diagnostics &amp; product specifications.
               </p>
             </div>
             <Link href="/reports" className="dash-link">
@@ -2698,8 +2651,7 @@ export default function DashboardClient() {
                         fontSize: "12.5px",
                       }}
                     >
-                      No live forms recorded yet. Submit a Purchasing Order or
-                      Servicing Job to see live activity.
+                      No live forms recorded yet. Submit a Servicing Job to see live activity.
                     </td>
                   </tr>
                 )}

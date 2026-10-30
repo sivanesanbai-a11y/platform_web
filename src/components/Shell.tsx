@@ -166,7 +166,7 @@ function SearchBox() {
         value={q}
         onChange={(e) => change(e.target.value)}
         onFocus={() => rows.length && setOpen(true)}
-        placeholder="Search order, service job, customer, product, worker…"
+        placeholder="Search service job, customer, product, engineer…"
         aria-label="Search company records"
       />
       <kbd>Ctrl K</kbd>
@@ -176,15 +176,15 @@ function SearchBox() {
           {rows.length ? (
             rows.slice(0, 10).map((r, i) => (
               <button key={`${r.source}-${r.id}-${i}`} onClick={() => go(r)}>
-                <span className={`source-mark ${r.source}`}>
-                  {r.source === "purchasing" ? "P" : "S"}
+                <span className="source-mark servicing">
+                  S
                 </span>
                 <span className="search-copy">
                   <b>
                     {r.record_no} · {r.title}
                   </b>
                   <small>
-                    {r.source === "purchasing" ? "Purchasing" : "Servicing"} · {r.stage} · {r.subtitle}
+                    Servicing · {r.stage} · {r.subtitle}
                   </small>
                 </span>
                 <span className="search-status">{r.status}</span>
@@ -449,14 +449,14 @@ export default function Shell({ children }: { children: ReactNode }) {
           {path === "/" || path === "/dashboard" ? (
             <>
               <b>Management workspace</b>
-              <span>Live Purchasing and Servicing operations in one clear owner view.</span>
+              <span>Live Servicing operations in one clear owner view.</span>
               <em>NUNES · V6.6.8</em>
             </>
           ) : (
             <>
               <b>Modular company platform</b>
               <span>
-                Purchasing and Servicing are operational modules. 30+ completed records loaded.
+                Dedicated Servicing operations module. 30+ completed records loaded.
               </span>
               <em>V6.6.8</em>
             </>

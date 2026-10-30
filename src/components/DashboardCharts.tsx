@@ -8,11 +8,12 @@ const TOOLTIP_STYLE={border:"1px solid #e2e8f0",borderRadius:12,background:"rgba
 function FormsTooltip({active,payload,label}:any){
   if(!active||!payload?.length)return null;
   const row=payload[0]?.payload||{};
-  return <div className="forms-chart-tooltip"><b>{label}</b><span><i className="purchase-dot"/>Purchasing <strong>{Number(row.purchasing||0)}</strong></span><span><i className="service-dot"/>Servicing <strong>{Number(row.servicing||0)}</strong></span><div>Total <strong>{Number(row.total||0)}</strong></div></div>;
+  const count = Number(row.servicing || row.total || 0);
+  return <div className="forms-chart-tooltip"><b>{label}</b><span><i className="service-dot"/>Service Jobs <strong>{count}</strong></span><div>Total <strong>{count}</strong></div></div>;
 }
 
 export function FormsOverviewChart({data}:{data:any[]}){
-  return <ResponsiveContainer width="100%" height="100%"><BarChart data={data} margin={{left:-8,right:8,top:18,bottom:4}} barGap={5} barCategoryGap="28%"><CartesianGrid vertical={false} stroke="#edf1f5"/><XAxis dataKey="label" tickLine={false} axisLine={false} tick={{fontSize:12,fill:"#64748b",fontWeight:650}} tickMargin={11} minTickGap={18}/><YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{fontSize:12,fill:"#94a3b8",fontWeight:600}} tickMargin={8}/><Tooltip content={<FormsTooltip/>} cursor={{fill:"#f8fafc"}}/><Bar dataKey="purchasing" name="Purchasing" fill="#1677FF" radius={[7,7,2,2]} maxBarSize={34}/><Bar dataKey="servicing" name="Servicing" fill="#10B981" radius={[7,7,2,2]} maxBarSize={34}/></BarChart></ResponsiveContainer>;
+  return <ResponsiveContainer width="100%" height="100%"><BarChart data={data} margin={{left:-8,right:8,top:18,bottom:4}} barGap={5} barCategoryGap="28%"><CartesianGrid vertical={false} stroke="#edf1f5"/><XAxis dataKey="label" tickLine={false} axisLine={false} tick={{fontSize:12,fill:"#64748b",fontWeight:650}} tickMargin={11} minTickGap={18}/><YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{fontSize:12,fill:"#94a3b8",fontWeight:600}} tickMargin={8}/><Tooltip content={<FormsTooltip/>} cursor={{fill:"#f8fafc"}}/><Bar dataKey="servicing" name="Service Jobs" fill="#1677FF" radius={[7,7,2,2]} maxBarSize={38}/></BarChart></ResponsiveContainer>;
 }
 
 export function CombinedStatusChart({data}:{data:Array<{name:string,value:number,color?:string}>}){
