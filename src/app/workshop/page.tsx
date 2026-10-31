@@ -608,32 +608,9 @@ export default function WorkshopPage() {
       {/* Top Identity Header */}
       <div style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-            <span
-              style={{
-                background: isSenthil ? "#059669" : "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
-                color: "#ffffff",
-                padding: "4px 10px",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: 900,
-                letterSpacing: "0.5px",
-              }}
-            >
-              {isSenthil ? "🔧 SENTHIL KUMAR MECHANIC STATION" : "🛠️ ARAVINDH WORKSHOP STATION"}
-            </span>
-            <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 700 }}>
-              {isSenthil ? "Lead Service Mechanic" : "Workshop Coordinator & Service Repair"}
-            </span>
-          </div>
-          <h1 style={{ fontSize: "26px", fontWeight: 900, color: "#0f172a", margin: 0 }}>
-            {isSenthil ? "Mechanical Teardown & Repair Station" : "Workshop Service Repair & Scope Station"}
+          <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#0f172a", margin: 0, letterSpacing: "-0.5px" }}>
+            Workshop
           </h1>
-          <p style={{ margin: "5px 0 0", fontSize: "14px", color: "#64748b", lineHeight: 1.55 }}>
-            {isSenthil
-              ? "Inspect incoming units, execute teardown, fit 30% Minimum vs. 50% Maximum overhaul scope, attach proof photos/video, and submit to MD for sign-off."
-              : "Confirm branch pickups (Suganya & Radha branch), verify incoming units with real-time photos, coordinate workshop repair with Senthil Kumar, and send to Azhalaku Priya."}
-          </p>
         </div>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -733,12 +710,7 @@ export default function WorkshopPage() {
             }}
           >
             <Truck size={15} />
-            <span>Branch Pickups Needed ({branchPickups.length})</span>
-            {branchPickups.length > 0 && (
-              <span style={{ background: "#fef3c7", color: "#92400e", fontSize: "11px", padding: "1px 6px", borderRadius: "10px", fontWeight: 800 }}>
-                Action
-              </span>
-            )}
+            <span>Branch Pickups ({branchPickups.length})</span>
           </button>
         )}
 
@@ -761,7 +733,7 @@ export default function WorkshopPage() {
           }}
         >
           <Wrench size={15} />
-          <span>{isSenthil ? "🔧 Senthil Mechanic Repair Queue" : "Active Repairs & Scope"} ({repairQueue.length})</span>
+          <span>Repairs &amp; Scope ({repairQueue.length})</span>
         </button>
 
         {/* Completed Dispatches Tab (MD & Admin only) */}
@@ -784,7 +756,7 @@ export default function WorkshopPage() {
             }}
           >
             <CheckCircle2 size={15} />
-            <span>Dispatched / Done ({completedQueue.length})</span>
+            <span>Completed ({completedQueue.length})</span>
           </button>
         )}
       </div>
@@ -1197,14 +1169,9 @@ export default function WorkshopPage() {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#b45309", fontWeight: 900, fontSize: "13.5px" }}>
-                        <Truck size={17} />
-                        <span>Branch Office Equipment Transfer Required</span>
-                      </div>
-                      <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#78350f" }}>
-                        Customer dropped this unit at the Branch Office (logged by {activeJob.createdBy?.split("@")[0]}). Aravindh: Please pick up and bring to Main Office workshop.
-                      </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#b45309", fontWeight: 900, fontSize: "13.5px" }}>
+                      <Truck size={17} />
+                      <span>Branch Office Equipment Transfer</span>
                     </div>
 
                     <button
@@ -1225,7 +1192,7 @@ export default function WorkshopPage() {
                         boxShadow: "0 2px 8px rgba(180, 83, 9, 0.3)",
                       }}
                     >
-                      <Check size={14} strokeWidth={3} /> Confirm Branch Pickup &amp; Bring to Workshop
+                      <Check size={14} strokeWidth={3} /> Confirm Branch Pickup
                     </button>
                   </div>
                 </div>
@@ -1234,16 +1201,12 @@ export default function WorkshopPage() {
               {/* ACTION 2: Real-Time Physical Verification Photo & Accept Process */}
               {activeTab === "verification" && (
                 <div style={{ background: "#f5f3ff", border: "1.5px solid #ddd6fe", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                     <Camera size={18} color="#7c3aed" />
                     <span style={{ fontSize: "14px", fontWeight: 850, color: "#5b21b6" }}>
-                      Workshop Real-Time Physical Verification &amp; Photo Accept
+                      Physical Verification &amp; Photo Inspection
                     </span>
                   </div>
-
-                  <p style={{ fontSize: "12px", color: "#4c1d95", margin: "0 0 12px" }}>
-                    Aravindh: Locate the physical unit in the workshop, upload a real-time inspection photo, enter condition notes, and accept the repair.
-                  </p>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: "12px", marginBottom: "14px" }}>
                     <div>
@@ -1310,7 +1273,7 @@ export default function WorkshopPage() {
                         boxShadow: "0 2px 8px rgba(124, 58, 237, 0.3)",
                       }}
                     >
-                      <Check size={15} strokeWidth={3} /> Upload Photo &amp; Accept Repair Process ➔
+                      <Check size={15} strokeWidth={3} /> Confirm &amp; Accept Repair ➔
                     </button>
                   </div>
                 </div>
@@ -1323,15 +1286,9 @@ export default function WorkshopPage() {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <Wrench size={18} color="#059669" />
                       <span style={{ fontSize: "14px", fontWeight: 850, color: "#065f46" }}>
-                        Technical Service Repair &amp; Scope Fitting
+                        Repair &amp; Service Scope
                       </span>
                     </div>
-
-                    {isSenthil && (
-                      <span style={{ fontSize: "11px", fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "6px" }}>
-                        Senthil Mechanic Workbench (No Pricing)
-                      </span>
-                    )}
                   </div>
 
                   {/* Senthil Physical Receipt Confirmation & Repair Start Status */}
@@ -1340,14 +1297,9 @@ export default function WorkshopPage() {
                       {!activeJob.workflow?.senthilAcceptedAt ? (
                         <div style={{ background: "#fffbeb", border: "2px solid #f59e0b", borderRadius: "12px", padding: "14px 16px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b45309", fontWeight: 900, fontSize: "13.5px" }}>
-                                <Package size={17} />
-                                <span>Incoming Instrument Awaiting Workshop Receipt</span>
-                              </div>
-                              <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#78350f" }}>
-                                This unit arrived for technical servicing. Confirm physical receipt into your repair bay.
-                              </p>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b45309", fontWeight: 900, fontSize: "13.5px" }}>
+                              <Package size={17} />
+                              <span>Incoming Instrument Receipt</span>
                             </div>
                             <button
                               type="button"
@@ -1368,21 +1320,16 @@ export default function WorkshopPage() {
                               }}
                             >
                               <Check size={15} strokeWidth={3} />
-                              <span>Accept &amp; Confirm Product Received</span>
+                              <span>Confirm Received</span>
                             </button>
                           </div>
                         </div>
                       ) : !activeJob.workflow?.repairStartedAt ? (
                         <div style={{ background: "#eff6ff", border: "2px solid #3b82f6", borderRadius: "12px", padding: "14px 16px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#1d4ed8", fontWeight: 900, fontSize: "13.5px" }}>
-                                <Clock size={17} />
-                                <span>Product Received in Workshop • Ready in Queue</span>
-                              </div>
-                              <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#1e40af" }}>
-                                Accepted by Senthil at {new Date(activeJob.workflow.senthilAcceptedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ({new Date(activeJob.workflow.senthilAcceptedAt).toLocaleDateString([], { month: "short", day: "numeric" })}). Click below when you start repairing.
-                              </p>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#1d4ed8", fontWeight: 900, fontSize: "13.5px" }}>
+                              <Clock size={17} />
+                              <span>Received in Workshop</span>
                             </div>
                             <button
                               type="button"
@@ -1403,7 +1350,7 @@ export default function WorkshopPage() {
                               }}
                             >
                               <Wrench size={15} />
-                              <span>▶ Start Repairing Instrument</span>
+                              <span>Start Repair</span>
                             </button>
                           </div>
                         </div>
@@ -1429,10 +1376,10 @@ export default function WorkshopPage() {
                     </div>
                   )}
 
-                  {/* 30% / 50% Scope Selector - Fitted by Senthil (Lead Mechanic) */}
+                  {/* 30% / 50% Scope Selector */}
                   <div style={{ marginBottom: "14px" }}>
                     <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#166534", marginBottom: "6px" }}>
-                      Fitted Service Scope ({isSenthil ? "Senthil selects 30% Min vs. 50% Max Overhaul" : "Workshop 30% Min vs. 50% Max Overhaul"}):
+                      Service Scope:
                     </label>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       <button
@@ -1450,7 +1397,7 @@ export default function WorkshopPage() {
                           boxShadow: repairScope === "MINIMUM_30" ? "0 2px 8px rgba(5,150,105,0.2)" : "none",
                         }}
                       >
-                        ✓ 30% Minimum Overhaul (Minor Service / Cleaning / Calibration)
+                        ✓ 30% Minimum Overhaul
                       </button>
 
                       <button
@@ -1468,7 +1415,7 @@ export default function WorkshopPage() {
                           boxShadow: repairScope === "MAXIMUM_50" ? "0 2px 8px rgba(217,119,6,0.2)" : "none",
                         }}
                       >
-                        ✓ 50% Maximum Overhaul (Major Rebuild / Electronics / Seals)
+                        ✓ 50% Maximum Overhaul
                       </button>
                     </div>
                   </div>
@@ -1542,7 +1489,7 @@ export default function WorkshopPage() {
                         }}
                       >
                         <Check size={16} strokeWidth={3} />
-                        <span>✓ Senthil: Fit {repairScope === "MAXIMUM_50" ? "50% Max" : "30% Min"} Scope &amp; Send to MD ➔</span>
+                        <span>Submit Scope to MD ➔</span>
                       </button>
                     ) : (
                       <button
@@ -1563,7 +1510,7 @@ export default function WorkshopPage() {
                           boxShadow: "0 2px 8px rgba(217, 119, 6, 0.3)",
                         }}
                       >
-                        <Send size={14} /> ✓ Fit Scope ({repairScope === "MAXIMUM_50" ? "50%" : "30%"}) &amp; Send to Azhalaku Priya ➔
+                        <Send size={14} /> Submit Scope &amp; Forward ➔
                       </button>
                     )}
                   </div>
