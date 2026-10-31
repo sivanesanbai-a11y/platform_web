@@ -1,6 +1,6 @@
 "use client";
 import CylindricalLoader from '@/components/CylindricalLoader';
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -27,15 +27,24 @@ import AddOlderFormModal from "@/components/AddOlderFormModal";
 
 function PurchasingHero3D({ isReady }: { isReady: boolean }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const rafRef = useRef<number | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (rafRef.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -(y * 14), y: x * 14 });
+    rafRef.current = requestAnimationFrame(() => {
+      setTilt({ x: -(y * 10), y: x * 10 });
+      rafRef.current = null;
+    });
   };
 
   const handleMouseLeave = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     setTilt({ x: 0, y: 0 });
   };
 
@@ -104,15 +113,24 @@ function PurchasingHero3D({ isReady }: { isReady: boolean }) {
 
 function ServicingHero3D({ isReady }: { isReady: boolean }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const rafRef = useRef<number | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (rafRef.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -(y * 14), y: x * 14 });
+    rafRef.current = requestAnimationFrame(() => {
+      setTilt({ x: -(y * 10), y: x * 10 });
+      rafRef.current = null;
+    });
   };
 
   const handleMouseLeave = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     setTilt({ x: 0, y: 0 });
   };
 

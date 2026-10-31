@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { AutoHeight } from "@animate-ui/react/primitives/effects/auto-height"
 import { cn } from "@/lib/utils"
 
 // Polyfill React.addTransitionType if running in standard React 19 without experimental view-transitions
@@ -35,28 +34,27 @@ export interface PageTransitionProps {
   children?: React.ReactNode
 }
 
-const CUBIC_EASE = [0.16, 1, 0.3, 1] as const
-
+// Ultra-fast, GPU-accelerated transition variants (transforms & opacity only, 0ms layout thrashing)
 const effectVariants = {
   slide: (direction: "forward" | "back") => ({
     initial: {
       opacity: 0,
-      x: direction === "forward" ? 28 : -28,
+      x: direction === "forward" ? 8 : -8,
     },
     animate: {
       opacity: 1,
       x: 0,
       transition: {
-        duration: 0.28,
-        ease: CUBIC_EASE,
+        duration: 0.12,
+        ease: [0.25, 1, 0.5, 1],
       },
     },
     exit: {
       opacity: 0,
-      x: direction === "forward" ? -28 : 28,
+      x: direction === "forward" ? -8 : 8,
       transition: {
-        duration: 0.2,
-        ease: CUBIC_EASE,
+        duration: 0.08,
+        ease: "easeIn",
       },
     },
   }),
@@ -64,37 +62,35 @@ const effectVariants = {
     initial: { opacity: 0 },
     animate: {
       opacity: 1,
-      transition: { duration: 0.22, ease: "easeOut" as const },
+      transition: { duration: 0.1, ease: "easeOut" },
     },
     exit: {
       opacity: 0,
-      transition: { duration: 0.16, ease: "easeIn" as const },
+      transition: { duration: 0.06, ease: "easeIn" },
     },
   }),
   zoom: () => ({
-    initial: { opacity: 0, scale: 0.96 },
+    initial: { opacity: 0, scale: 0.98 },
     animate: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.25, ease: CUBIC_EASE },
+      transition: { duration: 0.12, ease: "easeOut" },
     },
     exit: {
       opacity: 0,
-      scale: 1.03,
-      transition: { duration: 0.18, ease: "easeIn" as const },
+      scale: 1.01,
+      transition: { duration: 0.08, ease: "easeIn" },
     },
   }),
   blur: () => ({
-    initial: { opacity: 0, filter: "blur(6px)" },
+    initial: { opacity: 0 },
     animate: {
       opacity: 1,
-      filter: "blur(0px)",
-      transition: { duration: 0.24, ease: "easeOut" as const },
+      transition: { duration: 0.1, ease: "easeOut" },
     },
     exit: {
       opacity: 0,
-      filter: "blur(6px)",
-      transition: { duration: 0.18, ease: "easeIn" as const },
+      transition: { duration: 0.06, ease: "easeIn" },
     },
   }),
 }
@@ -103,45 +99,33 @@ export function PageTransition({
   effect = "slide",
   pageKey,
   direction = "forward",
-  autoHeight = true,
+  autoHeight = false,
   className,
   children,
 }: PageTransitionProps) {
   const variantFn = effectVariants[effect] || effectVariants.slide
   const variants = variantFn(direction)
 
-  const content = (
-    <AnimatePresence mode="wait" initial={false} custom={direction}>
-      <motion.div
-        key={pageKey}
-        custom={direction}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        variants={variants}
-        className="w-full"
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
-  )
-
-  if (!autoHeight) {
-    return (
-      <div className={cn("relative w-full overflow-hidden", className)}>
-        {content}
-      </div>
-    )
-  }
-
   return (
-    <AutoHeight
-      deps={[pageKey]}
-      transition={{ duration: 0.32, ease: CUBIC_EASE }}
-      className={cn("relative w-full overflow-hidden transition-[height]", className)}
-    >
-      {content}
-    </AutoHeight>
+    <div className={cn("relative w-full overflow-hidden", className)}>
+      <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <motion.div
+          key={pageKey}
+          custom={direction}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={variants}
+          className="w-full"
+          style={{
+            willChange: "transform, opacity",
+            transform: "translateZ(0)",
+          }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -158,7 +142,7 @@ export function PageTransitionShared({
   return (
     <motion.div
       layoutId={name}
-      transition={{ duration: 0.32, ease: CUBIC_EASE }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
       className={className}
       {...props}
     >

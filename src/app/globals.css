@@ -663,7 +663,7 @@ body{font-size:14px;line-height:1.5;letter-spacing:-.003em}
 
 .nunes-form-fields label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:750;color:#1e293b}
 
-.nunes-form-fields input,.nunes-form-fields select,.nunes-form-fields textarea{padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;outline:none;background:#ffffff;color:#0f172a;transition:all .15s ease}
+.nunes-form-fields input,.nunes-form-fields select,.nunes-form-fields textarea{padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;outline:none;background:#ffffff;color:#0f172a;transition:border-color .12s ease,box-shadow .12s ease}
 
 .nunes-form-fields input:focus,.nunes-form-fields select:focus,.nunes-form-fields textarea:focus{border-color:#0f2e5a;background:#ffffff;box-shadow:0 0 0 3.5px rgba(15,46,90,.12)}
 
