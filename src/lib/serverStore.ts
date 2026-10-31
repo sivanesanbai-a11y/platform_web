@@ -84,10 +84,6 @@ declare global {
 }
 
 function getStoreFilePath(): string {
-  // In Vercel serverless /tmp is writable; locally ./data is writable
-  if (process.env.VERCEL) {
-    return path.join("/tmp", "nunes_cloud_store.json");
-  }
   const localDir = path.join(process.cwd(), "data");
   if (!fs.existsSync(localDir)) {
     try {
@@ -99,51 +95,116 @@ function getStoreFilePath(): string {
 
 function loadFromDisk(): NunesStoreData {
   let loadedUsers: AuthUserRecord[] = [...DEFAULT_COMPANY_USERS];
-  try {
-    const filePath = getStoreFilePath();
-    let fileToRead = filePath;
-    if (!fs.existsSync(fileToRead)) {
-      const fallbackData = path.join(process.cwd(), "data", "nunes_cloud_store.json");
-      if (fs.existsSync(fallbackData)) {
-        fileToRead = fallbackData;
-      }
-    }
-    if (fs.existsSync(fileToRead)) {
-      const raw = fs.readFileSync(fileToRead, "utf8");
-      if (raw.trim()) {
-        const parsed = JSON.parse(raw);
-        const existingUsers: AuthUserRecord[] = Array.isArray(parsed.users) ? parsed.users : [];
-        for (const u of existingUsers) {
-          if (!loadedUsers.some((x) => x.email.toLowerCase() === u.email.toLowerCase())) {
-            loadedUsers.push(u);
-          }
-        }
-        const rawServiceJobs = Array.isArray(parsed.service_jobs) ? parsed.service_jobs : [];
-        const serviceJobsMap = new Map<string, any>();
-        for (const j of DEFAULT_OPERATIONAL_JOBS) serviceJobsMap.set(String(j.id || j.jobNo), j);
-        const fallbackDataPath = path.join(process.cwd(), "data", "nunes_cloud_store.json");
-        if (fs.existsSync(fallbackDataPath)) {
-          try {
-            const fbRaw = fs.readFileSync(fallbackDataPath, "utf8");
-            const fbParsed = JSON.parse(fbRaw);
-            if (Array.isArray(fbParsed.service_jobs)) {
-              for (const j of fbParsed.service_jobs) serviceJobsMap.set(String(j.id || j.jobNo), j);
-            }
-          } catch {}
-        }
-        for (const j of rawServiceJobs) serviceJobsMap.set(String(j.id || j.jobNo), j);
+  const serviceJobsMap = new Map<string, any>();
+  const ordersMap = new Map<string, any>();
+  const quotationsMap = new Map<string, any>();
+  let customers: any[] = [];
+  let suppliers: any[] = [];
+  let lastUpdated = new Date().toISOString();
 
-        return {
-          service_jobs: Array.from(serviceJobsMap.values()),
-          purchasing_orders: Array.isArray(parsed.purchasing_orders) ? parsed.purchasing_orders : [],
-          quotations: Array.isArray(parsed.quotations) ? parsed.quotations : [],
-          customers: Array.isArray(parsed.customers) ? parsed.customers : [],
-          suppliers: Array.isArray(parsed.suppliers) ? parsed.suppliers : [],
-          users: loadedUsers,
-          last_updated: parsed.last_updated || new Date().toISOString(),
-        };
+  // Seed baseline defaults
+  for (const j of DEFAULT_OPERATIONAL_JOBS) {
+    serviceJobsMap.set(String(j.id || j.jobNo), j);
+  }
+
+  const mergeStoreObject = (parsed: any) => {
+    if (!parsed || typeof parsed !== "object") return;
+    if (parsed.last_updated && parsed.last_updated > lastUpdated) {
+      lastUpdated = parsed.last_updated;
+    }
+    if (Array.isArray(parsed.users)) {
+      for (const u of parsed.users) {
+        if (!loadedUsers.some((x) => x.email.toLowerCase() === u.email.toLowerCase())) {
+          loadedUsers.push(u);
+        }
       }
     }
+    if (Array.isArray(parsed.service_jobs)) {
+      for (const j of parsed.service_jobs) {
+        const key = String(j.id || j.jobNo);
+        if (!key) continue;
+        if (!serviceJobsMap.has(key)) {
+          serviceJobsMap.set(key, j);
+        } else {
+          const prev = serviceJobsMap.get(key);
+          // Preserve any non-empty fields
+          serviceJobsMap.set(key, {
+            ...prev,
+            ...j,
+            customer: { ...(prev.customer || {}), ...(j.customer || {}) },
+            products: (j.products && j.products.length > 0 && j.products[0]?.productName) ? j.products : (prev.products || j.products),
+            workflow: { ...(prev.workflow || {}), ...(j.workflow || {}) },
+            totals: { ...(prev.totals || {}), ...(j.totals || {}) },
+            dispatch: { ...(prev.dispatch || {}), ...(j.dispatch || {}) },
+            signoff: { ...(prev.signoff || {}), ...(j.signoff || {}) },
+            attachments: Array.from(new Set([...(prev.attachments || []), ...(j.attachments || [])])),
+          });
+        }
+      }
+    }
+    if (Array.isArray(parsed.purchasing_orders)) {
+      for (const o of parsed.purchasing_orders) {
+        const key = String(o.id || o.order_id);
+        if (!key) continue;
+        ordersMap.set(key, { ...(ordersMap.get(key) || {}), ...o });
+      }
+    }
+    if (Array.isArray(parsed.quotations)) {
+      for (const q of parsed.quotations) {
+        const key = String(q.id || q.quotation_no);
+        if (!key) continue;
+        quotationsMap.set(key, { ...(quotationsMap.get(key) || {}), ...q });
+      }
+    }
+    if (Array.isArray(parsed.customers) && parsed.customers.length > customers.length) {
+      customers = parsed.customers;
+    }
+    if (Array.isArray(parsed.suppliers) && parsed.suppliers.length > suppliers.length) {
+      suppliers = parsed.suppliers;
+    }
+  };
+
+  try {
+    const dataDir = path.join(process.cwd(), "data");
+    const primaryFile = path.join(dataDir, "nunes_cloud_store.json");
+    const masterBackupFile = path.join(dataDir, "nunes_cloud_store_MASTER_BACKUP.json");
+
+    // 1. Read Master Backup if present (fail-safe indestructible copy)
+    if (fs.existsSync(masterBackupFile)) {
+      try {
+        const rawMaster = fs.readFileSync(masterBackupFile, "utf8");
+        if (rawMaster.trim()) mergeStoreObject(JSON.parse(rawMaster));
+      } catch {}
+    }
+
+    // 2. Read Primary File
+    if (fs.existsSync(primaryFile)) {
+      const raw = fs.readFileSync(primaryFile, "utf8");
+      if (raw.trim()) mergeStoreObject(JSON.parse(raw));
+    }
+
+    // 3. Check for any backups in data/backups/ to recover any historical jobs
+    const backupDir = path.join(dataDir, "backups");
+    if (fs.existsSync(backupDir)) {
+      try {
+        const files = fs.readdirSync(backupDir).filter((f) => f.endsWith(".json")).sort();
+        if (files.length > 0) {
+          const latestBackup = path.join(backupDir, files[files.length - 1]);
+          const rawB = fs.readFileSync(latestBackup, "utf8");
+          if (rawB.trim()) mergeStoreObject(JSON.parse(rawB));
+        }
+      } catch {}
+    }
+
+    return {
+      service_jobs: Array.from(serviceJobsMap.values()),
+      purchasing_orders: Array.from(ordersMap.values()),
+      quotations: Array.from(quotationsMap.values()),
+      customers,
+      suppliers,
+      users: loadedUsers,
+      last_updated: lastUpdated,
+    };
   } catch (e) {
     console.warn("Failed reading store file, using in-memory baseline:", e);
   }
@@ -162,7 +223,38 @@ function loadFromDisk(): NunesStoreData {
 function saveToDisk(data: NunesStoreData): void {
   try {
     const filePath = getStoreFilePath();
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    const dataDir = path.dirname(filePath);
+    const content = JSON.stringify(data, null, 2);
+
+    // 1. Write Primary File
+    fs.writeFileSync(filePath, content, "utf8");
+
+    // 2. Master permanent indestructible backup
+    const masterBackupPath = path.join(dataDir, "nunes_cloud_store_MASTER_BACKUP.json");
+    fs.writeFileSync(masterBackupPath, content, "utf8");
+
+    // 3. Historical Rotating Backups
+    const backupDir = path.join(dataDir, "backups");
+    if (!fs.existsSync(backupDir)) {
+      try {
+        fs.mkdirSync(backupDir, { recursive: true });
+      } catch {}
+    }
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const backupFile = path.join(backupDir, `nunes_store_${timestamp}.json`);
+    fs.writeFileSync(backupFile, content, "utf8");
+
+    // Keep up to 60 historical snapshots
+    try {
+      const files = fs.readdirSync(backupDir).filter((f) => f.endsWith(".json")).sort();
+      if (files.length > 60) {
+        files.slice(0, files.length - 60).forEach((oldFile) => {
+          try {
+            fs.unlinkSync(path.join(backupDir, oldFile));
+          } catch {}
+        });
+      }
+    } catch {}
   } catch (e) {
     console.warn("Failed saving store to disk:", e);
   }
@@ -279,7 +371,7 @@ export async function purgeAllStoreDataAsync(): Promise<void> {
 }
 
 export async function upsertServiceJobAsync(job: ServiceJobRecord): Promise<void> {
-  const store = await refreshServerStoreFromCloud();
+  const store = getServerStore();
   const idStr = String(job.id || job.jobNo || `SJ-${Date.now()}`);
   const jobNoStr = String(job.jobNo || job.id || idStr);
   const normalized = { ...job, id: idStr, jobNo: jobNoStr, updatedAt: new Date().toISOString() };
@@ -288,17 +380,28 @@ export async function upsertServiceJobAsync(job: ServiceJobRecord): Promise<void
     (x) => String(x.id) === idStr || String(x.jobNo) === jobNoStr
   );
   if (idx >= 0) {
-    store.service_jobs[idx] = { ...store.service_jobs[idx], ...normalized };
+    const existing = store.service_jobs[idx];
+    store.service_jobs[idx] = {
+      ...existing,
+      ...normalized,
+      customer: { ...(existing.customer || {}), ...(normalized.customer || {}) },
+      products: (normalized.products && normalized.products.length > 0 && normalized.products[0]?.productName) ? normalized.products : (existing.products || normalized.products),
+      workflow: { ...(existing.workflow || {}), ...(normalized.workflow || {}) },
+      totals: { ...(existing.totals || {}), ...(normalized.totals || {}) },
+      dispatch: { ...(existing.dispatch || {}), ...(normalized.dispatch || {}) },
+      signoff: { ...(existing.signoff || {}), ...(normalized.signoff || {}) },
+      attachments: Array.from(new Set([...(existing.attachments || []), ...(normalized.attachments || [])])),
+    };
   } else {
     store.service_jobs.unshift(normalized);
   }
   store.last_updated = new Date().toISOString();
   saveToDisk(store);
-  await pushToRemoteCloudStore(store);
+  void pushToRemoteCloudStore(store);
 }
 
 export async function upsertPurchasingOrderAsync(order: PurchasingOrderRecord): Promise<void> {
-  const store = await refreshServerStoreFromCloud();
+  const store = getServerStore();
   const idStr = String(order.id || order.order_id || `NM-${Date.now()}`);
   const orderIdStr = String(order.order_id || order.id || idStr);
   const normalized = { ...order, id: idStr, order_id: orderIdStr, updated_at: new Date().toISOString() };
@@ -307,13 +410,19 @@ export async function upsertPurchasingOrderAsync(order: PurchasingOrderRecord): 
     (x) => String(x.id) === idStr || String(x.order_id) === orderIdStr
   );
   if (idx >= 0) {
-    store.purchasing_orders[idx] = { ...store.purchasing_orders[idx], ...normalized };
+    const existing = store.purchasing_orders[idx];
+    store.purchasing_orders[idx] = {
+      ...existing,
+      ...normalized,
+      marketing_items: (normalized.marketing_items && normalized.marketing_items.length > 0) ? normalized.marketing_items : (existing.marketing_items || normalized.marketing_items),
+      totals: { ...(existing.totals || {}), ...(normalized.totals || {}) },
+    };
   } else {
     store.purchasing_orders.unshift(normalized);
   }
   store.last_updated = new Date().toISOString();
   saveToDisk(store);
-  await pushToRemoteCloudStore(store);
+  void pushToRemoteCloudStore(store);
 }
 
 export async function upsertQuotationAsync(quotation: QuotationStoreRecord): Promise<void> {

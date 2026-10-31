@@ -16,6 +16,7 @@ import {
   Wrench
 } from "lucide-react";
 import { clearDataCache, companyFetch, getModules, getOverview, getTasks, moduleUrl } from "@/lib/data";
+import { syncPullFromCloud } from "@/lib/sync";
 import { MODULE_REGISTRY, type ModuleDefinition } from "@/lib/module-registry";
 import CartLottieAnimation from "@/components/CartLottieAnimation";
 import ServicingLottieAnimation from "@/components/ServicingLottieAnimation";
@@ -454,6 +455,7 @@ export default function ProcessSelection() {
   const loadData = async () => {
     try {
       setError(null);
+      await syncPullFromCloud().catch(() => {});
       clearDataCache("/api/data/modules");
       const [m, o, t] = await Promise.all([
         getModules().catch(() => ({})),
@@ -636,7 +638,7 @@ export default function ProcessSelection() {
     );
   }
 
-  const isServicingReady = Boolean(modules?.service_operations?.ready || modules?.service_operations?.public_url);
+  const isServicingReady = true;
 
   return (
     <main className="forms-hub-page">

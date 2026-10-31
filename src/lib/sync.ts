@@ -208,9 +208,22 @@ export async function syncPullFromCloud(force = false): Promise<PullSyncResult> 
             const localHasPrice = Boolean(lJob.workflow?.customApprovedPrice || lJob.totals?.totalEstimateManual);
             const remoteHasPrice = Boolean(remoteJob.workflow?.customApprovedPrice || remoteJob.totals?.totalEstimateManual);
 
+            // Deep field-level preservation: never erase existing photos, customer names, or scopes
+            const merged = {
+              ...remoteJob,
+              ...lJob,
+              customer: { ...(remoteJob.customer || {}), ...(lJob.customer || {}) },
+              products: (lJob.products && lJob.products.length > 0 && lJob.products[0]?.productName) ? lJob.products : (remoteJob.products || lJob.products),
+              workflow: { ...(remoteJob.workflow || {}), ...(lJob.workflow || {}) },
+              totals: { ...(remoteJob.totals || {}), ...(lJob.totals || {}) },
+              dispatch: { ...(remoteJob.dispatch || {}), ...(lJob.dispatch || {}) },
+              signoff: { ...(remoteJob.signoff || {}), ...(lJob.signoff || {}) },
+              attachments: Array.from(new Set([...(remoteJob.attachments || []), ...(lJob.attachments || [])])),
+            };
+
+            jobsMap.set(key, merged);
             if (localTime > remoteTime || (localHasPrice && !remoteHasPrice)) {
-              jobsMap.set(key, lJob);
-              missingOnRemote.push(lJob);
+              missingOnRemote.push(merged);
             }
           }
         }

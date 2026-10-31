@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import type { ServiceJob, JobWorkflowInfo, WorkflowStage } from "@/types/service-job";
 import { dispatchWorkflowAlert } from "@/lib/workflow-service";
-import { syncFormToCloud } from "@/lib/sync";
+import { syncFormToCloud, syncPullFromCloud } from "@/lib/sync";
 import { DEMO_BENCHMARK_JOB } from "@/lib/service-defaults";
 
 export default function WorkshopPage() {
@@ -92,21 +92,28 @@ export default function WorkshopPage() {
   const isSenthil = user.includes("senthil");
   const isAdminOrMd = user.includes("admin") || user.includes("md");
 
-  // Load jobs from localStorage & sync
-  const loadJobs = () => {
+  // Load jobs from localStorage & sync from server
+  const loadJobs = async (force = false) => {
     try {
       if (typeof window === "undefined") return;
       const raw = localStorage.getItem("nunes:service_jobs");
-      let list: ServiceJob[] = raw ? JSON.parse(raw) : [];
-      setJobs(list);
+      if (raw) {
+        setJobs(JSON.parse(raw));
+      }
+      await syncPullFromCloud(force);
+      const updatedRaw = localStorage.getItem("nunes:service_jobs");
+      if (updatedRaw) {
+        setJobs(JSON.parse(updatedRaw));
+      }
     } catch {
-      setJobs([]);
+      const raw = localStorage.getItem("nunes:service_jobs");
+      if (raw) setJobs(JSON.parse(raw));
     }
   };
 
   useEffect(() => {
-    loadJobs();
-    const handleSync = () => loadJobs();
+    void loadJobs(true);
+    const handleSync = () => { void loadJobs(false); };
     window.addEventListener("nunes:records-synced", handleSync);
     window.addEventListener("storage", handleSync);
     return () => {
@@ -176,62 +183,81 @@ export default function WorkshopPage() {
     }
   };
 
+  // Helper to determine if a job has completed its lifecycle
+  const isJobFinishedOrDelivered = (j: any) => {
+    const s = String(j.status || "").toUpperCase();
+    const st = String(j.workflow?.stage || "").toUpperCase();
+    return (
+      s === "READY" ||
+      s === "CLOSED" ||
+      s === "DELIVERED" ||
+      st === "JOB_COMPLETED" ||
+      st === "READY_FOR_HANDOVER" ||
+      Boolean(j.workflow?.finalHandoverCompletedAt)
+    );
+  };
+
   // Filter queues
   // 1. Pending Branch Pickups (Suganya / Radha Branch -> Workshop)
   const branchPickups = useMemo(() => {
     return jobs.filter(
-      (j) => Boolean(j.workflow?.isBranchDelivery) && !j.workflow?.aravindhBranchPickupDone
+      (j) => !isJobFinishedOrDelivered(j) && Boolean(j.workflow?.isBranchDelivery) && !j.workflow?.aravindhBranchPickupDone
     );
   }, [jobs]);
 
-  // 2. Pending Workshop Physical Verification
+  // 2. Pending Workshop Physical Verification (Units in shop needing physical check)
   const verificationQueue = useMemo(() => {
-    return jobs.filter(
-      (j) => (!j.workflow?.stage || j.workflow?.stage === "INTAKE_RECEIVED" || j.workflow?.stage === "AWAITING_ARAVINDH_ACCEPT") &&
-             !(Boolean(j.workflow?.isBranchDelivery) && !j.workflow?.aravindhBranchPickupDone)
-    );
+    return jobs.filter((j) => {
+      if (isJobFinishedOrDelivered(j)) return false;
+      const isBranchPending = Boolean(j.workflow?.isBranchDelivery) && !j.workflow?.aravindhBranchPickupDone;
+      if (isBranchPending) return false;
+      const stage = j.workflow?.stage;
+      const status = String(j.status || "").toUpperCase();
+      if (stage === "UNDER_REPAIR_ARAVINDH" || stage === "UNDER_REPAIR_SENTHIL" || status === "REPAIRING") {
+        return false;
+      }
+      return !stage || stage === "INTAKE_RECEIVED" || stage === "AWAITING_ARAVINDH_ACCEPT";
+    });
   }, [jobs]);
 
   // 3. Active Repair Workbench (Needs 30%/50% scope or mechanic repair)
   const repairQueue = useMemo(() => {
-    return jobs.filter(
-      (j) => j.workflow?.stage === "UNDER_REPAIR_ARAVINDH" || j.workflow?.stage === "UNDER_REPAIR_SENTHIL"
-    );
+    return jobs.filter((j) => {
+      if (isJobFinishedOrDelivered(j)) return false;
+      const stage = j.workflow?.stage;
+      const status = String(j.status || "").toUpperCase();
+      return stage === "UNDER_REPAIR_ARAVINDH" || stage === "UNDER_REPAIR_SENTHIL" || status === "REPAIRING";
+    });
   }, [jobs]);
 
   // 4. Completed / Awaiting Priya Pricing / Handover / Sign-Check
   const completedQueue = useMemo(() => {
-    return jobs.filter(
-      (j) => j.workflow?.stage === "JOB_COMPLETED" ||
-             j.status === "CLOSED" ||
-             j.status === "READY" ||
-             (j as any).status === "COMPLETED" ||
-             j.workflow?.stage === "PRICE_APPROVED_BY_MD" ||
-             j.workflow?.stage === "READY_FOR_HANDOVER" ||
-             j.workflow?.stage === "AWAITING_PRIYA_PRICING" ||
-             j.workflow?.stage === "AWAITING_MD_APPROVAL" ||
-             Boolean(j.signoff?.repairedBy && j.signoff?.inspectedBy) ||
-             Boolean(j.signoff?.estimateConfirmedBy) ||
-             Boolean(j.workflow?.finalHandoverCompletedAt)
-    );
+    return jobs.filter((j) => {
+      const stage = j.workflow?.stage;
+      return (
+        isJobFinishedOrDelivered(j) ||
+        stage === "JOB_COMPLETED" ||
+        stage === "READY_FOR_HANDOVER" ||
+        stage === "PRICE_APPROVED_BY_MD" ||
+        stage === "AWAITING_PRIYA_PRICING" ||
+        stage === "AWAITING_MD_APPROVAL" ||
+        Boolean(j.signoff?.repairedBy && j.signoff?.inspectedBy) ||
+        Boolean(j.signoff?.estimateConfirmedBy)
+      );
+    });
   }, [jobs]);
 
   // 5. Pending MD Approvals & Signoffs (for MD supervision)
   const pendingQueue = useMemo(() => {
     return jobs.filter(
-      (j) => j.workflow?.stage === "AWAITING_MD_APPROVAL" ||
-             j.workflow?.stage === "AWAITING_ARAVINDH_ACCEPT" ||
-             (!j.workflow?.stage && j.status !== "CLOSED" && j.status !== "READY")
+      (j) => !isJobFinishedOrDelivered(j) && (j.workflow?.stage === "AWAITING_MD_APPROVAL" || j.workflow?.stage === "AWAITING_ARAVINDH_ACCEPT")
     );
   }, [jobs]);
 
   // 6. In-Process Workflow Pipeline (Intake, Verification, Priya pricing, Branch transfer)
   const inProcessQueue = useMemo(() => {
     return jobs.filter(
-      (j) => j.workflow?.stage === "INTAKE_RECEIVED" ||
-             j.workflow?.stage === "AWAITING_ARAVINDH_ACCEPT" ||
-             j.workflow?.stage === "AWAITING_PRIYA_PRICING" ||
-             (Boolean(j.workflow?.isBranchDelivery) && !j.workflow?.aravindhBranchPickupDone)
+      (j) => !isJobFinishedOrDelivered(j)
     );
   }, [jobs]);
 
@@ -829,150 +855,128 @@ export default function WorkshopPage() {
             {activeTab === "in_process" && `In-Process Workflow Queue (${inProcessQueue.length})`}
           </div>
 
-          {/* Queue List Items */}
-          {activeTab === "pickups" && (
-            branchPickups.length === 0 ? (
-              <div style={{ padding: "30px 16px", textAlign: "center", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "12.5px" }}>
-                ✓ No pending pickups. All branch drop-offs have been brought to Main Office.
-              </div>
-            ) : (
-              branchPickups.map((j) => (
-                <div
-                  key={j.jobNo || j.id}
-                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
-                  style={{
-                    background: activeJob?.id === j.id ? "#fffbeb" : "#ffffff",
-                    border: activeJob?.id === j.id ? "2px solid #f59e0b" : "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    padding: "12px 14px",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <b style={{ fontSize: "13px", color: "#0f172a" }}>Job #{j.jobNo || j.id}</b>
-                    <span style={{ fontSize: "10.5px", background: "#fef3c7", color: "#92400e", padding: "2px 7px", borderRadius: "5px", fontWeight: 800 }}>
-                      Branch Drop
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#334155", marginTop: "2px" }}>
-                    {j.products?.[0]?.productName || "Equipment"}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
-                    Customer: {j.customer?.name || "Customer"} · Logged by {j.createdBy?.split("@")[0]}
-                  </div>
-                </div>
-              ))
-            )
-          )}
+          {/* Queue List Items with Emil Kowalski Fluid Tactile Feel */}
+          {(() => {
+            const currentList =
+              activeTab === "pickups"
+                ? branchPickups
+                : activeTab === "repair"
+                ? repairQueue
+                : activeTab === "completed"
+                ? completedQueue
+                : activeTab === "pending"
+                ? pendingQueue
+                : activeTab === "in_process"
+                ? inProcessQueue
+                : verificationQueue;
 
-          {activeTab === "verification" && (
-            verificationQueue.length === 0 ? (
-              <div style={{ padding: "30px 16px", textAlign: "center", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "12.5px" }}>
-                ✓ No incoming units waiting for physical verification.
-              </div>
-            ) : (
-              verificationQueue.map((j) => (
+            if (currentList.length === 0) {
+              return (
+                <div style={{ padding: "30px 16px", textAlign: "center", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "12.5px" }}>
+                  {activeTab === "pickups" && "✓ No pending pickups. All branch drop-offs have arrived at Main Office."}
+                  {activeTab === "repair" && "✓ No units currently in active repair."}
+                  {activeTab === "completed" && "No completed jobs in this queue."}
+                  {activeTab === "pending" && "✓ No pending MD approvals."}
+                  {activeTab === "in_process" && "✓ No jobs in process."}
+                  {activeTab === "verification" && "✓ No incoming units waiting for physical verification."}
+                </div>
+              );
+            }
+
+            return currentList.map((j) => {
+              const currentId = String(j.id || "").toLowerCase();
+              const currentJobNo = String(j.jobNo || "").toLowerCase();
+              const targetActive = String(activeJob?.id || activeJob?.jobNo || "").toLowerCase();
+              const targetSelected = String(selectedJobId || "").toLowerCase();
+
+              const isSelected = Boolean(
+                (targetActive && (targetActive === currentId || targetActive === currentJobNo)) ||
+                (targetSelected && (targetSelected === currentId || targetSelected === currentJobNo))
+              );
+
+              const productName =
+                j.products?.[0]?.productName ||
+                j.products?.[0]?.makeModel ||
+                (j.products?.[0]?.complaint ? `Issue: ${j.products[0].complaint}` : "") ||
+                j.notes ||
+                "Service Equipment";
+
+              const hasPhoto = Boolean(j.workflow?.aravindhProductPhoto || (j.proofPhotos && j.proofPhotos.length > 0));
+
+              let badgeText = "Needs Photo";
+              let badgeBg = "#ede9fe";
+              let badgeColor = "#6d28d9";
+
+              if (activeTab === "pickups") {
+                badgeText = "Branch Drop";
+                badgeBg = "#fef3c7";
+                badgeColor = "#92400e";
+              } else if (activeTab === "repair") {
+                badgeText = "In Repair";
+                badgeBg = "#dcfce7";
+                badgeColor = "#15803d";
+              } else if (activeTab === "completed") {
+                badgeText = j.workflow?.stage === "JOB_COMPLETED" || j.status === "READY" ? "Delivered / Ready" : "Pricing / MD";
+                badgeBg = "#cffafe";
+                badgeColor = "#0e7490";
+              } else if (activeTab === "pending") {
+                badgeText = "Needs Approval";
+                badgeBg = "#fef3c7";
+                badgeColor = "#92400e";
+              } else if (activeTab === "verification") {
+                if (hasPhoto) {
+                  badgeText = "✓ Photo Verified";
+                  badgeBg = "#dcfce7";
+                  badgeColor = "#15803d";
+                } else {
+                  badgeText = "Needs Photo";
+                  badgeBg = "#ede9fe";
+                  badgeColor = "#6d28d9";
+                }
+              } else {
+                badgeText = String(j.workflow?.stage || j.status || "In Process").replace(/_/g, " ");
+                badgeBg = "#f1f5f9";
+                badgeColor = "#334155";
+              }
+
+              const borderClr = isSelected
+                ? activeTab === "repair" ? "#059669" : activeTab === "pickups" ? "#f59e0b" : activeTab === "completed" ? "#0891b2" : "#7c3aed"
+                : "#e2e8f0";
+              const bgClr = isSelected
+                ? activeTab === "repair" ? "#f0fdf4" : activeTab === "pickups" ? "#fffbeb" : activeTab === "completed" ? "#ecfeff" : "#f5f3ff"
+                : "#ffffff";
+
+              return (
                 <div
                   key={j.jobNo || j.id}
                   onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
                   style={{
-                    background: activeJob?.id === j.id ? "#f5f3ff" : "#ffffff",
-                    border: activeJob?.id === j.id ? "2px solid #7c3aed" : "1px solid #e2e8f0",
+                    background: bgClr,
+                    border: `2px solid ${borderClr}`,
                     borderRadius: "12px",
                     padding: "12px 14px",
                     cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
+                    boxShadow: isSelected ? "0 4px 12px rgba(0,0,0,0.06)" : "0 2px 6px rgba(0,0,0,0.03)",
+                    transition: "all 0.18s cubic-bezier(0.23, 1, 0.32, 1)",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <b style={{ fontSize: "13px", color: "#0f172a" }}>Job #{j.jobNo || j.id}</b>
-                    <span style={{ fontSize: "10.5px", background: "#ede9fe", color: "#6d28d9", padding: "2px 7px", borderRadius: "5px", fontWeight: 800 }}>
-                      Needs Photo
+                    <span style={{ fontSize: "10.5px", background: badgeBg, color: badgeColor, padding: "2px 7px", borderRadius: "5px", fontWeight: 800 }}>
+                      {badgeText}
                     </span>
                   </div>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#334155", marginTop: "2px" }}>
-                    {j.products?.[0]?.productName || "Equipment"}
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#334155", marginTop: "3px" }}>
+                    {productName}
                   </div>
                   <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
                     Customer: {j.customer?.name || "Customer"}
+                    {j.products?.[0]?.makeModel ? ` · ${j.products[0].makeModel}` : ""}
                   </div>
                 </div>
-              ))
-            )
-          )}
-
-          {activeTab === "repair" && (
-            repairQueue.length === 0 ? (
-              <div style={{ padding: "30px 16px", textAlign: "center", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "12.5px" }}>
-                ✓ No units currently in active repair.
-              </div>
-            ) : (
-              repairQueue.map((j) => (
-                <div
-                  key={j.jobNo || j.id}
-                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
-                  style={{
-                    background: activeJob?.id === j.id ? "#f0fdf4" : "#ffffff",
-                    border: activeJob?.id === j.id ? "2px solid #059669" : "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    padding: "12px 14px",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <b style={{ fontSize: "13px", color: "#0f172a" }}>Job #{j.jobNo || j.id}</b>
-                    <span style={{ fontSize: "10.5px", background: "#dcfce7", color: "#15803d", padding: "2px 7px", borderRadius: "5px", fontWeight: 800 }}>
-                      In Repair
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#334155", marginTop: "2px" }}>
-                    {j.products?.[0]?.productName || "Equipment"}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
-                    Scope: {j.workflow?.mechanicEstimateType || "30% Min Overhaul"}
-                  </div>
-                </div>
-              ))
-            )
-          )}
-
-          {activeTab === "completed" && (
-            completedQueue.length === 0 ? (
-              <div style={{ padding: "30px 16px", textAlign: "center", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "12.5px" }}>
-                No completed jobs yet.
-              </div>
-            ) : (
-              completedQueue.slice(0, 10).map((j) => (
-                <div
-                  key={j.jobNo || j.id}
-                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
-                  style={{
-                    background: activeJob?.id === j.id ? "#ecfeff" : "#ffffff",
-                    border: activeJob?.id === j.id ? "2px solid #0891b2" : "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    padding: "12px 14px",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <b style={{ fontSize: "13px", color: "#0f172a" }}>Job #{j.jobNo || j.id}</b>
-                    <span style={{ fontSize: "10.5px", background: "#cffafe", color: "#0e7490", padding: "2px 7px", borderRadius: "5px", fontWeight: 800 }}>
-                      {j.workflow?.stage === "JOB_COMPLETED" ? "Delivered" : "Pricing/MD"}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#334155", marginTop: "2px" }}>
-                    {j.products?.[0]?.productName || "Equipment"}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
-                    Quoted: ₹{j.workflow?.priyaTotalQuotationAmount || j.totals?.totalEstimate || 0}
-                  </div>
-                </div>
-              ))
-            )
-          )}
+              );
+            });
+          })()}
         </div>
 
         {/* Right Column: Active Action Workbench */}
