@@ -38,7 +38,7 @@ export default function WorkshopPage() {
   const [activeTab, setActiveTab] = useState<"pickups" | "verification" | "repair" | "completed" | "pending" | "in_process">("verification");
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
+  const [mobileView, setMobileView] = useState<"queue" | "workbench">("queue");
 
   // Real-time photo state for verification
   const [verificationPhoto, setVerificationPhoto] = useState<string>("");
@@ -793,7 +793,6 @@ export default function WorkshopPage() {
       <div
         className="workshop-mobile-switcher"
         style={{
-          display: "none",
           gap: "8px",
           marginBottom: "14px",
         }}
@@ -848,7 +847,7 @@ export default function WorkshopPage() {
       {/* Main Layout: Queue List (Left) + Action Workbench (Right) */}
       <div className="workshop-main-layout" style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: "20px", alignItems: "start" }}>
         {/* Left Column: Job Queue Cards */}
-        <div className="workshop-queue-col" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div className={`workshop-queue-col ${mobileView === "workbench" ? "mobile-hide" : ""}`} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <div style={{ fontSize: "12px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             {activeTab === "pickups" && `Branch Transfer Queue (${branchPickups.length})`}
             {activeTab === "verification" && `Workshop Verification Queue (${verificationQueue.length})`}
@@ -868,7 +867,7 @@ export default function WorkshopPage() {
               branchPickups.map((j) => (
                 <div
                   key={j.jobNo || j.id}
-                  onClick={() => setSelectedJobId(String(j.id || j.jobNo))}
+                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
                   style={{
                     background: activeJob?.id === j.id ? "#fffbeb" : "#ffffff",
                     border: activeJob?.id === j.id ? "2px solid #f59e0b" : "1px solid #e2e8f0",
@@ -904,7 +903,7 @@ export default function WorkshopPage() {
               verificationQueue.map((j) => (
                 <div
                   key={j.jobNo || j.id}
-                  onClick={() => setSelectedJobId(String(j.id || j.jobNo))}
+                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
                   style={{
                     background: activeJob?.id === j.id ? "#f5f3ff" : "#ffffff",
                     border: activeJob?.id === j.id ? "2px solid #7c3aed" : "1px solid #e2e8f0",
@@ -940,7 +939,7 @@ export default function WorkshopPage() {
               repairQueue.map((j) => (
                 <div
                   key={j.jobNo || j.id}
-                  onClick={() => setSelectedJobId(String(j.id || j.jobNo))}
+                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
                   style={{
                     background: activeJob?.id === j.id ? "#f0fdf4" : "#ffffff",
                     border: activeJob?.id === j.id ? "2px solid #059669" : "1px solid #e2e8f0",
@@ -976,7 +975,7 @@ export default function WorkshopPage() {
               completedQueue.slice(0, 10).map((j) => (
                 <div
                   key={j.jobNo || j.id}
-                  onClick={() => setSelectedJobId(String(j.id || j.jobNo))}
+                  onClick={() => { setSelectedJobId(String(j.id || j.jobNo)); setMobileView("workbench"); }}
                   style={{
                     background: activeJob?.id === j.id ? "#ecfeff" : "#ffffff",
                     border: activeJob?.id === j.id ? "2px solid #0891b2" : "1px solid #e2e8f0",
@@ -1005,7 +1004,7 @@ export default function WorkshopPage() {
         </div>
 
         {/* Right Column: Active Action Workbench */}
-        <div className="workshop-workbench-col">
+        <div className={`workshop-workbench-col ${mobileView === "queue" ? "mobile-hide" : ""}`}>
           {!activeJob ? (
             <div style={{ padding: "60px 20px", textAlign: "center", background: "#ffffff", borderRadius: "16px", border: "1px solid #e2e8f0" }}>
               <Package size={36} color="#94a3b8" style={{ margin: "0 auto 12px" }} />
@@ -1019,21 +1018,28 @@ export default function WorkshopPage() {
           ) : (
             <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e2e8f0", padding: "20px", boxShadow: "0 4px 18px rgba(15, 23, 42, 0.05)" }}>
               {/* Mobile Back Button to Queue */}
-              <div className="workshop-mobile-back-btn" style={{ display: "none", marginBottom: "14px" }}>
+              <div className="workshop-mobile-back-btn" style={{ marginBottom: "14px" }}>
                 <button
                   type="button"
                   onClick={() => setMobileView("queue")}
                   style={{
-                    background: "#f1f5f9",
-                    border: "1px solid #cbd5e1",
+                    background: "#0f766e",
+                    border: "none",
                     borderRadius: "8px",
-                    padding: "7px 14px",
-                    fontSize: "12px",
+                    padding: "9px 16px",
+                    fontSize: "12.5px",
                     fontWeight: 800,
-                    color: "#334155",
+                    color: "#ffffff",
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
+                    gap: "6px",
+                    boxShadow: "0 2px 6px rgba(15,118,110,0.2)",
+                  }}
+                >
+                  <span>← Back to Job Queue</span>
+                </button>
+              </div>
                     gap: "6px",
                   }}
                 >
@@ -1275,11 +1281,18 @@ export default function WorkshopPage() {
                           </button>
                         </div>
                       ) : (
-                        <label style={{ width: "100%", height: "70px", border: "1.5px dashed #a78bfa", borderRadius: "8px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "#ffffff" }}>
-                          <Upload size={16} color="#7c3aed" />
-                          <span style={{ fontSize: "10.5px", color: "#6d28d9", fontWeight: 700, marginTop: "2px" }}>Upload Photo</span>
-                          <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, "verification")} style={{ display: "none" }} />
-                        </label>
+                        <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+                          <label style={{ flex: 1, height: "64px", border: "1.5px dashed #7c3aed", borderRadius: "8px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "#f5f3ff" }}>
+                            <Camera size={18} color="#7c3aed" />
+                            <span style={{ fontSize: "11px", color: "#6d28d9", fontWeight: 800, marginTop: "2px" }}>Camera</span>
+                            <input type="file" accept="image/*" capture="environment" onChange={(e) => handlePhotoUpload(e, "verification")} style={{ display: "none" }} />
+                          </label>
+                          <label style={{ flex: 1, height: "64px", border: "1.5px dashed #cbd5e1", borderRadius: "8px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "#ffffff" }}>
+                            <Upload size={18} color="#64748b" />
+                            <span style={{ fontSize: "11px", color: "#475569", fontWeight: 800, marginTop: "2px" }}>Upload</span>
+                            <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, "verification")} style={{ display: "none" }} />
+                          </label>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1486,10 +1499,16 @@ export default function WorkshopPage() {
                       Repair Proof Media (Photos &amp; Video):
                     </label>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
-                      <label style={{ width: "48px", height: "48px", border: "1.5px dashed #10b981", borderRadius: "8px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "#ffffff" }}>
-                        <Upload size={14} color="#059669" />
-                        <span style={{ fontSize: "9px", color: "#059669", fontWeight: 800 }}>Add</span>
-                        <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, "repair")} style={{ display: "none" }} />
+                      <label style={{ height: "44px", padding: "0 14px", border: "1.5px dashed #10b981", borderRadius: "8px", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", background: "#ecfdf5", color: "#047857", fontSize: "12px", fontWeight: 800 }}>
+                        <Camera size={16} color="#059669" />
+                        <span>Camera</span>
+                        <input type="file" accept="image/*" capture="environment" onChange={(e) => handlePhotoUpload(e, "repair")} style={{ display: "none" }} />
+                      </label>
+
+                      <label style={{ height: "44px", padding: "0 14px", border: "1.5px dashed #cbd5e1", borderRadius: "8px", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", background: "#ffffff", color: "#475569", fontSize: "12px", fontWeight: 800 }}>
+                        <Upload size={16} color="#475569" />
+                        <span>Gallery</span>
+                        <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, "repair")} style={{ display: "none" }} />
                       </label>
 
                       {repairPhotos.map((photo, i) => (

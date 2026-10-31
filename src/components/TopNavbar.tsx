@@ -20,6 +20,7 @@ import {
   X,
   Menu,
   Bell,
+  Wrench,
 } from "lucide-react";
 import CommandPalette from "@/components/CommandPalette";
 import { getRoleDestination } from "@/lib/role-routing";
@@ -218,6 +219,7 @@ export default function TopNavbar() {
   // Primary Navigation items
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: <LayoutGrid size={15} /> },
+    { href: "/workshop", label: "Workshop", icon: <Wrench size={15} /> },
     { href: "/forms", label: "Forms Hub", icon: <FolderOpen size={15} /> },
     { href: "/quotations", label: "Quotations", icon: <FileText size={15} /> },
     { href: "/customers", label: "Customers", icon: <Users size={15} /> },
