@@ -1040,12 +1040,6 @@ export default function WorkshopPage() {
                   <span>← Back to Job Queue</span>
                 </button>
               </div>
-                    gap: "6px",
-                  }}
-                >
-                  <span>← Back to Job Queue</span>
-                </button>
-              </div>
 
               {/* Job Header & Equipment Info */}
               <div style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: "16px", marginBottom: "16px" }}>
