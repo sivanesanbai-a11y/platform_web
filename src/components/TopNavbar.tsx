@@ -283,13 +283,13 @@ export default function TopNavbar() {
                   key={item.href}
                   href={item.href}
                   prefetch={true}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all duration-150 select-none whitespace-nowrap ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all duration-150 select-none whitespace-nowrap border ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900"
+                      ? "bg-blue-50/90 text-blue-700 border-blue-200/90 shadow-2xs dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/80"
+                      : "border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900"
                   }`}
                 >
-                  <span className={isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}>
+                  <span className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-500"}>
                     {item.icon}
                   </span>
                   <span>{item.label}</span>
@@ -394,13 +394,15 @@ export default function TopNavbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all border ${
                       isActive
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                        ? "bg-blue-50/90 text-blue-700 border-blue-200/90 shadow-2xs dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/80"
+                        : "border-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
                     }`}
                   >
-                    <span>{item.icon}</span>
+                    <span className={isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-500"}>
+                      {item.icon}
+                    </span>
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -476,15 +478,15 @@ export default function TopNavbar() {
                     onClick={() => handleSwitchStaff(staff)}
                     className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                        ? "bg-blue-50/90 text-blue-900 border-blue-300 dark:bg-blue-950/60 dark:text-blue-100 dark:border-blue-800 shadow-2xs"
                         : "bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100"
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
                         className={`w-8 h-8 rounded-full ${
-                          isSelected ? "bg-white/20" : "bg-blue-600"
-                        } text-white font-bold text-xs grid place-items-center shrink-0`}
+                          isSelected ? "bg-blue-600 text-white shadow-2xs" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        } font-bold text-xs grid place-items-center shrink-0`}
                       >
                         {staff.initials}
                       </div>
@@ -494,7 +496,7 @@ export default function TopNavbar() {
                         </span>
                         <span
                           className={`text-[10.5px] font-medium truncate mt-0.5 ${
-                            isSelected ? "text-blue-100" : "text-slate-500 dark:text-slate-400"
+                            isSelected ? "text-blue-700 dark:text-blue-300 font-semibold" : "text-slate-500 dark:text-slate-400"
                           }`}
                         >
                           {staff.roleTitle}
@@ -504,7 +506,7 @@ export default function TopNavbar() {
                     <span
                       className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${
                         isSelected
-                          ? "bg-white/20 text-white border-white/20"
+                          ? "bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700"
                           : "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
                       }`}
                     >
