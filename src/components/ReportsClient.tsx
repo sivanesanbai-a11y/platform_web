@@ -12,7 +12,7 @@ const baselineServicing: any[] = [];
 
 export default function ReportsClient(){
   const sp=useSearchParams();const initial=sp.get("source");
-  const [source,setSource]=useState(initial==="purchasing"||initial==="servicing"?initial:"purchasing");
+  const [source,setSource]=useState(initial==="purchasing"||initial==="servicing"?initial:"servicing");
   const [q,setQ]=useState(sp.get("q")||"");
   const [status,setStatus]=useState("ALL");
   const [branch,setBranch]=useState("ALL");

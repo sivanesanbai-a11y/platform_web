@@ -1103,7 +1103,7 @@ export default function DashboardClient() {
   ];
 
   const recentForms = (() => {
-    const combined = [...localPurchasing, ...localServicing, ...apiRecent];
+    const combined = [...localServicing, ...apiRecent.filter((r) => r.source === "servicing")];
     const seen = new Set<string>();
     const unique = [];
     for (const item of combined) {
@@ -2654,7 +2654,7 @@ export default function DashboardClient() {
               <span>Live Form Records</span>
               <h2>Recent Forms &amp; Dispatches</h2>
               <p>
-                Live saved Purchasing and Servicing records with product specifications.
+                Live saved Calibration and Servicing records with product specifications.
               </p>
             </div>
             <Link href="/reports" className="dash-link">
