@@ -6030,3 +6030,31 @@ h1, h2, h3, .hero-title, .page-head h1, .dash-card-head h2, .dash-card-head h3 {
     scroll-behavior: auto !important;
   }
 }
+
+/* =========================================================================
+   CUSTOM MODERN MOVING BAR (VIBRANT BLUE SCROLLBAR & TRAY)
+   ========================================================================= */
+.custom-moving-bar {
+  scrollbar-width: thin;
+  scrollbar-color: #2563eb #e2e8f0;
+}
+
+.custom-moving-bar::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.custom-moving-bar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.custom-moving-bar::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 999px;
+  border: 2px solid #f1f5f9;
+}
+
+.custom-moving-bar::-webkit-scrollbar-thumb:hover {
+  background: #1d4ed8;
+}

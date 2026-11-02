@@ -31,6 +31,10 @@ import {
   Send,
   User,
   CheckSquare,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+  LayoutGrid,
 } from "lucide-react";
 import { dispatchWorkflowAlert } from "@/lib/workflow-service";
 import { syncFormToCloud } from "@/lib/sync";
@@ -281,6 +285,8 @@ export default function DashboardClient() {
   const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
   const [activeWorkflowStaff, setActiveWorkflowStaff] = useState<string>("all");
   const [workflowTab, setWorkflowTab] = useState<"pending" | "completed">("pending");
+  const [workflowLayout, setWorkflowLayout] = useState<"slider" | "grid">("slider");
+  const workflowScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -2313,83 +2319,197 @@ export default function DashboardClient() {
               </p>
             </div>
 
-            {/* Completed vs Pending View Switcher */}
-            <div
-              style={{
-                display: "inline-flex",
-                background: "#f1f5f9",
-                padding: "3px",
-                borderRadius: "10px",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setWorkflowTab("pending")}
+            {/* Header Right: Completed vs Pending Switcher + Moving Bar Controls */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              {/* Completed vs Pending View Switcher */}
+              <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12.5px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  border: "none",
-                  background: workflowTab === "pending" ? "#ffffff" : "transparent",
-                  color: workflowTab === "pending" ? "#2563eb" : "#64748b",
-                  boxShadow: workflowTab === "pending" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                  transition: "all 0.15s ease",
+                  display: "inline-flex",
+                  background: "#f1f5f9",
+                  padding: "3px",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
                 }}
               >
-                <span>⚡ Pending / In Progress</span>
-                <span
+                <button
+                  type="button"
+                  onClick={() => setWorkflowTab("pending")}
                   style={{
-                    background: workflowTab === "pending" ? "#2563eb" : "#cbd5e1",
-                    color: "#ffffff",
-                    borderRadius: "999px",
-                    padding: "1px 7px",
-                    fontSize: "11px",
-                    fontWeight: 800,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    fontSize: "12.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: "none",
+                    background: workflowTab === "pending" ? "#ffffff" : "transparent",
+                    color: workflowTab === "pending" ? "#2563eb" : "#64748b",
+                    boxShadow: workflowTab === "pending" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                    transition: "all 0.15s ease",
                   }}
                 >
-                  {roleWorkflowData.pendingJobs.length}
-                </span>
-              </button>
+                  <span>⚡ Pending / In Progress</span>
+                  <span
+                    style={{
+                      background: workflowTab === "pending" ? "#2563eb" : "#cbd5e1",
+                      color: "#ffffff",
+                      borderRadius: "999px",
+                      padding: "1px 7px",
+                      fontSize: "11px",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {roleWorkflowData.pendingJobs.length}
+                  </span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setWorkflowTab("completed")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12.5px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  border: "none",
-                  background: workflowTab === "completed" ? "#ffffff" : "transparent",
-                  color: workflowTab === "completed" ? "#2563eb" : "#64748b",
-                  boxShadow: workflowTab === "completed" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <span>✅ Completed</span>
-                <span
+                <button
+                  type="button"
+                  onClick={() => setWorkflowTab("completed")}
                   style={{
-                    background: workflowTab === "completed" ? "#2563eb" : "#cbd5e1",
-                    color: "#ffffff",
-                    borderRadius: "999px",
-                    padding: "1px 7px",
-                    fontSize: "11px",
-                    fontWeight: 800,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    fontSize: "12.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: "none",
+                    background: workflowTab === "completed" ? "#ffffff" : "transparent",
+                    color: workflowTab === "completed" ? "#2563eb" : "#64748b",
+                    boxShadow: workflowTab === "completed" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                    transition: "all 0.15s ease",
                   }}
                 >
-                  {roleWorkflowData.completedJobs.length}
-                </span>
-              </button>
+                  <span>✅ Completed</span>
+                  <span
+                    style={{
+                      background: workflowTab === "completed" ? "#2563eb" : "#cbd5e1",
+                      color: "#ffffff",
+                      borderRadius: "999px",
+                      padding: "1px 7px",
+                      fontSize: "11px",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {roleWorkflowData.completedJobs.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Moving Bar Layout Mode Toggle (Slider vs Compact Grid) */}
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: "#f1f5f9",
+                  padding: "3px",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setWorkflowLayout("slider")}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: "none",
+                    background: workflowLayout === "slider" ? "#ffffff" : "transparent",
+                    color: workflowLayout === "slider" ? "#2563eb" : "#64748b",
+                    boxShadow: workflowLayout === "slider" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                  title="Horizontal slider with moving bar (Short compact height)"
+                >
+                  <SlidersHorizontal size={13} />
+                  <span>Moving Bar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkflowLayout("grid")}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    border: "none",
+                    background: workflowLayout === "grid" ? "#ffffff" : "transparent",
+                    color: workflowLayout === "grid" ? "#2563eb" : "#64748b",
+                    boxShadow: workflowLayout === "grid" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                  title="2-Row Scrollable Grid"
+                >
+                  <LayoutGrid size={13} />
+                  <span>Grid</span>
+                </button>
+              </div>
+
+              {/* Slider Left/Right Quick Controls */}
+              {workflowLayout === "slider" && (
+                <div style={{ display: "flex", gap: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (workflowScrollRef.current) {
+                        workflowScrollRef.current.scrollBy({ left: -380, behavior: "smooth" });
+                      }
+                    }}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      background: "#ffffff",
+                      display: "grid",
+                      placeItems: "center",
+                      cursor: "pointer",
+                      color: "#475569",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                    }}
+                    title="Slide Left"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (workflowScrollRef.current) {
+                        workflowScrollRef.current.scrollBy({ left: 380, behavior: "smooth" });
+                      }
+                    }}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      background: "#ffffff",
+                      display: "grid",
+                      placeItems: "center",
+                      cursor: "pointer",
+                      color: "#475569",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                    }}
+                    title="Slide Right"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -2478,11 +2598,30 @@ export default function DashboardClient() {
 
             return (
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-                  gap: "14px",
-                }}
+                ref={workflowScrollRef}
+                className="custom-moving-bar"
+                style={
+                  workflowLayout === "slider"
+                    ? {
+                        display: "flex",
+                        gap: "14px",
+                        overflowX: "auto",
+                        overflowY: "hidden",
+                        paddingBottom: "14px",
+                        scrollSnapType: "x mandatory",
+                        scrollBehavior: "smooth",
+                      }
+                    : {
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                        gap: "14px",
+                        maxHeight: "410px",
+                        overflowY: "auto",
+                        paddingRight: "8px",
+                        paddingBottom: "8px",
+                        scrollBehavior: "smooth",
+                      }
+                }
               >
                 {displayList.map((j: any) => {
                   const jobRef = j.jobNo || j.id || "SJ-1000";
@@ -2515,6 +2654,10 @@ export default function DashboardClient() {
                     <div
                       key={jobRef}
                       style={{
+                        minWidth: workflowLayout === "slider" ? "320px" : undefined,
+                        maxWidth: workflowLayout === "slider" ? "340px" : undefined,
+                        flexShrink: workflowLayout === "slider" ? 0 : undefined,
+                        scrollSnapAlign: workflowLayout === "slider" ? "start" : undefined,
                         background: "#ffffff",
                         border: "1px solid #e2e8f0",
                         borderRadius: "12px",
