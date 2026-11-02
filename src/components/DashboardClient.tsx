@@ -1558,400 +1558,6 @@ export default function DashboardClient() {
         </article>
       </section>
 
-      {/* 2.5. OPERATIONAL WORKFLOW QUEUE HUB (PENDING & COMPLETED FOR EACH STAFF) */}
-      <section style={{ marginBottom: "24px" }}>
-        <article
-          style={{
-            background: "#ffffff",
-            border: "1px solid #e2e8f0",
-            borderRadius: "16px",
-            padding: "20px",
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "12px",
-              borderBottom: "1px solid #f1f5f9",
-              paddingBottom: "16px",
-              marginBottom: "16px",
-            }}
-          >
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <span
-                  style={{
-                    background: "#2563eb",
-                    color: "#ffffff",
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  WORKFLOW COMMAND
-                </span>
-                <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
-                  Role Queue &amp; Operational Throughput
-                </span>
-              </div>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#0f172a", margin: 0 }}>
-                {activeWorkflowStaff === "all"
-                  ? "All Stations — Workflow Queue & Status"
-                  : activeWorkflowStaff === "suganya"
-                  ? "Suganya — Branch Intake & Receipts Queue"
-                  : activeWorkflowStaff === "radha"
-                  ? "Radha — Branch Intake & Receipts Queue"
-                  : activeWorkflowStaff === "senthil"
-                  ? "Senthil Kumar — Workshop Repairs (30%/50% Scope) Queue"
-                  : activeWorkflowStaff === "aravindh"
-                  ? "Aravindh — Workshop Logistics & Physical Verification Queue"
-                  : "Azhalaku Priya — Commercial Quotations & Delivery Queue"}
-              </h2>
-              <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#64748b" }}>
-                Instantly view items awaiting action (Pending) vs finished items (Completed).
-              </p>
-            </div>
-
-            {/* Completed vs Pending View Switcher */}
-            <div
-              style={{
-                display: "inline-flex",
-                background: "#f1f5f9",
-                padding: "3px",
-                borderRadius: "10px",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setWorkflowTab("pending")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12.5px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  border: "none",
-                  background: workflowTab === "pending" ? "#ffffff" : "transparent",
-                  color: workflowTab === "pending" ? "#2563eb" : "#64748b",
-                  boxShadow: workflowTab === "pending" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <span>⚡ Pending / In Progress</span>
-                <span
-                  style={{
-                    background: workflowTab === "pending" ? "#2563eb" : "#cbd5e1",
-                    color: "#ffffff",
-                    borderRadius: "999px",
-                    padding: "1px 7px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                  }}
-                >
-                  {roleWorkflowData.pendingJobs.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setWorkflowTab("completed")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
-                  fontSize: "12.5px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  border: "none",
-                  background: workflowTab === "completed" ? "#ffffff" : "transparent",
-                  color: workflowTab === "completed" ? "#2563eb" : "#64748b",
-                  boxShadow: workflowTab === "completed" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <span>✅ Completed</span>
-                <span
-                  style={{
-                    background: workflowTab === "completed" ? "#2563eb" : "#cbd5e1",
-                    color: "#ffffff",
-                    borderRadius: "999px",
-                    padding: "1px 7px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                  }}
-                >
-                  {roleWorkflowData.completedJobs.length}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Operator / Station Filter Tabs (Admin/MD or Switcher) */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              overflowX: "auto",
-              paddingBottom: "12px",
-              marginBottom: "16px",
-              borderBottom: "1px solid #f1f5f9",
-            }}
-          >
-            <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginRight: "4px", whiteSpace: "nowrap" }}>
-              Filter Station:
-            </span>
-            {[
-              { id: "all", label: "🌐 All Workflows" },
-              { id: "suganya", label: "Suganya (Branch Intake)" },
-              { id: "radha", label: "Radha (Branch Intake)" },
-              { id: "senthil", label: "Senthil Kumar (Mechanic)" },
-              { id: "aravindh", label: "Aravindh (Workshop & Field)" },
-              { id: "priya", label: "Azhalaku Priya (Quotations)" },
-            ].map((st) => {
-              const active = activeWorkflowStaff === st.id;
-              return (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => setActiveWorkflowStaff(st.id)}
-                  style={{
-                    padding: "5px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11.5px",
-                    fontWeight: active ? 750 : 600,
-                    whiteSpace: "nowrap",
-                    cursor: "pointer",
-                    border: active ? "1px solid #2563eb" : "1px solid #e2e8f0",
-                    background: active ? "#eff6ff" : "#ffffff",
-                    color: active ? "#1d4ed8" : "#475569",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {st.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Workflow Cards Grid */}
-          {(() => {
-            const displayList =
-              workflowTab === "pending"
-                ? roleWorkflowData.pendingJobs
-                : roleWorkflowData.completedJobs;
-
-            if (displayList.length === 0) {
-              return (
-                <div
-                  style={{
-                    padding: "36px 16px",
-                    textAlign: "center",
-                    background: "#f8fafc",
-                    borderRadius: "12px",
-                    border: "1px dashed #cbd5e1",
-                  }}
-                >
-                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>
-                    {workflowTab === "pending" ? "🎉" : "📋"}
-                  </div>
-                  <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a", margin: "0 0 4px" }}>
-                    {workflowTab === "pending"
-                      ? "No Pending Items in This Workflow"
-                      : "No Completed Records in This View Yet"}
-                  </h4>
-                  <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
-                    {workflowTab === "pending"
-                      ? "All assigned tasks for this station are completed and up to date."
-                      : "Complete service jobs and quotations to populate this completed archive."}
-                  </p>
-                </div>
-              );
-            }
-
-            return (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-                  gap: "14px",
-                }}
-              >
-                {displayList.map((j: any) => {
-                  const jobRef = j.jobNo || j.id || "SJ-1000";
-                  const customerName = j.customer?.name || "Customer";
-                  const productName =
-                    (j.products || [])[0]?.productName || "Instruments Equipment";
-                  const productModel = (j.products || [])[0]?.makeModel
-                    ? ` (${(j.products || [])[0]?.makeModel})`
-                    : "";
-                  const stage = j.workflow?.stage || "INTAKE_RECEIVED";
-                  const isReadyOrClosed =
-                    j.status === "CLOSED" ||
-                    j.status === "READY" ||
-                    stage === "JOB_COMPLETED";
-
-                  let actionLabel = "View Form";
-                  let actionHref = `/forms/servicing?id=${jobRef}`;
-                  if (activeWorkflowStaff === "senthil" || activeWorkflowStaff === "aravindh") {
-                    actionLabel = "Open Workshop Terminal";
-                    actionHref = "/workshop";
-                  } else if (activeWorkflowStaff === "priya") {
-                    actionLabel = "Open Quotations";
-                    actionHref = "/quotations";
-                  } else if (activeWorkflowStaff === "suganya" || activeWorkflowStaff === "radha") {
-                    actionLabel = "Open Inward Form";
-                    actionHref = `/forms/servicing?id=${jobRef}`;
-                  }
-
-                  return (
-                    <div
-                      key={jobRef}
-                      style={{
-                        background: "#ffffff",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "12px",
-                        padding: "14px 16px",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-                        transition: "border-color 0.15s ease",
-                      }}
-                    >
-                      <div>
-                        {/* Card Header: Ref & Status */}
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontFamily: "monospace",
-                              fontSize: "12px",
-                              fontWeight: 800,
-                              color: "#0f172a",
-                              background: "#f1f5f9",
-                              padding: "2px 6px",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            #{jobRef}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              padding: "2px 8px",
-                              borderRadius: "999px",
-                              background: isReadyOrClosed ? "#f0fdf4" : "#eff6ff",
-                              color: isReadyOrClosed ? "#166534" : "#1d4ed8",
-                              border: isReadyOrClosed ? "1px solid #bbf7d0" : "1px solid #bfdbfe",
-                            }}
-                          >
-                            {isReadyOrClosed
-                              ? "COMPLETED"
-                              : stage.replaceAll("_", " ")}
-                          </span>
-                        </div>
-
-                        {/* Customer & Product */}
-                        <div style={{ fontSize: "13.5px", fontWeight: 800, color: "#0f172a", marginBottom: "2px" }}>
-                          {customerName}
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#475569", fontWeight: 600, marginBottom: "10px" }}>
-                          📦 {productName}{productModel}
-                        </div>
-
-                        {/* Workflow Details */}
-                        <div
-                          style={{
-                            background: "#f8fafc",
-                            borderRadius: "8px",
-                            padding: "8px 10px",
-                            fontSize: "11px",
-                            color: "#64748b",
-                            display: "grid",
-                            gap: "3px",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          <div>
-                            <b>Stage:</b> {stage.replaceAll("_", " ")}
-                          </div>
-                          <div>
-                            <b>Logged By:</b> {j.workflow?.intakeStaffName || j.createdBy || "Staff Intake"}
-                          </div>
-                          {j.workflow?.mechanicAssigned && (
-                            <div>
-                              <b>Mechanic:</b> {j.workflow?.mechanicAssigned}
-                            </div>
-                          )}
-                          {j.workflow?.priyaTotalQuotationAmount && (
-                            <div style={{ color: "#166534", fontWeight: 700 }}>
-                              <b>Estimate:</b> ₹ {Number(j.workflow.priyaTotalQuotationAmount).toLocaleString("en-IN")}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Card Footer: Action */}
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          paddingTop: "10px",
-                          borderTop: "1px solid #f1f5f9",
-                        }}
-                      >
-                        <span style={{ fontSize: "11px", color: "#94a3b8" }}>
-                          {dateText(j.updatedAt || j.createdAt)}
-                        </span>
-                        <Link
-                          href={actionHref}
-                          style={{
-                            background: "#2563eb",
-                            color: "#ffffff",
-                            padding: "5px 12px",
-                            borderRadius: "6px",
-                            fontSize: "11.5px",
-                            fontWeight: 700,
-                            textDecoration: "none",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                        >
-                          {actionLabel} <ArrowRight size={12} />
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </article>
-      </section>
-
       {/* 3. WORKLOAD STATUS OVERVIEW */}
       <section className="dash-grid-main" style={{ gridTemplateColumns: "1fr", marginBottom: "16px" }}>
         {/* Workload Status Distribution (Real-Time Stage Breakdown) */}
@@ -2642,6 +2248,400 @@ export default function DashboardClient() {
               })()}
             </div>
           </div>
+        </article>
+      </section>
+
+      {/* 2.5. OPERATIONAL WORKFLOW QUEUE HUB (PENDING & COMPLETED FOR EACH STAFF) */}
+      <section style={{ marginBottom: "24px" }}>
+        <article
+          style={{
+            background: "#ffffff",
+            border: "1px solid #e2e8f0",
+            borderRadius: "16px",
+            padding: "20px",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "12px",
+              borderBottom: "1px solid #f1f5f9",
+              paddingBottom: "16px",
+              marginBottom: "16px",
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <span
+                  style={{
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  WORKFLOW COMMAND
+                </span>
+                <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
+                  Role Queue &amp; Operational Throughput
+                </span>
+              </div>
+              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#0f172a", margin: 0 }}>
+                {activeWorkflowStaff === "all"
+                  ? "All Stations — Workflow Queue & Status"
+                  : activeWorkflowStaff === "suganya"
+                  ? "Suganya — Branch Intake & Receipts Queue"
+                  : activeWorkflowStaff === "radha"
+                  ? "Radha — Branch Intake & Receipts Queue"
+                  : activeWorkflowStaff === "senthil"
+                  ? "Senthil Kumar — Workshop Repairs (30%/50% Scope) Queue"
+                  : activeWorkflowStaff === "aravindh"
+                  ? "Aravindh — Workshop Logistics & Physical Verification Queue"
+                  : "Azhalaku Priya — Commercial Quotations & Delivery Queue"}
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#64748b" }}>
+                Instantly view items awaiting action (Pending) vs finished items (Completed).
+              </p>
+            </div>
+
+            {/* Completed vs Pending View Switcher */}
+            <div
+              style={{
+                display: "inline-flex",
+                background: "#f1f5f9",
+                padding: "3px",
+                borderRadius: "10px",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setWorkflowTab("pending")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12.5px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  border: "none",
+                  background: workflowTab === "pending" ? "#ffffff" : "transparent",
+                  color: workflowTab === "pending" ? "#2563eb" : "#64748b",
+                  boxShadow: workflowTab === "pending" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>⚡ Pending / In Progress</span>
+                <span
+                  style={{
+                    background: workflowTab === "pending" ? "#2563eb" : "#cbd5e1",
+                    color: "#ffffff",
+                    borderRadius: "999px",
+                    padding: "1px 7px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {roleWorkflowData.pendingJobs.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWorkflowTab("completed")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12.5px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  border: "none",
+                  background: workflowTab === "completed" ? "#ffffff" : "transparent",
+                  color: workflowTab === "completed" ? "#2563eb" : "#64748b",
+                  boxShadow: workflowTab === "completed" ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>✅ Completed</span>
+                <span
+                  style={{
+                    background: workflowTab === "completed" ? "#2563eb" : "#cbd5e1",
+                    color: "#ffffff",
+                    borderRadius: "999px",
+                    padding: "1px 7px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {roleWorkflowData.completedJobs.length}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Operator / Station Filter Tabs (Admin/MD or Switcher) */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              overflowX: "auto",
+              paddingBottom: "12px",
+              marginBottom: "16px",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginRight: "4px", whiteSpace: "nowrap" }}>
+              Filter Station:
+            </span>
+            {[
+              { id: "all", label: "🌐 All Workflows" },
+              { id: "suganya", label: "Suganya (Branch Intake)" },
+              { id: "radha", label: "Radha (Branch Intake)" },
+              { id: "senthil", label: "Senthil Kumar (Mechanic)" },
+              { id: "aravindh", label: "Aravindh (Workshop & Field)" },
+              { id: "priya", label: "Azhalaku Priya (Quotations)" },
+            ].map((st) => {
+              const active = activeWorkflowStaff === st.id;
+              return (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => setActiveWorkflowStaff(st.id)}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: "8px",
+                    fontSize: "11.5px",
+                    fontWeight: active ? 750 : 600,
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    border: active ? "1px solid #2563eb" : "1px solid #e2e8f0",
+                    background: active ? "#eff6ff" : "#ffffff",
+                    color: active ? "#1d4ed8" : "#475569",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {st.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Workflow Cards Grid */}
+          {(() => {
+            const displayList =
+              workflowTab === "pending"
+                ? roleWorkflowData.pendingJobs
+                : roleWorkflowData.completedJobs;
+
+            if (displayList.length === 0) {
+              return (
+                <div
+                  style={{
+                    padding: "36px 16px",
+                    textAlign: "center",
+                    background: "#f8fafc",
+                    borderRadius: "12px",
+                    border: "1px dashed #cbd5e1",
+                  }}
+                >
+                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>
+                    {workflowTab === "pending" ? "🎉" : "📋"}
+                  </div>
+                  <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a", margin: "0 0 4px" }}>
+                    {workflowTab === "pending"
+                      ? "No Pending Items in This Workflow"
+                      : "No Completed Records in This View Yet"}
+                  </h4>
+                  <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>
+                    {workflowTab === "pending"
+                      ? "All assigned tasks for this station are completed and up to date."
+                      : "Complete service jobs and quotations to populate this completed archive."}
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                  gap: "14px",
+                }}
+              >
+                {displayList.map((j: any) => {
+                  const jobRef = j.jobNo || j.id || "SJ-1000";
+                  const customerName = j.customer?.name || "Customer";
+                  const productName =
+                    (j.products || [])[0]?.productName || "Instruments Equipment";
+                  const productModel = (j.products || [])[0]?.makeModel
+                    ? ` (${(j.products || [])[0]?.makeModel})`
+                    : "";
+                  const stage = j.workflow?.stage || "INTAKE_RECEIVED";
+                  const isReadyOrClosed =
+                    j.status === "CLOSED" ||
+                    j.status === "READY" ||
+                    stage === "JOB_COMPLETED";
+
+                  let actionLabel = "View Form";
+                  let actionHref = `/forms/servicing?id=${jobRef}`;
+                  if (activeWorkflowStaff === "senthil" || activeWorkflowStaff === "aravindh") {
+                    actionLabel = "Open Workshop Terminal";
+                    actionHref = "/workshop";
+                  } else if (activeWorkflowStaff === "priya") {
+                    actionLabel = "Open Quotations";
+                    actionHref = "/quotations";
+                  } else if (activeWorkflowStaff === "suganya" || activeWorkflowStaff === "radha") {
+                    actionLabel = "Open Inward Form";
+                    actionHref = `/forms/servicing?id=${jobRef}`;
+                  }
+
+                  return (
+                    <div
+                      key={jobRef}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "12px",
+                        padding: "14px 16px",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+                        transition: "border-color 0.15s ease",
+                      }}
+                    >
+                      <div>
+                        {/* Card Header: Ref & Status */}
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: "monospace",
+                              fontSize: "12px",
+                              fontWeight: 800,
+                              color: "#0f172a",
+                              background: "#f1f5f9",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            #{jobRef}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                              background: isReadyOrClosed ? "#f0fdf4" : "#eff6ff",
+                              color: isReadyOrClosed ? "#166534" : "#1d4ed8",
+                              border: isReadyOrClosed ? "1px solid #bbf7d0" : "1px solid #bfdbfe",
+                            }}
+                          >
+                            {isReadyOrClosed
+                              ? "COMPLETED"
+                              : stage.replaceAll("_", " ")}
+                          </span>
+                        </div>
+
+                        {/* Customer & Product */}
+                        <div style={{ fontSize: "13.5px", fontWeight: 800, color: "#0f172a", marginBottom: "2px" }}>
+                          {customerName}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#475569", fontWeight: 600, marginBottom: "10px" }}>
+                          📦 {productName}{productModel}
+                        </div>
+
+                        {/* Workflow Details */}
+                        <div
+                          style={{
+                            background: "#f8fafc",
+                            borderRadius: "8px",
+                            padding: "8px 10px",
+                            fontSize: "11px",
+                            color: "#64748b",
+                            display: "grid",
+                            gap: "3px",
+                            marginBottom: "12px",
+                          }}
+                        >
+                          <div>
+                            <b>Stage:</b> {stage.replaceAll("_", " ")}
+                          </div>
+                          <div>
+                            <b>Logged By:</b> {j.workflow?.intakeStaffName || j.createdBy || "Staff Intake"}
+                          </div>
+                          {j.workflow?.mechanicAssigned && (
+                            <div>
+                              <b>Mechanic:</b> {j.workflow?.mechanicAssigned}
+                            </div>
+                          )}
+                          {j.workflow?.priyaTotalQuotationAmount && (
+                            <div style={{ color: "#166534", fontWeight: 700 }}>
+                              <b>Estimate:</b> ₹ {Number(j.workflow.priyaTotalQuotationAmount).toLocaleString("en-IN")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Card Footer: Action */}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          paddingTop: "10px",
+                          borderTop: "1px solid #f1f5f9",
+                        }}
+                      >
+                        <span style={{ fontSize: "11px", color: "#94a3b8" }}>
+                          {dateText(j.updatedAt || j.createdAt)}
+                        </span>
+                        <Link
+                          href={actionHref}
+                          style={{
+                            background: "#2563eb",
+                            color: "#ffffff",
+                            padding: "5px 12px",
+                            borderRadius: "6px",
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            textDecoration: "none",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          {actionLabel} <ArrowRight size={12} />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </article>
       </section>
 
