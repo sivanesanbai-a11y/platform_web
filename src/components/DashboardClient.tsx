@@ -1340,6 +1340,224 @@ export default function DashboardClient() {
         </div>
       </section>
 
+      {/* 2.3. STAFF PERFORMANCE BREAKDOWN & ACTIVE COLLABORATIVE PIPELINE FLOW */}
+      <section style={{ marginBottom: "24px" }}>
+        <article
+          style={{
+            background: "#ffffff",
+            border: "1px solid #e2e8f0",
+            borderRadius: "16px",
+            padding: "20px",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          }}
+        >
+          {/* Team Members Completed Work Performance Summary (7 staff members) */}
+          <div style={{ marginBottom: "18px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#1e293b", margin: 0 }}>
+                Staff Member Completed Performance Breakdown
+              </h3>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>
+                Total jobs handled and closed per worker account
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: "12px",
+              }}
+            >
+              {pipelineMetrics.staffSummary.map((staff) => {
+                const staffFilterKey =
+                  staff.name.includes("Suganya")
+                    ? "suganya"
+                    : staff.name.includes("Radha")
+                    ? "radha"
+                    : staff.name.includes("Senthil")
+                    ? "senthil"
+                    : staff.name.includes("Aravindh")
+                    ? "aravindh"
+                    : staff.name.includes("Priya")
+                    ? "priya"
+                    : "all";
+
+                return (
+                  <div
+                    key={staff.name}
+                    onClick={() => {
+                      if (staffFilterKey !== "all") {
+                        setActiveWorkflowStaff(staffFilterKey as any);
+                      }
+                    }}
+                    style={{
+                      background: "#f8fafc",
+                      border:
+                        activeWorkflowStaff === staffFilterKey && staffFilterKey !== "all"
+                          ? "2px solid #2563eb"
+                          : "1px solid #e2e8f0",
+                      borderRadius: "12px",
+                      padding: "12px 14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                    title={`Click to view ${staff.name}'s station queue in Workflow Command`}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                      <div
+                        style={{
+                          width: "34px",
+                          height: "34px",
+                          borderRadius: "8px",
+                          background: staff.color,
+                          color: "#ffffff",
+                          fontSize: "12px",
+                          fontWeight: 900,
+                          display: "grid",
+                          placeItems: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {staff.avatar}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: 800, color: "#0f172a" }}>
+                          {staff.name}
+                        </div>
+                        <div style={{ fontSize: "10.5px", color: "#64748b" }}>
+                          {staff.branch}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        background: "#ffffff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                        padding: "6px 10px",
+                        margin: "4px 0 8px",
+                      }}
+                    >
+                      <div>
+                        <small style={{ fontSize: "9.5px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                          Handled
+                        </small>
+                        <div style={{ fontSize: "14px", fontWeight: 800, color: "#0f172a" }}>
+                          {staff.intakes}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <small style={{ fontSize: "9.5px", color: "#059669", textTransform: "uppercase", fontWeight: 800 }}>
+                          Completed
+                        </small>
+                        <div style={{ fontSize: "14px", fontWeight: 900, color: "#059669" }}>
+                          {staff.completed}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: "10.5px", color: "#64748b", fontStyle: "italic" }}>
+                      {staff.note}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Collaborative 5-Stage Live Pipeline Progress Tracker */}
+          <div
+            style={{
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: "12px",
+              padding: "12px 16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "10px",
+                flexWrap: "wrap",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "11.5px", fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Active Collaborative Pipeline Flow
+              </span>
+              <span style={{ fontSize: "11px", color: "#64748b" }}>
+                {fullServiceJobs.length} Total Registered Jobs
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                gap: "8px",
+              }}
+            >
+              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+                <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 700 }}>1. Intake Logged</span>
+                <div style={{ fontSize: "15px", fontWeight: 850, color: "#0f172a" }}>
+                  {pipelineMetrics.stageCounts.intake} jobs
+                </div>
+                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Suganya, Radha, Sabitha, Rekha</small>
+              </div>
+
+              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+                <span style={{ fontSize: "10px", color: "#6366f1", fontWeight: 700 }}>2. Aravindh Accept/Pickup</span>
+                <div style={{ fontSize: "15px", fontWeight: 850, color: "#4338ca" }}>
+                  {pipelineMetrics.stageCounts.aravindhAccept} jobs
+                </div>
+                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Branch pickup &amp; photo verification</small>
+              </div>
+
+              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+                <span style={{ fontSize: "10px", color: "#d97706", fontWeight: 700 }}>3. Repair Scope (30%/50%)</span>
+                <div style={{ fontSize: "15px", fontWeight: 850, color: "#b45309" }}>
+                  {pipelineMetrics.stageCounts.underRepair} jobs
+                </div>
+                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Aravindh &amp; Senthil Workshop</small>
+              </div>
+
+              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+                <span style={{ fontSize: "10px", color: "#0891b2", fontWeight: 700 }}>4. Priya Pricing &amp; MD</span>
+                <div style={{ fontSize: "15px", fontWeight: 850, color: "#0e7490" }}>
+                  {pipelineMetrics.stageCounts.priyaPricing + pipelineMetrics.stageCounts.mdApproval + pipelineMetrics.stageCounts.priceApproved} jobs
+                </div>
+                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Commercial estimate &amp; MD signoff</small>
+              </div>
+
+              <div style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "8px 10px" }}>
+                <span style={{ fontSize: "10px", color: "#166534", fontWeight: 700 }}>5. Delivery &amp; Quotation</span>
+                <div style={{ fontSize: "15px", fontWeight: 850, color: "#15803d" }}>
+                  {pipelineMetrics.stageCounts.readyHandover + pipelineMetrics.stageCounts.completed} jobs
+                </div>
+                <small style={{ fontSize: "9.5px", color: "#166534" }}>Courier / Handover / Field Pick up</small>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
       {/* 2.5. OPERATIONAL WORKFLOW QUEUE HUB (PENDING & COMPLETED FOR EACH STAFF) */}
       <section style={{ marginBottom: "24px" }}>
         <article
@@ -1364,8 +1582,8 @@ export default function DashboardClient() {
               marginBottom: "16px",
             }}
           >
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                 <span
                   style={{
                     background: "#2563eb",
@@ -1402,7 +1620,7 @@ export default function DashboardClient() {
             </div>
 
             {/* Completed vs Pending View Switcher */}
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+            <div
               style={{
                 display: "inline-flex",
                 background: "#f1f5f9",
@@ -1538,7 +1756,7 @@ export default function DashboardClient() {
 
             if (displayList.length === 0) {
               return (
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+                <div
                   style={{
                     padding: "36px 16px",
                     textAlign: "center",
@@ -1547,7 +1765,7 @@ export default function DashboardClient() {
                     border: "1px dashed #cbd5e1",
                   }}
                 >
-                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "24px", marginBottom: "8px" }}>
+                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>
                     {workflowTab === "pending" ? "🎉" : "📋"}
                   </div>
                   <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a", margin: "0 0 4px" }}>
@@ -1565,7 +1783,7 @@ export default function DashboardClient() {
             }
 
             return (
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+              <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
@@ -1600,7 +1818,7 @@ export default function DashboardClient() {
                   }
 
                   return (
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+                    <div
                       key={jobRef}
                       style={{
                         background: "#ffffff",
@@ -1614,9 +1832,9 @@ export default function DashboardClient() {
                         transition: "border-color 0.15s ease",
                       }}
                     >
-                      <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                      <div>
                         {/* Card Header: Ref & Status */}
-                        <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+                        <div
                           style={{
                             display: "flex",
                             justifyContent: "space-between",
@@ -1655,15 +1873,15 @@ export default function DashboardClient() {
                         </div>
 
                         {/* Customer & Product */}
-                        <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "13.5px", fontWeight: 800, color: "#0f172a", marginBottom: "2px" }}>
+                        <div style={{ fontSize: "13.5px", fontWeight: 800, color: "#0f172a", marginBottom: "2px" }}>
                           {customerName}
                         </div>
-                        <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "12px", color: "#475569", fontWeight: 600, marginBottom: "10px" }}>
+                        <div style={{ fontSize: "12px", color: "#475569", fontWeight: 600, marginBottom: "10px" }}>
                           📦 {productName}{productModel}
                         </div>
 
                         {/* Workflow Details */}
-                        <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+                        <div
                           style={{
                             background: "#f8fafc",
                             borderRadius: "8px",
@@ -1675,19 +1893,19 @@ export default function DashboardClient() {
                             marginBottom: "12px",
                           }}
                         >
-                          <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                          <div>
                             <b>Stage:</b> {stage.replaceAll("_", " ")}
                           </div>
-                          <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                          <div>
                             <b>Logged By:</b> {j.workflow?.intakeStaffName || j.createdBy || "Staff Intake"}
                           </div>
                           {j.workflow?.mechanicAssigned && (
-                            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                            <div>
                               <b>Mechanic:</b> {j.workflow?.mechanicAssigned}
                             </div>
                           )}
                           {j.workflow?.priyaTotalQuotationAmount && (
-                            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ color: "#166534", fontWeight: 700 }}>
+                            <div style={{ color: "#166534", fontWeight: 700 }}>
                               <b>Estimate:</b> ₹ {Number(j.workflow.priyaTotalQuotationAmount).toLocaleString("en-IN")}
                             </div>
                           )}
@@ -1695,7 +1913,7 @@ export default function DashboardClient() {
                       </div>
 
                       {/* Card Footer: Action */}
-                      <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+                      <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
@@ -1739,7 +1957,7 @@ export default function DashboardClient() {
         {/* Workload Status Distribution (Real-Time Stage Breakdown) */}
         <article className="dash-card dash-status-card" style={{ minHeight: "auto", paddingBottom: "6px" }}>
           <div className="dash-card-head" style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: "14px" }}>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <span>Status Overview</span>
               <h2>Current Workload</h2>
               <p>Active distribution across operational stages.</p>
@@ -1747,7 +1965,7 @@ export default function DashboardClient() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", alignItems: "center", gap: "24px", padding: "16px 20px" }}>
             <div className="dash-donut-wrap" style={{ margin: 0, height: "195px" }}>
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="dash-donut">
+              <div className="dash-donut">
                 <ModernDonutChart
                   data={activeStatuses}
                   total={activeStatusTotal}
@@ -1756,12 +1974,12 @@ export default function DashboardClient() {
             </div>
             <div className="dash-status-list" style={{ padding: 0 }}>
               {activeStatuses.length === 0 ? (
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: "12px" }}>
+                <div style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: "12px" }}>
                   No active operational stages recorded yet.
                 </div>
               ) : (
                 activeStatuses.slice(0, 8).map((x) => (
-                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" key={x.name}>
+                  <div key={x.name}>
                     <span>
                       <i style={{ background: x.color }} />
                       {String(x.name).replaceAll("_", " ")}
@@ -1782,7 +2000,7 @@ export default function DashboardClient() {
             <span className="module-snapshot-icon">
               <Wrench />
             </span>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <small>Calibration &amp; Repairs</small>
               <h3>Service Activity</h3>
             </div>
@@ -1791,19 +2009,19 @@ export default function DashboardClient() {
             </Link>
           </div>
           <div className="module-snapshot-stats">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <span>Today</span>
               <b>{serviceMetricsToday}</b>
             </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <span>Open</span>
               <b>{serviceMetricsOpen}</b>
             </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <span>Ready</span>
               <b>{serviceMetricsReady}</b>
             </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <span>Estimate</span>
               <b>{compactMoney(serviceMetricsEstimate)}</b>
             </div>
@@ -1857,8 +2075,8 @@ export default function DashboardClient() {
               paddingBottom: "14px",
             }}
           >
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span
                   style={{
                     background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
@@ -1884,7 +2102,7 @@ export default function DashboardClient() {
               </p>
             </div>
 
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               <Link
                 href="/forms?type=servicing"
                 style={{
@@ -1915,7 +2133,7 @@ export default function DashboardClient() {
               marginBottom: "18px",
             }}
           >
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+            <div
               style={{
                 background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
                 border: "1.5px solid #bbf7d0",
@@ -1923,7 +2141,7 @@ export default function DashboardClient() {
                 padding: "14px",
               }}
             >
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <small style={{ fontSize: "11px", fontWeight: 800, color: "#166534", textTransform: "uppercase" }}>
                   Completed Jobs
                 </small>
@@ -1937,7 +2155,7 @@ export default function DashboardClient() {
               </span>
             </div>
 
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+            <div
               style={{
                 background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
                 border: "1.5px solid #bfdbfe",
@@ -1945,7 +2163,7 @@ export default function DashboardClient() {
                 padding: "14px",
               }}
             >
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <small style={{ fontSize: "11px", fontWeight: 800, color: "#1e40af", textTransform: "uppercase" }}>
                   Completed Revenue
                 </small>
@@ -1959,7 +2177,7 @@ export default function DashboardClient() {
               </span>
             </div>
 
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+            <div
               style={{
                 background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)",
                 border: "1.5px solid #ddd6fe",
@@ -1967,7 +2185,7 @@ export default function DashboardClient() {
                 padding: "14px",
               }}
             >
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <small style={{ fontSize: "11px", fontWeight: 800, color: "#5b21b6", textTransform: "uppercase" }}>
                   Active In-Progress
                 </small>
@@ -1981,7 +2199,7 @@ export default function DashboardClient() {
               </span>
             </div>
 
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+            <div
               style={{
                 background:
                   pipelineMetrics.pendingMdApprovals.length > 0
@@ -1995,7 +2213,7 @@ export default function DashboardClient() {
                 padding: "14px",
               }}
             >
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <small
                   style={{
                     fontSize: "11px",
@@ -2424,185 +2642,6 @@ export default function DashboardClient() {
               })()}
             </div>
           </div>
-
-          {/* Team Members Completed Work Performance Summary (7 staff members) */}
-          <div style={{ marginBottom: "18px" }}>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
-              }}
-            >
-              <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#1e293b", margin: 0 }}>
-                Staff Member Completed Performance Breakdown
-              </h3>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>
-                Total jobs handled and closed per worker account
-              </span>
-            </div>
-
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "12px",
-              }}
-            >
-              {pipelineMetrics.staffSummary.map((staff) => (
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-                  key={staff.name}
-                  style={{
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    padding: "12px 14px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: "8px",
-                        background: staff.color,
-                        color: "#ffffff",
-                        fontSize: "12px",
-                        fontWeight: 900,
-                        display: "grid",
-                        placeItems: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {staff.avatar}
-                    </div>
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-                      <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "13px", fontWeight: 800, color: "#0f172a" }}>
-                        {staff.name}
-                      </div>
-                      <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "10.5px", color: "#64748b" }}>
-                        {staff.branch}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      background: "#ffffff",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
-                      padding: "6px 10px",
-                      margin: "4px 0 8px",
-                    }}
-                  >
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-                      <small style={{ fontSize: "9.5px", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
-                        Handled
-                      </small>
-                      <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "14px", fontWeight: 800, color: "#0f172a" }}>
-                        {staff.intakes}
-                      </div>
-                    </div>
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ textAlign: "right" }}>
-                      <small style={{ fontSize: "9.5px", color: "#059669", textTransform: "uppercase", fontWeight: 800 }}>
-                        Completed
-                      </small>
-                      <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "14px", fontWeight: 900, color: "#059669" }}>
-                        {staff.completed}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "10.5px", color: "#64748b", fontStyle: "italic" }}>
-                    {staff.note}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Collaborative 5-Stage Live Pipeline Progress Tracker */}
-          <div
-            style={{
-              background: "#f8fafc",
-              border: "1px solid #e2e8f0",
-              borderRadius: "12px",
-              padding: "12px 16px",
-            }}
-          >
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "10px",
-                flexWrap: "wrap",
-                gap: "8px",
-              }}
-            >
-              <span style={{ fontSize: "11.5px", fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                Active Collaborative Pipeline Flow
-              </span>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>
-                {fullServiceJobs.length} Total Registered Jobs
-              </span>
-            </div>
-
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-                gap: "8px",
-              }}
-            >
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
-                <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 700 }}>1. Intake Logged</span>
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "15px", fontWeight: 850, color: "#0f172a" }}>
-                  {pipelineMetrics.stageCounts.intake} jobs
-                </div>
-                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Suganya, Radha, Sabitha, Rekha</small>
-              </div>
-
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
-                <span style={{ fontSize: "10px", color: "#6366f1", fontWeight: 700 }}>2. Aravindh Accept/Pickup</span>
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "15px", fontWeight: 850, color: "#4338ca" }}>
-                  {pipelineMetrics.stageCounts.aravindhAccept} jobs
-                </div>
-                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Branch pickup &amp; photo verification</small>
-              </div>
-
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
-                <span style={{ fontSize: "10px", color: "#d97706", fontWeight: 700 }}>3. Repair Scope (30%/50%)</span>
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "15px", fontWeight: 850, color: "#b45309" }}>
-                  {pipelineMetrics.stageCounts.underRepair} jobs
-                </div>
-                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Aravindh &amp; Senthil Workshop</small>
-              </div>
-
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
-                <span style={{ fontSize: "10px", color: "#0891b2", fontWeight: 700 }}>4. Priya Pricing &amp; MD</span>
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "15px", fontWeight: 850, color: "#0e7490" }}>
-                  {pipelineMetrics.stageCounts.priyaPricing + pipelineMetrics.stageCounts.mdApproval + pipelineMetrics.stageCounts.priceApproved} jobs
-                </div>
-                <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Commercial estimate &amp; MD signoff</small>
-              </div>
-
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ background: "#ffffff", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "8px 10px" }}>
-                <span style={{ fontSize: "10px", color: "#166534", fontWeight: 700 }}>5. Delivery &amp; Quotation</span>
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ fontSize: "15px", fontWeight: 850, color: "#15803d" }}>
-                  {pipelineMetrics.stageCounts.readyHandover + pipelineMetrics.stageCounts.completed} jobs
-                </div>
-                <small style={{ fontSize: "9.5px", color: "#166534" }}>Courier / Handover / Field Pick up</small>
-              </div>
-            </div>
-          </div>
         </article>
       </section>
 
@@ -2611,7 +2650,7 @@ export default function DashboardClient() {
         {/* Left Column: Real Recent Forms Output */}
         <article className="dash-card recent-card">
           <div className="dash-card-head">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div>
               <span>Live Form Records</span>
               <h2>Recent Forms &amp; Dispatches</h2>
               <p>
@@ -2720,8 +2759,8 @@ export default function DashboardClient() {
         <div className="dash-side-stack">
           {/* Needs Attention */}
           <article className="dash-card attention-card">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="dash-card-head compact">
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div className="dash-card-head compact">
+              <div>
                 <span>Priority Actions</span>
                 <h2>Needs Attention</h2>
               </div>
@@ -2729,12 +2768,12 @@ export default function DashboardClient() {
                 All tasks <ArrowRight size={13} />
               </Link>
             </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="attention-list-v2">
+            <div className="attention-list-v2">
               {attention.length ? (
                 attention.map((x) => (
                   <Link key={`${x.source}-${x.id}`} href={x.action_path}>
                     <SourceBadge source={x.source} />
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                    <div>
                       <b>
                         {x.record_no} · {x.customer}
                       </b>
@@ -2746,9 +2785,9 @@ export default function DashboardClient() {
                   </Link>
                 ))
               ) : (
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="healthy-state">
+                <div className="healthy-state">
                   <CheckCircle2 size={18} />
-                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                  <div>
                     <b>Operational Queue Clear</b>
                     <span>All service batches and purchasing orders running on schedule.</span>
                   </div>
@@ -2759,8 +2798,8 @@ export default function DashboardClient() {
 
           {/* Recent Activity */}
           <article className="dash-card activity-card">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="dash-card-head compact">
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+            <div className="dash-card-head compact">
+              <div>
                 <span>Audit Log</span>
                 <h2>Recent Activity</h2>
               </div>
@@ -2768,7 +2807,7 @@ export default function DashboardClient() {
                 Full log <ArrowRight size={13} />
               </Link>
             </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="activity-list-v2">
+            <div className="activity-list-v2">
               {(activity?.items || []).length ? (
                 (activity?.items || []).slice(0, 4).map((a) => (
                   <Link
@@ -2784,7 +2823,7 @@ export default function DashboardClient() {
                         <Wrench size={13} />
                       )}
                     </span>
-                    <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
+                    <div>
                       <b>
                         {a.record_no} · {a.action}
                       </b>
@@ -2795,7 +2834,7 @@ export default function DashboardClient() {
                   </Link>
                 ))
               ) : (
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway"
+                <div
                   style={{
                     padding: "22px 14px",
                     textAlign: "center",
