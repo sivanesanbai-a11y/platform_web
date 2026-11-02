@@ -97,8 +97,31 @@ function buildLocalBootstrap(store: any) {
   const qVal = quotations.reduce((sum: number, q: any) => sum + Number(q.total_amount || 0), 0);
   const totalRev = pVal + sVal + qVal;
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const thisMonthStr = todayStr.slice(0, 7);
+
   const pActive = purchasingOrders.filter((x: any) => (x.current_status || x.status) !== "Completed").length;
-  const sOpen = serviceJobs.filter((x: any) => x.status !== "CLOSED" && x.status !== "DISPATCHED").length;
+  const sOpen = serviceJobs.filter((x: any) => {
+    const st = String(x.status || "").toUpperCase();
+    const stage = String(x.workflow?.stage || "").toUpperCase();
+    return st !== "CLOSED" && st !== "DISPATCHED" && st !== "DELIVERED" && stage !== "JOB_COMPLETED" && stage !== "CLOSED";
+  }).length;
+
+  const sToday = serviceJobs.filter((j: any) => {
+    const d = String(j.jobDate || j.createdAt || j.workflow?.inwardDate || "");
+    return d.startsWith(todayStr);
+  }).length;
+
+  const sMonth = serviceJobs.filter((j: any) => {
+    const d = String(j.jobDate || j.createdAt || j.workflow?.inwardDate || "");
+    return d.startsWith(thisMonthStr);
+  }).length;
+
+  const sReady = serviceJobs.filter((x: any) => {
+    const st = String(x.status || "").toUpperCase();
+    const stage = String(x.workflow?.stage || "").toUpperCase();
+    return st === "READY" || stage === "READY" || stage === "READY_FOR_DELIVERY";
+  }).length;
 
   const pRecent = purchasingOrders.slice(0, 8).map((x: any) => ({
     id: x.id || x.order_id,
@@ -189,9 +212,9 @@ function buildLocalBootstrap(store: any) {
     service: {
       open_jobs: sOpen,
       total_jobs: serviceCount,
-      ready: serviceJobs.filter((x: any) => x.status === "READY").length,
-      today_forms: serviceCount,
-      this_month_forms: serviceCount,
+      ready: sReady,
+      today_forms: sToday,
+      this_month_forms: sMonth,
       total_estimate: sVal,
       statuses: serviceStageCounts,
       branches: [],

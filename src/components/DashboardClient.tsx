@@ -1208,6 +1208,46 @@ export default function DashboardClient() {
   const activeStatusTotal = statusTotal || (kpiToday + kpiActive);
   const displayRecentForms = recentForms;
 
+  const serviceMetricsOpen = fullServiceJobs.length
+    ? fullServiceJobs.filter((j) => {
+        const st = String(j.status || "").toUpperCase();
+        const stage = String(j.workflow?.stage || "").toUpperCase();
+        return (
+          st !== "CLOSED" &&
+          st !== "DISPATCHED" &&
+          st !== "DELIVERED" &&
+          stage !== "JOB_COMPLETED" &&
+          stage !== "CLOSED"
+        );
+      }).length
+    : Number(s.open_jobs || 0);
+
+  const serviceMetricsReady = fullServiceJobs.length
+    ? fullServiceJobs.filter((j) => {
+        const st = String(j.status || "").toUpperCase();
+        const stage = String(j.workflow?.stage || "").toUpperCase();
+        return st === "READY" || stage === "READY" || stage === "READY_FOR_DELIVERY";
+      }).length
+    : Number(s.ready || 0);
+
+  const serviceMetricsToday = fullServiceJobs.length
+    ? fullServiceJobs.filter((j) => {
+        const d = String(j.jobDate || j.createdAt || j.workflow?.inwardDate || "");
+        return d.startsWith(todayStr);
+      }).length
+    : Number(s.today_forms || 0);
+
+  const serviceMetricsEstimate = fullServiceJobs.length
+    ? fullServiceJobs.reduce((sum, j) => {
+        const est =
+          j.totals?.totalEstimate ||
+          j.totals?.estimatedAmount ||
+          j.workflow?.priyaTotalQuotationAmount ||
+          0;
+        return sum + Number(est || 0);
+      }, 0)
+    : Number(s.total_estimate || 0);
+
   return (
     <main className="page dashboard-page-v2 font-sans">
 
@@ -1753,19 +1793,19 @@ export default function DashboardClient() {
           <div className="module-snapshot-stats">
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Today</span>
-              <b>{s.today_forms || 0}</b>
+              <b>{serviceMetricsToday}</b>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Open</span>
-              <b>{(s.open_jobs || 0) + localServicing.length}</b>
+              <b>{serviceMetricsOpen}</b>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Ready</span>
-              <b>{s.ready || 0}</b>
+              <b>{serviceMetricsReady}</b>
             </div>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Estimate</span>
-              <b>{compactMoney(s.total_estimate || 0)}</b>
+              <b>{compactMoney(serviceMetricsEstimate)}</b>
             </div>
           </div>
         </article>
