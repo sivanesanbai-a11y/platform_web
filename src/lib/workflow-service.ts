@@ -33,6 +33,10 @@ if (typeof window !== "undefined" && typeof BroadcastChannel !== "undefined") {
   } catch {}
 }
 
+/**
+ * Returns genuine, dispatched workflow alerts.
+ * Pure real-time notification engine: no synthetic/fake alerts.
+ */
 export function getWorkflowAlerts(): WorkflowAlert[] {
   if (typeof window === "undefined") return [];
   try {
@@ -40,60 +44,13 @@ export function getWorkflowAlerts(): WorkflowAlert[] {
     let list: WorkflowAlert[] = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) list = [];
 
-    // Auto-synthesize return approval alerts from synced service jobs so cross-device sessions never miss MD approval!
-    try {
-      const jobsRaw = localStorage.getItem("nunes:service_jobs");
-      if (jobsRaw) {
-        const jobs = JSON.parse(jobsRaw);
-        if (Array.isArray(jobs)) {
-          for (const j of jobs) {
-            const wf = j.workflow || {};
-            const jId = String(j.id || j.jobNo);
-            const jNo = String(j.jobNo || j.id);
+    // Filter out any stale auto-synthesized fake alerts
+    const cleaned = list.filter((a) => a && typeof a === "object" && a.id && !a.id.startsWith("alert-auto-"));
+    if (cleaned.length !== list.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+    }
 
-            // If MD has approved price, ensure Priya's return approval alert is present
-            if (
-              (wf.stage === "PRICE_APPROVED_BY_MD" || wf.mdApprovedPrice) &&
-              !list.some((a) => (a.jobId === jId || a.jobNo === jNo) && a.stage === "PRICE_APPROVED_BY_MD")
-            ) {
-              const approvedAmt = Number(wf.mdApprovedPrice || wf.priyaTotalQuotationAmount || j.totals?.totalEstimate || 0);
-              const isMod = Boolean(wf.mdPriceModified);
-              const origAmt = Number(wf.originalQuotedPrice || approvedAmt);
-              const titleMsg = isMod
-                ? `✅ MD Adjusted & Approved ₹${approvedAmt.toLocaleString("en-IN")} (Orig: ₹${origAmt.toLocaleString("en-IN")}) for Job #${jNo}!`
-                : `✅ MD Approved ₹${approvedAmt.toLocaleString("en-IN")} for Job #${jNo}!`;
-              const bodyMsg = wf.mdReturnMessageToPriya || (isMod
-                ? `MD adjusted and approved quotation price to ₹${approvedAmt.toLocaleString("en-IN")} (modified from Priya's quote of ₹${origAmt.toLocaleString("en-IN")}). Azhalaku Priya: Please fill courier/delivery details and send updated quotation.`
-                : `MD approved quotation price ₹${approvedAmt.toLocaleString("en-IN")}. Azhalaku Priya: Please fill courier/delivery details and send quotation.`);
-
-              list.unshift({
-                id: `alert-auto-md-appr-${jId}`,
-                jobId: jId,
-                jobNo: jNo,
-                customerName: j.customer?.name || "Customer",
-                customerPhone: j.customer?.phone || "",
-                customerCity: j.customer?.city || "Coimbatore",
-                equipmentName: j.products?.[0]?.productName || "Equipment",
-                equipmentModel: j.products?.[0]?.makeModel || "",
-                serialNo: j.products?.[0]?.serialNo || "",
-                fromUser: wf.mdApprovedBy || "MD (Managing Director)",
-                targetRole: "PRIYA",
-                targetNames: ["Azhalaku Priya", "azhalaku", "priya", "azhalakupriya@nunesinstruments.com"],
-                stage: "PRICE_APPROVED_BY_MD",
-                title: titleMsg,
-                message: bodyMsg,
-                amount: approvedAmt,
-                createdAt: wf.mdApprovedAt || j.updatedAt || new Date().toISOString(),
-                read: false,
-                priority: "urgent",
-              });
-            }
-          }
-        }
-      }
-    } catch {}
-
-    return list;
+    return cleaned;
   } catch {
     return [];
   }
@@ -103,6 +60,19 @@ export function saveWorkflowAlerts(alerts: WorkflowAlert[]): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts.slice(0, 60)));
+    window.dispatchEvent(new CustomEvent("nunes:workflow-alerts-updated"));
+    if (workflowChannel) {
+      try {
+        workflowChannel.postMessage({ type: "alerts-updated" });
+      } catch {}
+    }
+  } catch {}
+}
+
+export function clearAllWorkflowAlerts(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
     window.dispatchEvent(new CustomEvent("nunes:workflow-alerts-updated"));
     if (workflowChannel) {
       try {
@@ -158,92 +128,56 @@ export function markAllAlertsRead(): void {
 }
 
 /**
- * Filters alerts relevant to a particular logged in user or role.
+ * Filters alerts strictly relevant to a particular logged-in staff member or role.
+ * Accurately prevents cross-role alert bleed so MD does not receive Priya's return notifications.
  */
 export function getAlertsForUser(currentUser: string): WorkflowAlert[] {
-  const user = (currentUser || "").toLowerCase();
+  const user = (currentUser || "").toLowerCase().trim();
   const all = getWorkflowAlerts();
+  if (!user) return [];
+
+  const isAdmin = user.includes("admin");
+  const isMd = !isAdmin && (user === "md" || user.startsWith("md@") || user.includes("director") || user.includes("managing") || user.includes("nunesinstruments@gmail.com"));
+  const isPriya = user.includes("priya") || user.includes("azhalaku") || user.includes("commercial");
+  const isSenthil = user.includes("senthil");
+  const isAravindh = user.includes("aravind");
+  const isFrontOffice = user.includes("suganya") || user.includes("radha") || user.includes("rekha") || user.includes("sabitha") || user.includes("front_office");
 
   return all.filter((alert) => {
+    // Alerts broadcast to all stations
     if (alert.targetRole === "ALL") return true;
 
-    // Senthil alerts
-    if (alert.targetRole === "SENTHIL" && (user.includes("senthil") || user.startsWith("senthil"))) {
-      return true;
-    }
-
-    // MD alerts
-    if (
-      alert.targetRole === "MD" &&
-      (user.includes("md") ||
-        user.includes("admin") ||
-        user.includes("director") ||
-        user.includes("managing") ||
-        user.includes("nunesinstruments@gmail.com"))
-    ) {
-      return true;
-    }
-
-    // Aravindh alerts
-    if (alert.targetRole === "ARAVINDH" && (user.includes("aravind") || user.includes("aravindh"))) {
-      return true;
-    }
-
-    // Return message from MD to Azhalaku Priya (PRICE_APPROVED_BY_MD) or any Priya target
-    // Priya must ALWAYS receive this return message!
-    if (
-      alert.stage === "PRICE_APPROVED_BY_MD" ||
-      alert.targetRole === "PRIYA"
-    ) {
-      if (
-        user.includes("priya") ||
-        user.includes("azhalaku") ||
-        user.includes("commercial") ||
-        user.includes("quotation") ||
-        user.includes("admin") ||
-        user.includes("md") ||
-        !user ||
-        (typeof window !== "undefined" && window.location.pathname.startsWith("/quotations"))
-      ) {
-        return true;
-      }
-    }
-
-    // Front Office & Service Intake (Suganya, Radha, Rekha, Sabitha, Azhalaku Priya, Senthil)
-    if (alert.targetRole === "FRONT_OFFICE") {
-      if (
-        user.includes("suganya") ||
-        user.includes("radha") ||
-        user.includes("rekha") ||
-        user.includes("sabitha") ||
-        user.includes("priya") ||
-        user.includes("azhalaku") ||
-        user.includes("senthil") ||
-        user.includes("admin") ||
-        user.includes("md") ||
-        !user
-      ) {
-        return true;
-      }
-    }
-
+    // Direct name match in targetNames
     if (alert.targetNames && alert.targetNames.some((n) => {
       const nLower = n.toLowerCase();
-      const uPrefix = user.split('@')[0];
+      const uPrefix = user.split("@")[0];
       return user.includes(nLower) || nLower.includes(uPrefix) || uPrefix.includes(nLower);
     })) {
       return true;
     }
 
-    // If user is Admin or MD, they can see all alerts
-    if (
-      user.includes("admin") ||
-      user === "md" ||
-      user.startsWith("md@") ||
-      user.includes("director") ||
-      user.includes("managing") ||
-      user.includes("nunesinstruments@gmail.com")
-    ) {
+    // Role-specific routing
+    if (alert.targetRole === "MD") {
+      return isMd || isAdmin;
+    }
+
+    if (alert.targetRole === "PRIYA" || alert.stage === "PRICE_APPROVED_BY_MD") {
+      return isPriya || (isAdmin && !isMd);
+    }
+
+    if (alert.targetRole === "SENTHIL") {
+      return isSenthil || (isAdmin && !isMd);
+    }
+
+    if (alert.targetRole === "ARAVINDH") {
+      return isAravindh || (isAdmin && !isMd);
+    }
+
+    if (alert.targetRole === "FRONT_OFFICE") {
+      return isFrontOffice || (isAdmin && !isMd);
+    }
+
+    if (isAdmin) {
       return true;
     }
 

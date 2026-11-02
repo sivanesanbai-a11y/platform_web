@@ -21,6 +21,7 @@ import {
   getAlertsForUser,
   markAlertRead,
   markAllAlertsRead,
+  clearAllWorkflowAlerts,
 } from "@/lib/workflow-service";
 
 function playNotificationChime() {
@@ -101,6 +102,10 @@ export default function WorkflowNotificationManager() {
     };
 
     // 1. Window Event Listeners
+    const handleTogglePanel = () => {
+      setPanelOpen((prev) => !prev);
+    };
+    window.addEventListener("nunes:toggle-workflow-alerts", handleTogglePanel);
     window.addEventListener("nunes:workflow-notification", handleNotification as EventListener);
     window.addEventListener("nunes:workflow-alerts-updated", handleAlertsUpdated);
     window.addEventListener("nunes:records-synced", loadData);
@@ -142,6 +147,7 @@ export default function WorkflowNotificationManager() {
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
+      window.removeEventListener("nunes:toggle-workflow-alerts", handleTogglePanel);
       window.removeEventListener("nunes:workflow-notification", handleNotification as EventListener);
       window.removeEventListener("nunes:workflow-alerts-updated", handleAlertsUpdated);
       window.removeEventListener("nunes:records-synced", loadData);
@@ -458,22 +464,41 @@ export default function WorkflowNotificationManager() {
                   Suganya • Rekha • Sabitha • Priya • Senthil • MD • Aravindh
                 </p>
               </div>
-              {userAlerts.length > 0 && (
-                <button
-                  type="button"
-                  onClick={markAllAlertsRead}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: "#0f766e",
-                    cursor: "pointer",
-                  }}
-                >
-                  Mark All Read
-                </button>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {userAlerts.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllAlertsRead}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#0f766e",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Mark All Read
+                  </button>
+                )}
+                {userAlerts.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllWorkflowAlerts}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#94a3b8",
+                      cursor: "pointer",
+                    }}
+                    title="Clear notification list"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Alerts List */}
