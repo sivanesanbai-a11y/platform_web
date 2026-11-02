@@ -1657,79 +1657,43 @@ export default function DashboardClient() {
         </article>
       </section>
 
-      {/* 3. CHARTS GRID (Purchasing vs Servicing + Workload Status Distribution) */}
-      <section className="dash-grid-main">
-        {/* Left Column: Forms Overview Chart */}
-        <article className="dash-card dash-chart-card">
-          <div className="dash-card-head">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Forms Throughput</span>
-              <h2>Purchasing vs Servicing</h2>
-              <p>Real saved operational form volume over time.</p>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="period-control">
-              <button
-                className={period === "daily" ? "active" : ""}
-                onClick={() => setPeriod("daily")}
-              >
-                14 Days
-              </button>
-              <button
-                className={period === "monthly" ? "active" : ""}
-                onClick={() => setPeriod("monthly")}
-              >
-                6 Months
-              </button>
-            </div>
-          </div>
-          <div className="chart-legend">
-            <span>
-              <i className="purchase-dot" />
-              Purchasing
-            </span>
-            <span>
-              <i className="service-dot" />
-              Servicing
-            </span>
-          </div>
-          <div className="dash-chart-area">
-            <FormsOverviewChart data={activeFormsChart} />
-          </div>
-        </article>
-
-        {/* Right Column: Workload Status Distribution */}
-        <article className="dash-card dash-status-card">
-          <div className="dash-card-head">
+      {/* 3. WORKLOAD STATUS OVERVIEW */}
+      <section className="dash-grid-main" style={{ gridTemplateColumns: "1fr", marginBottom: "16px" }}>
+        {/* Workload Status Distribution (Real-Time Stage Breakdown) */}
+        <article className="dash-card dash-status-card" style={{ minHeight: "auto", paddingBottom: "6px" }}>
+          <div className="dash-card-head" style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: "14px" }}>
             <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
               <span>Status Overview</span>
               <h2>Current Workload</h2>
               <p>Active distribution across operational stages.</p>
             </div>
           </div>
-          <div className="dash-donut-wrap">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="dash-donut">
-              <ModernDonutChart
-                data={activeStatuses}
-                total={activeStatusTotal}
-              />
-            </div>
-          </div>
-          <div className="dash-status-list">
-            {activeStatuses.length === 0 ? (
-              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: "12px" }}>
-                No active operational stages recorded yet.
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", alignItems: "center", gap: "24px", padding: "16px 20px" }}>
+            <div className="dash-donut-wrap" style={{ margin: 0, height: "195px" }}>
+              <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" className="dash-donut">
+                <ModernDonutChart
+                  data={activeStatuses}
+                  total={activeStatusTotal}
+                />
               </div>
-            ) : (
-              activeStatuses.slice(0, 6).map((x) => (
-                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" key={x.name}>
-                  <span>
-                    <i style={{ background: x.color }} />
-                    {String(x.name).replaceAll("_", " ")}
-                  </span>
-                  <b>{x.value}</b>
+            </div>
+            <div className="dash-status-list" style={{ padding: 0 }}>
+              {activeStatuses.length === 0 ? (
+                <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" style={{ padding: "16px 0", textAlign: "center", color: "#94a3b8", fontSize: "12px" }}>
+                  No active operational stages recorded yet.
                 </div>
-              ))
-            )}
+              ) : (
+                activeStatuses.slice(0, 8).map((x) => (
+                  <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway" key={x.name}>
+                    <span>
+                      <i style={{ background: x.color }} />
+                      {String(x.name).replaceAll("_", " ")}
+                    </span>
+                    <b>{x.value}</b>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </article>
       </section>
