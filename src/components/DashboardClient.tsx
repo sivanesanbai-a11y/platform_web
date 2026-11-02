@@ -97,29 +97,62 @@ const COLORS = [
 
 function semanticStatusColor(name: string, index = 0) {
   const n = String(name || "").toLowerCase();
+  if (n.includes("completed") || n.includes("closed")) return "#10B981"; // Emerald Green
+  if (n.includes("dispatch") || n.includes("deliver")) return "#6366F1"; // Indigo
+  if (n.includes("ready") || n.includes("test")) return "#14B8A6"; // Teal
+  if (n.includes("approval") || n.includes("md")) return "#EC4899"; // Rose Pink
+  if (n.includes("repair") || n.includes("servicing")) return "#0EA5E9"; // Sky Blue
+  if (n.includes("estimate") || n.includes("scope") || n.includes("pricing")) return "#F59E0B"; // Amber
+  if (n.includes("inspection") || n.includes("aravindh") || n.includes("verif")) return "#8B5CF6"; // Purple
+  if (n.includes("receive") || n.includes("intake")) return "#3B82F6"; // Cobalt Blue
   if (n.includes("cancel") || n.includes("draft")) return "#94A3B8";
-  if (n.includes("error") || n.includes("failed")) return "#EF4444";
-  if (
-    n.includes("completed") ||
-    n.includes("closed") ||
-    n.includes("dispatched") ||
-    n.includes("ready")
-  )
-    return "#22C55E";
-  if (
-    n.includes("pending") ||
-    n.includes("waiting") ||
-    n.includes("approval") ||
-    n.includes("estimate")
-  )
-    return "#F59E0B";
-  if (
-    n.includes("progress") ||
-    n.includes("repair") ||
-    n.includes("received")
-  )
-    return "#3B82F6";
   return COLORS[index % COLORS.length];
+}
+
+function resolveJobStage(j: any): string {
+  const status = String(j?.status || "").toUpperCase();
+  const wf = j?.workflow || {};
+  const stage = String(wf?.stage || "").toUpperCase();
+
+  if (status === "CLOSED" || stage === "JOB_COMPLETED" || stage === "CLOSED") {
+    return "Completed";
+  }
+  if (status === "DISPATCHED" || status === "DELIVERED" || stage === "DISPATCHED" || stage === "DELIVERED") {
+    return "Dispatched";
+  }
+  if (status === "READY" || stage === "READY" || stage === "READY_FOR_DELIVERY") {
+    return "Testing / Ready";
+  }
+  if (
+    stage.includes("APPROVAL") ||
+    status.includes("APPROVAL") ||
+    (wf.priyaTotalQuotationAmount && !wf.mdApprovedAt)
+  ) {
+    return "MD Approval";
+  }
+  if (
+    status === "IN SERVICING" ||
+    status === "REPAIRING" ||
+    stage.includes("REPAIR") ||
+    (wf.mechanicAssigned && !wf.priyaTotalQuotationAmount)
+  ) {
+    return "Repairing";
+  }
+  if (
+    stage.includes("PRICING") ||
+    stage.includes("ESTIMATE") ||
+    status.includes("ESTIMATE")
+  ) {
+    return "Estimate / Scope";
+  }
+  if (
+    stage.includes("ARAVINDH") ||
+    stage.includes("INSPECTION") ||
+    stage.includes("VERIF")
+  ) {
+    return "Inspection";
+  }
+  return "Receive / Intake";
 }
 
 function semanticStatusClass(name: string) {
@@ -1022,16 +1055,20 @@ export default function DashboardClient() {
       : monthlyForms;
 
   const statusMap = new Map<string, number>();
-  for (const x of fStatuses)
-    statusMap.set(
-      String(x.name),
-      Number(x.value || 0) + (statusMap.get(String(x.name)) || 0)
-    );
-  for (const x of sStatuses)
-    statusMap.set(
-      String(x.name),
-      Number(x.value || 0) + (statusMap.get(String(x.name)) || 0)
-    );
+  // Wire Status Overview purely to real Service Operations & Live Workflow stages
+  if (fullServiceJobs && fullServiceJobs.length > 0) {
+    for (const j of fullServiceJobs) {
+      const st = resolveJobStage(j);
+      statusMap.set(st, (statusMap.get(st) || 0) + 1);
+    }
+  } else {
+    for (const x of sStatuses) {
+      statusMap.set(
+        String(x.name),
+        Number(x.value || 0) + (statusMap.get(String(x.name)) || 0)
+      );
+    }
+  }
   const combinedStatuses = Array.from(statusMap.entries())
     .map(([name, value], i) => ({
       name,

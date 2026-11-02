@@ -31,10 +31,62 @@ async function pull(base: string, path: string, signal: AbortSignal) {
   return res.json();
 }
 
+function resolveJobStage(j: any): string {
+  const status = String(j?.status || "").toUpperCase();
+  const wf = j?.workflow || {};
+  const stage = String(wf?.stage || "").toUpperCase();
+
+  if (status === "CLOSED" || stage === "JOB_COMPLETED" || stage === "CLOSED") {
+    return "Completed";
+  }
+  if (status === "DISPATCHED" || status === "DELIVERED" || stage === "DISPATCHED" || stage === "DELIVERED") {
+    return "Dispatched";
+  }
+  if (status === "READY" || stage === "READY" || stage === "READY_FOR_DELIVERY") {
+    return "Testing / Ready";
+  }
+  if (
+    stage.includes("APPROVAL") ||
+    status.includes("APPROVAL") ||
+    (wf.priyaTotalQuotationAmount && !wf.mdApprovedAt)
+  ) {
+    return "MD Approval";
+  }
+  if (
+    status === "IN SERVICING" ||
+    status === "REPAIRING" ||
+    stage.includes("REPAIR") ||
+    (wf.mechanicAssigned && !wf.priyaTotalQuotationAmount)
+  ) {
+    return "Repairing";
+  }
+  if (
+    stage.includes("PRICING") ||
+    stage.includes("ESTIMATE") ||
+    status.includes("ESTIMATE")
+  ) {
+    return "Estimate / Scope";
+  }
+  if (
+    stage.includes("ARAVINDH") ||
+    stage.includes("INSPECTION") ||
+    stage.includes("VERIF")
+  ) {
+    return "Inspection";
+  }
+  return "Receive / Intake";
+}
+
 function buildLocalBootstrap(store: any) {
   const serviceJobs = Array.isArray(store?.service_jobs) ? store.service_jobs : [];
   const purchasingOrders = Array.isArray(store?.purchasing_orders) ? store.purchasing_orders : [];
   const quotations = Array.isArray(store?.quotations) ? store.quotations : [];
+
+  const serviceStageCounts: Record<string, number> = {};
+  for (const j of serviceJobs) {
+    const st = resolveJobStage(j);
+    serviceStageCounts[st] = (serviceStageCounts[st] || 0) + 1;
+  }
 
   const serviceCount = serviceJobs.length;
   const purchasingCount = purchasingOrders.length;
@@ -141,10 +193,7 @@ function buildLocalBootstrap(store: any) {
       today_forms: serviceCount,
       this_month_forms: serviceCount,
       total_estimate: sVal,
-      statuses: sOpen > 0 ? {
-        RECEIVED: sOpen,
-        ...(serviceCount - sOpen > 0 ? { COMPLETED: serviceCount - sOpen } : {}),
-      } : (serviceCount > 0 ? { COMPLETED: serviceCount } : {}),
+      statuses: serviceStageCounts,
       branches: [],
       monthly: [],
       daily: [],
