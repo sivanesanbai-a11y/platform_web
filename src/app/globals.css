@@ -4010,6 +4010,25 @@ em,
 
 
 
+.hero-3d-device-lottie {
+  width: 100%;
+  max-width: 290px;
+  height: 195px;
+  transform: translateZ(24px);
+  filter: drop-shadow(0 14px 22px rgba(3, 27, 88, 0.45));
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-3d-device-lottie svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 195px !important;
+  overflow: hidden !important;
+}
+
 .hero-3d-device-img {
 
   max-height: 195px;

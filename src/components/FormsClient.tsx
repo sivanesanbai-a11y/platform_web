@@ -27,6 +27,7 @@ import { clearDataCache, companyFetch, getModules, getOverview, getTasks, module
 import { syncPullFromCloud } from "@/lib/sync";
 import { MODULE_REGISTRY, type ModuleDefinition } from "@/lib/module-registry";
 import AddOlderFormModal from "@/components/AddOlderFormModal";
+import ServicingLottieAnimation from "@/components/ServicingLottieAnimation";
 
 // =========================================================================
 // 1. Bespoke Apple-Grade Interactive 3D Vector Instruments
@@ -416,7 +417,7 @@ function ServicingHero3D({ isReady }: { isReady: boolean }) {
         >
           <div className="hero-3d-shadow" />
           <div className="hero-3d-device-floater">
-            <ServicingInstrumentSVG />
+            <ServicingLottieAnimation />
           </div>
         </div>
       </div>
@@ -500,11 +501,7 @@ interface ProcessCardProps {
 export function ProcessCard({ moduleDef, isReady, metrics, onAddOlder }: ProcessCardProps) {
   return (
     <article className={`process-card ${moduleDef.id}`} id={`process-card-${moduleDef.id}`}>
-      {moduleDef.id === "purchasing" ? (
-        <PurchasingHero3D isReady={isReady} />
-      ) : (
-        <ServicingHero3D isReady={isReady} />
-      )}
+      <ServicingHero3D isReady={isReady} />
       <div className="process-card-content">
         <ProcessMetrics metrics={metrics} />
         <WorkflowStages stages={moduleDef.workflow} />
@@ -764,8 +761,8 @@ export default function ProcessSelection() {
         link: `/forms/purchasing?id=${o.id || o.order_id}`,
       }));
 
-    return [...matchedJobs, ...matchedOrders].slice(0, 8);
-  }, [searchQuery, allServiceJobs, allPurchasingOrders]);
+    return matchedJobs.slice(0, 8);
+  }, [searchQuery, allServiceJobs]);
 
   // Recent Active Jobs for Quick Resume
   const recentActiveForms = useMemo(() => {
@@ -808,7 +805,7 @@ export default function ProcessSelection() {
   return (
     <main className="forms-hub-page" style={{ maxWidth: "1360px", margin: "0 auto", padding: "24px 20px" }}>
       {/* 1. TOP IDENTITY & FAST SEARCH HEADER */}
-      <div style={{ marginBottom: "26px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
+      <div style={{ maxWidth: "920px", margin: "0 auto 24px auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>
           <span style={{ fontSize: "11px", fontWeight: 800, color: "#0866ff", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             CENTRAL OPERATIONS HUB
@@ -941,15 +938,8 @@ export default function ProcessSelection() {
         </div>
       </div>
 
-      {/* 2. DUAL BALANCED FORMS GRID (PURCHASING & SERVICING) */}
-      <div className="hub-forms-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(460px, 1fr))", gap: "24px" }}>
-        {purchasingDef && (
-          <ProcessCard
-            moduleDef={purchasingDef}
-            isReady={true}
-            metrics={purchasingMetrics}
-          />
-        )}
+      {/* 2. SERVICING FORM (PROMINENT CENTERED OPERATION CARD) */}
+      <div className="hub-forms-grid" style={{ maxWidth: "920px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr" }}>
         {servicingDef && (
           <ProcessCard
             moduleDef={servicingDef}
@@ -962,7 +952,7 @@ export default function ProcessSelection() {
 
       {/* 3. LIVE RECENT FORMS & ACTIVE DISPATCHES MINI-QUEUE */}
       {recentActiveForms.length > 0 && (
-        <section style={{ marginTop: "34px", background: "#ffffff", borderRadius: "20px", border: "1px solid #e2e8f0", padding: "20px 24px", boxShadow: "0 4px 18px rgba(15, 23, 42, 0.04)" }}>
+        <section style={{ maxWidth: "920px", margin: "30px auto 0 auto", background: "#ffffff", borderRadius: "20px", border: "1px solid #e2e8f0", padding: "20px 24px", boxShadow: "0 4px 18px rgba(15, 23, 42, 0.04)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div>
               <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: 0 }}>
