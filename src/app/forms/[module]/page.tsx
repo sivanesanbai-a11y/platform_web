@@ -7,11 +7,8 @@ export default async function Page({
   params: Promise<{ module: string }>;
 }) {
   const { module } = await params;
-  if (module === "purchasing") {
-    redirect("/forms/servicing");
-  }
-  if (module !== "servicing") {
+  if (module !== "servicing" && module !== "purchasing") {
     notFound();
   }
-  return <ModuleWorkspace kind="servicing" />;
+  return <ModuleWorkspace kind={module as "servicing" | "purchasing"} />;
 }

@@ -275,7 +275,6 @@ export default function TopNavbar() {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" &&
-                  item.href !== "/forms" &&
                   pathname.startsWith(item.href));
 
               return (
@@ -386,7 +385,6 @@ export default function TopNavbar() {
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/dashboard" &&
-                    item.href !== "/forms" &&
                     pathname.startsWith(item.href));
 
                 return (
