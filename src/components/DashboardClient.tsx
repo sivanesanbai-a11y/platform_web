@@ -1392,6 +1392,7 @@ export default function DashboardClient() {
 
                 return (
                   <div
+                    className="staff-card-interactive"
                     key={staff.name}
                     onClick={() => {
                       if (staffFilterKey !== "all") {
@@ -1514,7 +1515,7 @@ export default function DashboardClient() {
                 gap: "8px",
               }}
             >
-              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+              <div className="stage-flow-card" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
                 <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 700 }}>1. Intake Logged</span>
                 <div style={{ fontSize: "15px", fontWeight: 850, color: "#0f172a" }}>
                   {pipelineMetrics.stageCounts.intake} jobs
@@ -1522,7 +1523,7 @@ export default function DashboardClient() {
                 <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Suganya, Radha, Sabitha, Rekha</small>
               </div>
 
-              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+              <div className="stage-flow-card" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
                 <span style={{ fontSize: "10px", color: "#6366f1", fontWeight: 700 }}>2. Aravindh Accept/Pickup</span>
                 <div style={{ fontSize: "15px", fontWeight: 850, color: "#4338ca" }}>
                   {pipelineMetrics.stageCounts.aravindhAccept} jobs
@@ -1530,7 +1531,7 @@ export default function DashboardClient() {
                 <small style={{ fontSize: "9.5px", color: "#94a3b8" }}>Branch pickup &amp; photo verification</small>
               </div>
 
-              <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
+              <div className="stage-flow-card" style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "8px 10px" }}>
                 <span style={{ fontSize: "10px", color: "#d97706", fontWeight: 700 }}>3. Repair Scope (30%/50%)</span>
                 <div style={{ fontSize: "15px", fontWeight: 850, color: "#b45309" }}>
                   {pipelineMetrics.stageCounts.underRepair} jobs

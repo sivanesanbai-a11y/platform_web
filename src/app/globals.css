@@ -5869,46 +5869,140 @@ html.dark .metric-icon.green {
 
 /* ============================================================
    EMIL KOWALSKI APPLE MOTION & TACTILE INTERACTION RULES
+   Based on emilkowalski/skills & Apple WWDC Fluid Design
    ============================================================ */
-/* 1. Tactile Apple Physical Press Feedback */
+
+/* 1. Tactile Apple Physical Press Feedback (Sub-160ms Response) */
 button:active,
 .btn:active,
 .process-action-btn:active,
 .nunes-step-btn:active,
-.workshop-queue-card:active {
+.workshop-queue-card:active,
+.table-action:active,
+.output-report-btn:active,
+.period-tile:active,
+.mini-btn:active,
+.staff-card-interactive:active,
+.stage-flow-card:active {
   transform: scale(0.97) translateZ(0) !important;
   transition: transform 120ms var(--ease-out) !important;
 }
 
-/* 2. Hardware-Accelerated Smooth Transitions */
+/* 2. Hardware-Accelerated Smooth Transitions (GPU-only properties) */
 button,
 .btn,
 .process-action-btn,
 .nunes-step-btn,
-.workshop-queue-card {
+.workshop-queue-card,
+.table-action,
+.output-report-btn,
+.staff-card-interactive,
+.stage-flow-card {
   will-change: transform;
   touch-action: manipulation;
 }
 
-/* 3. High-Performance Form Card & Workspace Framing */
-.nunes-form-card {
-  transition: box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
+/* 3. Fluid Card Elevation on Hover (Apple Depth & Materials) */
+.staff-card-interactive {
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out) !important;
 }
 
-/* 4. Tabular Numbers to Prevent Number Jitter on Counter Changes */
+.staff-card-interactive:hover {
+  transform: translateY(-2px) translateZ(0) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.stage-flow-card {
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out) !important;
+}
+
+.stage-flow-card:hover {
+  transform: translateY(-1.5px) translateZ(0) !important;
+  box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.07) !important;
+}
+
+.dash-kpi-card-v2,
+.period-tile {
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out) !important;
+}
+
+.dash-kpi-card-v2:hover,
+.period-tile:hover {
+  transform: translateY(-1.5px) translateZ(0) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* 4. Tabular Numbers to Prevent Number Jitter on Counter Changes (Emil Rule #2) */
 .tabular-nums,
 .metric-val,
 .stat-val,
-.nunes-step-num {
+.nunes-step-num,
+.money,
+.kpi-value,
+.dash-status-list b,
+.dash-table td b,
+.dash-table td small {
   font-variant-numeric: tabular-nums;
 }
 
-/* 5. Tighter Headings Tracking (Apple Typography Standard) */
-h1, h2, .hero-title, .page-head h1 {
+/* 5. Tighter Headings Tracking (Apple Typography Standard: -0.025em) */
+h1, h2, h3, .hero-title, .page-head h1, .dash-card-head h2, .dash-card-head h3 {
   letter-spacing: -0.025em;
 }
 
-/* 6. Reduced Motion Accessibility Handling */
+/* 6. Apple-grade Modal Entry (Scale 0.96 -> 1.0, Never Scale 0, Blur 16px) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 100;
+  animation: modalBackdropFadeIn 200ms var(--ease-out) forwards;
+}
+
+.modal {
+  width: min(1100px, 96vw);
+  max-height: 92vh;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform-origin: center;
+  animation: modalScaleIn 240ms var(--ease-out) forwards;
+}
+
+@keyframes modalBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 7. Gliding Table Row Interactions */
+.dash-table tbody tr {
+  transition: background-color 140ms var(--ease-out);
+}
+
+.dash-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* 8. Reduced Motion Accessibility Handling */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
