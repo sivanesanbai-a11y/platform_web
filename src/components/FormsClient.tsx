@@ -764,16 +764,7 @@ export default function ProcessSelection() {
     return matchedJobs.slice(0, 8);
   }, [searchQuery, allServiceJobs]);
 
-  // Recent Active Jobs for Quick Resume
-  const recentActiveForms = useMemo(() => {
-    return allServiceJobs.slice(0, 5).map((j) => ({
-      id: String(j.jobNo || j.id),
-      customer: j.customer?.name || "Commercial Client",
-      equipment: j.products?.[0]?.productName || j.products?.[0]?.makeModel || "Service Equipment",
-      stage: String(j.workflow?.stage || j.status || "INTAKE_RECEIVED").replace(/_/g, " "),
-      date: j.updatedAt || j.createdAt || new Date().toISOString(),
-    }));
-  }, [allServiceJobs]);
+
 
   const purchasingDef = MODULE_REGISTRY.find((x) => x.id === "purchasing");
   const servicingDef = MODULE_REGISTRY.find((x) => x.id === "servicing");
@@ -949,106 +940,6 @@ export default function ProcessSelection() {
           />
         )}
       </div>
-
-      {/* 3. LIVE RECENT FORMS & ACTIVE DISPATCHES MINI-QUEUE */}
-      {recentActiveForms.length > 0 && (
-        <section style={{ maxWidth: "920px", margin: "30px auto 0 auto", background: "#ffffff", borderRadius: "20px", border: "1px solid #e2e8f0", padding: "20px 24px", boxShadow: "0 4px 18px rgba(15, 23, 42, 0.04)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <div>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", margin: 0 }}>
-                Recent Active Service Operations
-              </h3>
-              <p style={{ fontSize: "12px", color: "#64748b", margin: "2px 0 0" }}>
-                Latest verified units currently progressing through diagnostic and repair bays.
-              </p>
-            </div>
-            <Link
-              href="/workshop"
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                color: "#0866ff",
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              Open Workshop Station <ArrowRight size={13} />
-            </Link>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px" }}>
-            {recentActiveForms.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  background: "#f8fafc",
-                  borderRadius: "12px",
-                  border: "1px solid #e2e8f0",
-                  padding: "12px 14px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  gap: "10px",
-                }}
-              >
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <b style={{ fontSize: "13px", color: "#0f172a" }}>#{item.id}</b>
-                    <span
-                      style={{
-                        fontSize: "10px",
-                        fontWeight: 800,
-                        background: "#dcfce7",
-                        color: "#15803d",
-                        padding: "2px 7px",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      {item.stage}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#334155", marginTop: "3px" }}>
-                    {item.equipment}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
-                    {item.customer}
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "8px", borderTop: "1px solid #e2e8f0" }}>
-                  <Link
-                    href={`/forms/servicing?id=${item.id}`}
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      color: "#0866ff",
-                      textDecoration: "none",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    Open Job Card <ArrowRight size={11} />
-                  </Link>
-                  <Link
-                    href={`/workshop?job=${item.id}`}
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      color: "#64748b",
-                      textDecoration: "none",
-                    }}
-                  >
-                    Workshop Bay →
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* 4. MODAL: ADD HISTORICAL / OLDER FORM */}
       <AddOlderFormModal
