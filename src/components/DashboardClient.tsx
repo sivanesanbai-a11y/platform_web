@@ -1698,41 +1698,8 @@ export default function DashboardClient() {
         </article>
       </section>
 
-      {/* 4. OPERATIONAL MODULE SNAPSHOTS */}
-      <section className="dash-module-row">
-        <article className="module-snapshot purchasing">
-          <div className="module-snapshot-head">
-            <span className="module-snapshot-icon">
-              <FileText />
-            </span>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <small>Procurement &amp; Orders</small>
-              <h3>Purchasing Activity</h3>
-            </div>
-            <Link href="/reports?type=purchasing">
-              Reports <ArrowRight size={13} />
-            </Link>
-          </div>
-          <div className="module-snapshot-stats">
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Today</span>
-              <b>{f.today_forms || 0}</b>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Active</span>
-              <b>{(f.active_orders || 0) + localPurchasing.length}</b>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Completed</span>
-              <b>{f.completed_orders || 0}</b>
-            </div>
-            <div ref={priceApprovalGatewayRef} id="md-price-approval-gateway">
-              <span>Order value</span>
-              <b>{compactMoney(f.order_value || 0)}</b>
-            </div>
-          </div>
-        </article>
-
+      {/* 4. SERVICE ACTIVITY SNAPSHOT */}
+      <section className="dash-module-row" style={{ gridTemplateColumns: "1fr" }}>
         <article className="module-snapshot servicing">
           <div className="module-snapshot-head">
             <span className="module-snapshot-icon">
